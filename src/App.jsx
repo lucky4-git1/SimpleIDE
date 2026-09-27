@@ -21,6 +21,7 @@ import { buildFileIndex, getProjectSummary } from './services/fileIndex'
 import { ProjectIndexer } from './services/agentEngine/ProjectIndexer'
 import { globalContextEngine } from './services/agentEngine/ContextEngine'
 import { editorBridge } from './services/editorBridge'
+import { inlineDiffService } from './services/inlineDiffService'
 import { useWorkspaceStore } from './store/workspaceStore'
 import { useEditorStore } from './store/editorStore'
 import { useUIStore } from './store/uiStore'
@@ -390,6 +391,29 @@ export default function App() {
       const normalizedTarget = filePath.replace(/\\/g, '/').toLowerCase()
       return normalizedF === normalizedTarget ? { ...f, content, isDirty: false } : f
     }))
+
+    // Trigger inline diff experience with green/red highlights and floating accept/reject widget
+    if (previousContent && content && previousContent !== content) {
+      inlineDiffService.showDiff(filePath, previousContent, content, {
+        patch: metadata.patch,
+        edits: metadata.edits,
+        onAccept: async () => {
+          setAIEditHistory(prev => prev.map(item => item.filePath === filePath && item.content === content ? { ...item, status: 'accepted' } : item))
+        },
+        onReject: async (session) => {
+          if (window.api?.writeFile) {
+            await window.api.writeFile(filePath, session.before)
+          }
+          updateSingleIndexedFile(filePath, session.before)
+          setOpenFiles(stateRef.current.openFiles.map(f => {
+            const normalizedF = f.path.replace(/\\/g, '/').toLowerCase()
+            const normalizedTarget = filePath.replace(/\\/g, '/').toLowerCase()
+            return normalizedF === normalizedTarget ? { ...f, content: session.before, isDirty: false } : f
+          }))
+          setAIEditHistory(prev => prev.map(item => item.filePath === filePath && item.content === content ? { ...item, status: 'rejected' } : item))
+        }
+      })
+    }
   }
 
   const handleUndoAIEdit = async () => {
@@ -644,6 +668,22 @@ export default function App() {
         e.preventDefault()
         if (e.shiftKey) handleSaveAll()
         else handleSave(stateRef.current.activeFilePath)
+      }
+      if ((e.ctrlKey || e.metaKey) && e.shiftKey && e.key.toLowerCase() === 'y') {
+        const active = stateRef.current.activeFilePath
+        if (active && inlineDiffService.hasActiveDiff(active)) {
+          e.preventDefault()
+          inlineDiffService.acceptDiff(active)
+          return
+        }
+      }
+      if ((e.ctrlKey || e.metaKey) && e.shiftKey && e.key.toLowerCase() === 'n') {
+        const active = stateRef.current.activeFilePath
+        if (active && inlineDiffService.hasActiveDiff(active)) {
+          e.preventDefault()
+          inlineDiffService.rejectDiff(active)
+          return
+        }
       }
       if ((e.ctrlKey || e.metaKey) && e.key === 'o') {
         e.preventDefault()

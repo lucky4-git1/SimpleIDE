@@ -898,3 +898,159 @@
 .prime-ai--light .prime-approval-card__args { background: #f4efe2; color: #33415c; }
 .prime-ai--light .prime-attached-chip { background: rgba(43, 96, 200, 0.1); color: #24407c; box-shadow: inset 0 0 0 1px rgba(43, 96, 200, 0.25); }
 .prime-ai--light .prime-attach-btn, .prime-ai--light .prime-attach-result { background: rgba(43, 96, 200, 0.08); color: #24407c; }
+
+/* ==========================================================================
+   Phase 6 — Inline AI Diff Experience
+   ========================================================================== */
+.inline-diff-insert-line {
+  background-color: rgba(34, 197, 94, 0.16) !important;
+  border-left: 3px solid #22c55e !important;
+}
+
+.inline-diff-insert-gutter {
+  background: #22c55e !important;
+  width: 4px !important;
+  border-radius: 2px;
+}
+
+.inline-diff-delete-line {
+  background-color: rgba(239, 68, 68, 0.16) !important;
+  text-decoration: line-through !important;
+  border-left: 3px solid #ef4444 !important;
+}
+
+.inline-diff-delete-zone {
+  background: rgba(239, 68, 68, 0.08);
+  border-left: 3px solid #ef4444;
+  border-bottom: 1px dashed rgba(239, 68, 68, 0.3);
+  padding: 4px 12px;
+  overflow: hidden;
+  box-sizing: border-box;
+}
+
+.inline-diff-delete-zone-header {
+  display: flex;
+  align-items: center;
+  margin-bottom: 4px;
+}
+
+.inline-diff-delete-tag {
+  font-size: 11px;
+  font-weight: 600;
+  color: #f87171;
+  background: rgba(239, 68, 68, 0.16);
+  padding: 2px 6px;
+  border-radius: 4px;
+}
+
+.inline-diff-delete-text {
+  margin: 0;
+  font-family: var(--font-mono, monospace);
+  font-size: 12px;
+  color: #fca5a5;
+  white-space: pre-wrap;
+  line-height: 1.4;
+  text-decoration: line-through;
+  opacity: 0.85;
+}
+
+/* Floating Inline Accept / Reject Widget */
+.inline-diff-widget {
+  position: absolute;
+  z-index: 50;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 5px 12px;
+  border-radius: 8px;
+  background: #0d1118;
+  border: 1px solid rgba(89, 213, 247, 0.4);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.65), 0 0 15px rgba(48, 217, 255, 0.15);
+  font-size: 12px;
+  color: #e8edf5;
+  user-select: none;
+  animation: inline-diff-fade-in 150ms ease;
+  pointer-events: auto;
+}
+
+@keyframes inline-diff-fade-in {
+  from { opacity: 0; transform: translateY(-4px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.inline-diff-widget-badge {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-weight: 500;
+}
+
+.inline-diff-sparkle {
+  color: #30d9ff;
+  font-size: 13px;
+}
+
+.inline-diff-title {
+  color: #cfe0f5;
+  font-weight: 600;
+  font-size: 11px;
+}
+
+.inline-diff-stats {
+  font-family: monospace;
+  font-size: 11px;
+  color: #54d392;
+  background: rgba(84, 211, 146, 0.15);
+  padding: 1px 6px;
+  border-radius: 4px;
+}
+
+.inline-diff-widget-actions {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.inline-diff-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 4px 10px;
+  border-radius: 5px;
+  font-size: 11px;
+  font-weight: 600;
+  cursor: pointer;
+  border: 0;
+  transition: all 120ms ease;
+}
+
+.inline-diff-btn-accept {
+  background: linear-gradient(135deg, #10b981, #059669);
+  color: #ffffff;
+  box-shadow: 0 2px 6px rgba(16, 185, 129, 0.3);
+}
+
+.inline-diff-btn-accept:hover {
+  background: linear-gradient(135deg, #34d399, #10b981);
+}
+
+.inline-diff-btn-reject {
+  background: rgba(239, 68, 68, 0.15);
+  color: #fca5a5;
+  box-shadow: inset 0 0 0 1px rgba(239, 68, 68, 0.35);
+}
+
+.inline-diff-btn-reject:hover {
+  background: rgba(239, 68, 68, 0.28);
+  color: #ffffff;
+}
+
+.inline-diff-key {
+  font-size: 9px;
+  opacity: 0.8;
+  background: rgba(0, 0, 0, 0.3);
+  padding: 1px 4px;
+  border-radius: 3px;
+  font-family: monospace;
+}
+

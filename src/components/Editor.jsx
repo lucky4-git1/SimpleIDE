@@ -5,6 +5,7 @@ import { getInlineCompletions } from '../services/autocompleteService'
 import { useEditorStore } from '../store/editorStore'
 import { useUIStore } from '../store/uiStore'
 import { editorBridge } from '../services/editorBridge'
+import { inlineDiffService } from '../services/inlineDiffService'
 
 export default function Editor({ file, revealLine, revealKey }) {
   const editorRef = useRef(null)
@@ -30,6 +31,7 @@ export default function Editor({ file, revealLine, revealKey }) {
 
     if (file?.path) {
       editorBridge.registerEditor(file.path, editor, monaco)
+      inlineDiffService.attachToEditor(file.path, editor, monaco)
     }
 
     // Listen for markers (errors/warnings)
@@ -97,6 +99,7 @@ export default function Editor({ file, revealLine, revealKey }) {
     return () => {
       provider.dispose()
       if (file?.path) {
+        inlineDiffService.detachFromEditor(file.path, editor)
         editorBridge.unregisterEditor(file.path, editor)
       }
     }
@@ -105,6 +108,7 @@ export default function Editor({ file, revealLine, revealKey }) {
   useEffect(() => {
     return () => {
       if (file?.path && editorRef.current) {
+        inlineDiffService.detachFromEditor(file.path, editorRef.current)
         editorBridge.unregisterEditor(file.path, editorRef.current)
       }
     }
