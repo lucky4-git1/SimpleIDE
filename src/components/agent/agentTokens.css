@@ -153,12 +153,20 @@
   }
 }
 
-/* Accessibility & Focus Rings */
-.prime-ai button:focus-visible,
+/* Accessibility & Focus States */
+.prime-ai input,
+.prime-ai textarea,
+.prime-ai input:focus,
+.prime-ai textarea:focus,
 .prime-ai input:focus-visible,
-.prime-ai textarea:focus-visible,
+.prime-ai textarea:focus-visible {
+  outline: none !important;
+  box-shadow: none !important;
+}
+
+.prime-ai button:focus-visible,
 .prime-ai select:focus-visible {
-  outline: 2px solid var(--agent-accent);
+  outline: 1px solid var(--agent-border-strong);
   outline-offset: 1px;
 }
 
