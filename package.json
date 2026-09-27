@@ -73,6 +73,13 @@
       "assets/**/*",
       "package.json"
     ],
+    "extraResources": [
+      {
+        "from": "assets/models/prime-router",
+        "to": "assets/models/prime-router",
+        "filter": ["**/*"]
+      }
+    ],
     "win": {
       "icon": "assets/icon.ico",
       "target": [

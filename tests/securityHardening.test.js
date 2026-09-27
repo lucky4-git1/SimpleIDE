@@ -7,7 +7,6 @@ import fs from 'fs'
 import { isPathInWorkspace } from '../src/main/ipc/pathSanitizer.js'
 import { isAllowedAIEndpoint } from '../src/main/ipc/aiSecurity.js'
 import { validateProcessCwd, cleanupProcessesForRun, setProcessSecurityWorkspace } from '../src/main/ipc/processSecurity.js'
-import { CrashRecoveryService } from '../src/services/agentEngine/CrashRecoveryService.js'
 import { checkCrashRecovery } from '../src/services/agentService.js'
 
 describe('Security & Execution Reliability Hardening Test Suite (Phase 9)', () => {
@@ -23,8 +22,8 @@ describe('Security & Execution Reliability Hardening Test Suite (Phase 9)', () =
   })
 
   afterEach(() => {
-    try { fs.rmSync(tempWorkspace, { recursive: true, force: true }) } catch {}
-    try { fs.rmSync(tempOutside, { recursive: true, force: true }) } catch {}
+    try { fs.rmSync(tempWorkspace, { recursive: true, force: true }) } catch (err) { void err }
+    try { fs.rmSync(tempOutside, { recursive: true, force: true }) } catch (err) { void err }
   })
 
   describe('1. Path Sanitization & Symlink Escape Prevention', () => {
@@ -118,6 +117,14 @@ describe('Security & Execution Reliability Hardening Test Suite (Phase 9)', () =
       // When no workspace is watched, any valid string passes
       const unmanaged = validateProcessCwd(validCwd)
       assert.equal(unmanaged.ok, true)
+
+      // When workspace root is configured, enforces boundary jail
+      setProcessSecurityWorkspace(tempWorkspace)
+      const inside = validateProcessCwd(validCwd)
+      assert.equal(inside.ok, true)
+      const outside = validateProcessCwd(tempOutside)
+      assert.equal(outside.ok, false)
+      setProcessSecurityWorkspace(null)
     })
 
     test('cleanupProcessesForRun cleanly returns when no processes or unknown runId', () => {
