@@ -7,7 +7,7 @@ import {
   FileCheck2
 } from 'lucide-react'
 
-export function AgentChanges({
+export const AgentChanges = React.memo(function AgentChanges({
   changedFiles = [],
   lastChange = null,
   onReview
@@ -83,4 +83,5 @@ export function AgentChanges({
       )}
     </div>
   )
-}
+})
+

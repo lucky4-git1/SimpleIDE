@@ -7,7 +7,7 @@ import {
   XCircle
 } from 'lucide-react'
 
-export function AgentError({
+export const AgentError = React.memo(function AgentError({
   summary = '',
   status = 'failed',
   onRetry
@@ -57,4 +57,5 @@ export function AgentError({
       )}
     </div>
   )
-}
+})
+

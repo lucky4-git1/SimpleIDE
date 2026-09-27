@@ -10,7 +10,7 @@ import {
   BrainCircuit
 } from 'lucide-react'
 
-export function AgentCurrentAction({ currentAction }) {
+export const AgentCurrentAction = React.memo(function AgentCurrentAction({ currentAction }) {
   if (!currentAction) return null
 
   const getActionIcon = () => {
@@ -57,4 +57,5 @@ export function AgentCurrentAction({ currentAction }) {
       </div>
     </div>
   )
-}
+})
+

@@ -36,7 +36,7 @@ const SUGGESTIONS = [
   }
 ]
 
-export function AgentEmptyState({
+export const AgentEmptyState = React.memo(function AgentEmptyState({
   activeFileName,
   onSelectSuggestion
 }) {
@@ -85,4 +85,5 @@ export function AgentEmptyState({
       </div>
     </div>
   )
-}
+})
+

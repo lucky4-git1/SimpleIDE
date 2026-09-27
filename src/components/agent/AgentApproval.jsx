@@ -8,7 +8,7 @@ import {
   AlertTriangle
 } from 'lucide-react'
 
-export function AgentApproval({
+export const AgentApproval = React.memo(function AgentApproval({
   pendingApproval,
   onResolveApproval
 }) {
@@ -91,4 +91,5 @@ export function AgentApproval({
       </div>
     </div>
   )
-}
+})
+

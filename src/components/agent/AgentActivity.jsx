@@ -13,7 +13,7 @@ import {
   Check
 } from 'lucide-react'
 
-export function AgentActivity({ activity }) {
+export const AgentActivity = React.memo(function AgentActivity({ activity }) {
   const [isExpanded, setIsExpanded] = useState(false)
   const [copied, setCopied] = useState(false)
 
@@ -117,4 +117,5 @@ export function AgentActivity({ activity }) {
       )}
     </div>
   )
-}
+})
+

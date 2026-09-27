@@ -12,7 +12,7 @@ import {
   ChevronDown
 } from 'lucide-react'
 
-export function AgentHeader({
+export const AgentHeader = React.memo(function AgentHeader({
   taskTitle = 'Prime AI',
   state = 'idle',
   isWorking = false,
@@ -210,4 +210,5 @@ export function AgentHeader({
       )}
     </header>
   )
-}
+})
+

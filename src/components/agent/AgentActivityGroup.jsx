@@ -9,7 +9,7 @@ import {
   FileText
 } from 'lucide-react'
 
-export function AgentActivityGroup({ group }) {
+export const AgentActivityGroup = React.memo(function AgentActivityGroup({ group }) {
   const [isExpanded, setIsExpanded] = useState(false)
   if (!group) return null
 
@@ -71,4 +71,5 @@ export function AgentActivityGroup({ group }) {
       )}
     </div>
   )
-}
+})
+

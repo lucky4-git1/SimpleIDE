@@ -7,7 +7,7 @@ import {
   ShieldCheck
 } from 'lucide-react'
 
-export function AgentVerification({
+export const AgentVerification = React.memo(function AgentVerification({
   verification,
   isWorking = false
 }) {
@@ -81,4 +81,5 @@ export function AgentVerification({
       </div>
     </div>
   )
-}
+})
+

@@ -152,3 +152,47 @@
     transition: none !important;
   }
 }
+
+/* Accessibility & Focus Rings */
+.prime-ai button:focus-visible,
+.prime-ai input:focus-visible,
+.prime-ai textarea:focus-visible,
+.prime-ai select:focus-visible {
+  outline: 2px solid var(--agent-accent);
+  outline-offset: 1px;
+}
+
+/* Clean Custom Scrollbar */
+.prime-ai main::-webkit-scrollbar,
+.prime-ai pre::-webkit-scrollbar {
+  width: 5px;
+  height: 5px;
+}
+
+.prime-ai main::-webkit-scrollbar-track,
+.prime-ai pre::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.prime-ai main::-webkit-scrollbar-thumb,
+.prime-ai pre::-webkit-scrollbar-thumb {
+  background: rgba(144, 167, 197, 0.2);
+  border-radius: 99px;
+}
+
+.prime-ai main::-webkit-scrollbar-thumb:hover,
+.prime-ai pre::-webkit-scrollbar-thumb:hover {
+  background: rgba(144, 167, 197, 0.35);
+}
+
+/* Responsive Containment */
+.prime-ai * {
+  box-sizing: border-box;
+}
+
+@container (max-width: 320px) {
+  .agent-hide-narrow {
+    display: none !important;
+  }
+}
+

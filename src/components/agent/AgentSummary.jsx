@@ -9,7 +9,7 @@ import {
   ChevronUp
 } from 'lucide-react'
 
-export function AgentSummary({
+export const AgentSummary = React.memo(function AgentSummary({
   summary = '',
   status = 'complete',
   changedFiles = [],
@@ -104,4 +104,5 @@ export function AgentSummary({
       )}
     </div>
   )
-}
+})
+

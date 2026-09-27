@@ -10,7 +10,7 @@ import {
   ListTodo
 } from 'lucide-react'
 
-export function AgentPlan({
+export const AgentPlan = React.memo(function AgentPlan({
   planSteps = [],
   rawPlan = '',
   status = 'working',
@@ -151,4 +151,5 @@ export function AgentPlan({
       </div>
     </div>
   )
-}
+})
+
