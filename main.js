@@ -10,6 +10,8 @@ import { registerAiIPC } from './src/main/ipc/ai.ipc.js'
 import { registerProcessIPC } from './src/main/ipc/process.ipc.js'
 import { registerDbIPC } from './src/main/ipc/db.ipc.js'
 import { registerSkillsIPC } from './src/main/ipc/skills.ipc.js'
+import { registerPrimeRouterIPC } from './src/main/ipc/primeRouter.ipc.js'
+import { localModelRuntime } from './src/main/primeRouter/LocalModelRuntime.js'
 import { databaseManager } from './electron/database/DatabaseManager.js'
 
 const __filename = fileURLToPath(import.meta.url)
@@ -62,6 +64,10 @@ app.whenReady().then(() => {
   registerProcessIPC()
   registerDbIPC()
   registerSkillsIPC()
+  registerPrimeRouterIPC()
+
+  // Initialize Prime Router local decision runtime in background
+  localModelRuntime.initInBackground()
 
   // Server & Browser IPCs
   ipcMain.handle('start-server', async (_, folderPath) => {

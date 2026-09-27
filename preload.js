@@ -139,5 +139,12 @@ contextBridge.exposeInMainWorld('api', {
     integrityCheck: () => ipcRenderer.invoke('db:storage:integrityCheck'),
     clearHistory: () => ipcRenderer.invoke('db:storage:prune', { runDays: 0, toolDays: 0, verificationDays: 0 }),
     clearAllData: () => ipcRenderer.invoke('db:storage:clearAll')
+  },
+
+  primeRouter: {
+    decide: (params) => ipcRenderer.invoke('prime-router:decide', params),
+    batchDecide: (items) => ipcRenderer.invoke('prime-router:batch', items),
+    getStatus: () => ipcRenderer.invoke('prime-router:status'),
+    init: () => ipcRenderer.invoke('prime-router:init')
   }
 })
