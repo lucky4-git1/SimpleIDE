@@ -1269,6 +1269,7 @@ export default function AIPanel({
         <div className="prime-ai__brand">
           <Sparkles size={16} />
           <span>Prime AI</span>
+          <span className="text-[10px] text-emerald-400 bg-emerald-950/60 border border-emerald-500/30 px-1.5 py-0.5 rounded ml-1 font-medium select-none" title="Prime Router local decision engine active">Ready</span>
           {chats.length > 0 && (
             <select
               className="prime-chat-selector flex-1 text-xs bg-black/40 border border-white/10 rounded px-1 py-0.5 ml-2 text-gray-300 max-w-[140px] truncate outline-none cursor-pointer"

@@ -8,7 +8,9 @@ import { globalContextEngine } from './agentEngine/ContextEngine.js'
 import { AgentRuntime, AGENT_STATES, AGENT_EVENTS } from './agentEngine/AgentRuntime.js'
 import { NativeToolAdapter } from './agentEngine/NativeToolAdapter.js'
 import { ToolResult } from './agentEngine/ToolDefinition.js'
-import { globalRouter } from './agentEngine/LLMRouter.js'
+import { globalRouter, filterToolsByFamily } from './agentEngine/LLMRouter.js'
+import { PrimeRouter } from './agentEngine/PrimeRouter.js'
+import { MainProcessRouterAdapter } from './agentEngine/MainProcessRouterAdapter.js'
 import { RunLedger } from './agentEngine/RunLedger.js'
 import { MessageWindow, MESSAGE_KINDS } from './agentEngine/MessageWindow.js'
 import { buildCheckpointV2, migrateCheckpoint, restoreIntoWindow } from './agentEngine/RunCheckpoint.js'
@@ -717,7 +719,11 @@ export async function runAgentTask({ taskId, task, context, tools = {}, onEvent,
   if (context.approvedPlan) messageWindow.addFact(`Approved plan: ${clip(String(context.approvedPlan), 1000)}`)
   // Expose the window to the shared action executor so user denials (durable
   // decisions) survive compaction as facts. Nothing else writes facts.
-  context = { ...context, messageWindow }
+  const primeRouter = new PrimeRouter({
+    adapter: new MainProcessRouterAdapter(api),
+    mode: context.primeRouterMode || 'assist'
+  })
+  context = { ...context, messageWindow, primeRouter }
 
   // Phase 4 bounded resume: reconstruct bounded execution state from a
   // migrated checkpoint (facts + summary + recent exchanges + ledger) instead
@@ -1144,6 +1150,18 @@ export async function runAgentTask({ taskId, task, context, tools = {}, onEvent,
         dynamicContextStr: `${context.skillContext.text}\n\n${userMessageStr}`
       })
 
+      // Prime Router local decision pass
+      const routerDecision = await primeRouter.decide({
+        request: requestedTask,
+        state: runtime.getState(),
+        availableTools: runner.getAvailableTools().map(t => t.name || t),
+        recentContext: observations.slice(-5),
+        runContext: { turn, activeTaskId },
+        signal
+      })
+      timeline.emit('ROUTE_DECIDED', { turn, ...routerDecision })
+      onEvent?.({ type: 'prime_router.decided', decision: routerDecision })
+
       if (useNativeTools) {
         const systemMessage = buildSystemPrompt({
           task,
@@ -1158,7 +1176,8 @@ export async function runAgentTask({ taskId, task, context, tools = {}, onEvent,
         if (messageWindow.isEmpty()) {
           messageWindow.seed(NativeToolAdapter.createInitialMessages(apiConfig.provider, systemMessage, executionPrompt))
         }
-        const formattedTools = NativeToolAdapter.formatToolsForProvider(apiConfig.provider, runner.getAvailableTools())
+        const activeTools = filterToolsByFamily(runner.getAvailableTools(), routerDecision?.toolFamily)
+        const formattedTools = NativeToolAdapter.formatToolsForProvider(apiConfig.provider, activeTools)
         // Phase 2 bounded runs: the request context is the composed window
         // (system anchor + facts + task state + recent exchanges), never the
         // raw unbounded history. Sizes are recorded to the ledger as
