@@ -79,26 +79,27 @@ export default function App() {
   // The integrated terminal is a persistent shell, so commands such as `cd`
   // keep their working directory just like they do in a desktop IDE.
   useEffect(() => {
-    const unsubscribe = window.api.onTerminalData?.((data) => {
+    const unsubscribe = window.api?.onTerminalData?.((data) => {
       if (data?.id === 'integrated') appendTerminalOutput(data.text || '')
     })
     return () => unsubscribe?.()
   }, [appendTerminalOutput])
 
   useEffect(() => {
-    if (!currentFolder) return undefined
+    if (!currentFolder || !window.api) return undefined
     clearTerminalOutput()
     terminalSessionRef.current = currentFolder
-    window.api.startTerminal?.({ id: 'integrated', cwd: currentFolder }).then(result => {
+    window.api?.startTerminal?.({ id: 'integrated', cwd: currentFolder })?.then(result => {
       if (!result?.success) appendTerminalOutput(`Unable to start terminal: ${result?.error || 'Unknown error'}\n`)
     })
     return () => {
-      window.api.stopTerminal?.({ id: 'integrated' })
+      window.api?.stopTerminal?.({ id: 'integrated' })
       terminalSessionRef.current = null
     }
   }, [currentFolder, appendTerminalOutput, clearTerminalOutput])
 
   const refreshWorkspaceTree = useCallback(async (path) => {
+    if (!window.api?.listFiles) return false
     const result = await window.api.listFiles(path)
     if (result.success) {
       setFileTree(result.children)
