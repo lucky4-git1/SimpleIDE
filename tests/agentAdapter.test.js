@@ -92,3 +92,71 @@ test('AgentAdapter — buildAgentViewModel', () => {
   assert.equal(vm.currentAction.title, 'Write token.js')
   assert.equal(vm.changedFiles.length, 1)
 })
+
+import { normalizePlanToMarkdown } from '../src/services/agentService.js'
+
+test('AgentAdapter & Service — normalizePlanToMarkdown transforms raw JSON into structured Markdown', () => {
+  const jsonPlan = JSON.stringify({
+    goal: 'Analyze the existing GitDrop codebase and create an implementation plan.',
+    design_direction: 'GitHub + VS Code aesthetic, minimal, fast, technical.',
+    steps: [
+      '1. **Audit Existing Codebase** - Read all existing source files',
+      '2. **Create Implementation Plan** - Based on the audit and the 65-phase specification',
+      '3. **Verify with automated tests**'
+    ],
+    affected_files: ['src/services/git.js', 'src/components/GitPanel.jsx'],
+    verification: 'npm test',
+    risks: ['Large repository context might exceed window']
+  })
+
+  const markdown = normalizePlanToMarkdown(jsonPlan)
+  assert.match(markdown, /^# Implementation Plan: Analyze the existing GitDrop codebase/)
+  assert.match(markdown, /## 1\. Goal\nAnalyze the existing GitDrop/)
+  assert.match(markdown, /## 2\. Design & Architecture\nGitHub \+ VS Code/)
+  assert.match(markdown, /## 3\. Implementation Steps/)
+  assert.match(markdown, /1\. \*\*Audit Existing Codebase\*\* - Read all existing source files/)
+  assert.match(markdown, /2\. \*\*Create Implementation Plan\*\*/)
+  assert.match(markdown, /3\. \*\*Verify with automated tests\*\*/)
+  assert.match(markdown, /## 4\. Affected Files\n- `src\/services\/git\.js`\n- `src\/components\/GitPanel\.jsx`/)
+  assert.match(markdown, /```bash\nnpm test\n```/)
+  assert.match(markdown, /## 6\. Risks & Mitigations\n- Large repository context might exceed window/)
+
+  // Also verify fenced JSON block: ```json { ... } ```
+  const fencedJson = `\`\`\`json\n${jsonPlan}\n\`\`\``
+  const fromFenced = normalizePlanToMarkdown(fencedJson)
+  assert.match(fromFenced, /^# Implementation Plan:/)
+  assert.match(fromFenced, /## 1\. Goal/)
+
+  // Normal markdown should be preserved untouched
+  const normalMd = '# Custom Plan\n\n1. Do something\n2. Do something else'
+  assert.equal(normalizePlanToMarkdown(normalMd), normalMd)
+})
+
+test('AgentAdapter — parsePlanSteps parses JSON plans and markdown checklists', () => {
+  // Test raw JSON string passed to parsePlanSteps
+  const jsonPlan = JSON.stringify({
+    steps: [
+      'Inspect repository structure',
+      'Refactor git client service',
+      'Add unit tests'
+    ]
+  })
+  const jsonSteps = parsePlanSteps(jsonPlan, [], 'working')
+  assert.equal(jsonSteps.length, 3)
+  assert.equal(jsonSteps[0].text, 'Inspect repository structure')
+  assert.equal(jsonSteps[0].status, 'active')
+  assert.equal(jsonSteps[1].status, 'pending')
+
+  // Test markdown checkbox checklist: - [ ] and - [x]
+  const checklistPlan = `
+# Plan
+- [x] Phase 1: Setup workspace
+- [ ] Phase 2: Implement UI redesign
+- [ ] Phase 3: Run end-to-end verification
+`
+  const checklistSteps = parsePlanSteps(checklistPlan, [], 'working')
+  assert.equal(checklistSteps.length, 3)
+  assert.equal(checklistSteps[0].text, 'Phase 1: Setup workspace')
+  assert.equal(checklistSteps[1].text, 'Phase 2: Implement UI redesign')
+})
+

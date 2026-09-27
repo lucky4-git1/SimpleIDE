@@ -81,13 +81,26 @@ export const AgentPlan = React.memo(function AgentPlan({
             placeholder="Edit implementation plan steps…"
           />
         ) : (
-          <div className="flex flex-col gap-1.5 py-1">
-            {planSteps.map((step, idx) => (
-              <div key={step.id || idx} className="flex items-start gap-2 text-xs">
-                <div className="mt-0.5">{getStepIcon(step.status)}</div>
-                <span className="text-[var(--agent-text-secondary)] leading-tight">{step.text}</span>
-              </div>
-            ))}
+          <div className="flex flex-col gap-2 py-1">
+            {(() => {
+              const goalMatch = rawPlan.match(/(?:##\s*(?:1\.\s*)?Goal(?:\s*&\s*Objectives)?)\s*\n+([\s\S]*?)(?=\n##|\n#|$)/i)
+              const goalText = goalMatch ? goalMatch[1].trim() : ''
+              if (!goalText) return null
+              return (
+                <div className="text-[11px] text-[var(--agent-text-secondary)] bg-[var(--agent-surface-raised)]/70 rounded-lg p-2 border border-[var(--agent-border-subtle)] leading-relaxed">
+                  <span className="font-semibold text-indigo-300">Goal: </span>
+                  <span>{goalText}</span>
+                </div>
+              )
+            })()}
+            <div className="flex flex-col gap-1.5">
+              {planSteps.map((step, idx) => (
+                <div key={step.id || idx} className="flex items-start gap-2 text-xs">
+                  <div className="mt-0.5">{getStepIcon(step.status)}</div>
+                  <span className="text-[var(--agent-text-secondary)] leading-tight">{step.text}</span>
+                </div>
+              ))}
+            </div>
           </div>
         )}
 

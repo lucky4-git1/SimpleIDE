@@ -46,18 +46,46 @@ export function parsePlanSteps(planText = '', existingTodos = [], runStatus = 'w
     }))
   }
 
-  const lines = String(planText || '')
+  const raw = String(planText || '').trim()
+  if (!raw) return []
+
+  const isComplete = runStatus === 'complete' || runStatus === 'completed'
+  const isFailed = runStatus === 'failed' || runStatus === 'cancelled'
+
+  // If input is a raw JSON string or JSON code fence, extract steps directly
+  let candidateJson = raw
+  const fenceMatch = raw.match(/^```(?:json)?\s*([\s\S]*?)\s*```$/i)
+  if (fenceMatch) candidateJson = fenceMatch[1].trim()
+
+  if (candidateJson.startsWith('{') && candidateJson.endsWith('}')) {
+    try {
+      const data = JSON.parse(candidateJson)
+      const rawSteps = data.steps || data.phases || data.milestones || data.tasks
+      if (Array.isArray(rawSteps) && rawSteps.length > 0) {
+        return rawSteps.slice(0, 15).map((step, idx) => {
+          let stepText = typeof step === 'string'
+            ? step.replace(/^(?:[-*]\s*\[[ xX]\]|\d+[.)]|[-*]|\bstep\s*\d+:?)\s+/i, '').trim()
+            : (step.text || step.name || step.title || `Step ${idx + 1}`)
+          let status = 'pending'
+          if (isComplete) status = 'completed'
+          else if (!isFailed) {
+            status = idx === 0 ? 'active' : 'pending'
+          }
+          return { id: `plan-step-${idx}`, text: stepText, status }
+        })
+      }
+    } catch {}
+  }
+
+  const lines = raw
     .split('\n')
     .map(line => line.trim())
-    .filter(line => /^(?:\d+[.)]|[-*]|\bstep\s*\d+:?)\s+/i.test(line))
-    .map(line => line.replace(/^(?:\d+[.)]|[-*]|\bstep\s*\d+:?)\s+/i, '').trim())
+    .filter(line => /^(?:[-*]\s*\[[ xX]\]|\d+[.)]|[-*]|\b(?:step|phase|milestone)\s*\d+:?)\s+/i.test(line))
+    .map(line => line.replace(/^(?:[-*]\s*\[[ xX]\]|\d+[.)]|[-*]|\b(?:step|phase|milestone)\s*\d+:?)\s+/i, '').trim())
     .filter(Boolean)
     .slice(0, 15)
 
   if (!lines.length) return []
-
-  const isComplete = runStatus === 'complete' || runStatus === 'completed'
-  const isFailed = runStatus === 'failed' || runStatus === 'cancelled'
 
   return lines.map((text, idx) => {
     let status = 'pending'

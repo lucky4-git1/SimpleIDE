@@ -375,28 +375,141 @@ Recent observations:
 ${observations.length ? observations.join('\n\n') : 'None yet'}`
 }
 
+export function normalizePlanToMarkdown(rawText = '') {
+  const text = String(rawText || '').trim()
+  if (!text) return ''
+
+  // Strip wrapping markdown code blocks containing JSON if present
+  let candidateJson = text
+  const fenceMatch = text.match(/^```(?:json)?\s*([\s\S]*?)\s*```$/i)
+  if (fenceMatch) {
+    candidateJson = fenceMatch[1].trim()
+  }
+
+  // Attempt structured JSON normalization
+  if (candidateJson.startsWith('{') && candidateJson.endsWith('}')) {
+    try {
+      const data = JSON.parse(candidateJson)
+      if (typeof data === 'object' && data !== null) {
+        const sections = []
+        const goalStr = data.goal || data.title || data.objective || 'Autonomous Engineering Task'
+        const shortTitle = goalStr.split('\n')[0].replace(/^#+\s*/, '')
+        sections.push(`# Implementation Plan: ${shortTitle}`)
+
+        sections.push(`## 1. Goal\n${goalStr}`)
+
+        if (data.design_direction && !/^N\/?A\b/i.test(data.design_direction.trim())) {
+          sections.push(`## 2. Design & Architecture\n${data.design_direction}`)
+        } else if (data.architecture) {
+          sections.push(`## 2. Design & Architecture\n${data.architecture}`)
+        }
+
+        const steps = data.steps || data.phases || data.milestones || data.tasks || []
+        if (Array.isArray(steps) && steps.length > 0) {
+          const formattedSteps = steps.map((s, idx) => {
+            if (typeof s === 'string') {
+              const clean = s.replace(/^(?:\d+[.)]|[-*]|\bstep\s*\d+:?)\s+/i, '').trim()
+              return `${idx + 1}. ${clean}`
+            }
+            const stepTitle = s.title || s.name || s.text || `Step ${idx + 1}`
+            const stepDesc = s.description || s.detail ? ` — ${s.description || s.detail}` : ''
+            return `${idx + 1}. **${stepTitle}**${stepDesc}`
+          }).join('\n')
+          sections.push(`## 3. Implementation Steps\n${formattedSteps}`)
+        }
+
+        const files = data.affected_files || data.files || data.changed_files || []
+        if (Array.isArray(files) && files.length > 0) {
+          const formattedFiles = files.map(f => {
+            const path = typeof f === 'string' ? f : (f.path || f.file || String(f))
+            const action = typeof f === 'object' && f.action ? ` (${f.action})` : ''
+            return `- \`${path}\`${action}`
+          }).join('\n')
+          sections.push(`## 4. Affected Files\n${formattedFiles}`)
+        }
+
+        if (data.verification || data.testing) {
+          const verif = data.verification || data.testing
+          let verifText = ''
+          if (typeof verif === 'string') {
+            verifText = /^(?:npm|yarn|pnpm|cargo|go|pytest|make|cd|node)\b/m.test(verif)
+              ? `\`\`\`bash\n${verif}\n\`\`\``
+              : verif
+          } else if (Array.isArray(verif)) {
+            verifText = verif.map(v => `- ${v}`).join('\n')
+          } else {
+            verifText = JSON.stringify(verif)
+          }
+          sections.push(`## 5. Verification Plan\n${verifText}`)
+        }
+
+        const risks = data.risks || data.edge_cases || []
+        if (Array.isArray(risks) && risks.length > 0) {
+          const formattedRisks = risks.map(r => `- ${typeof r === 'string' ? r : JSON.stringify(r)}`).join('\n')
+          sections.push(`## 6. Risks & Mitigations\n${formattedRisks}`)
+        } else if (typeof risks === 'string' && risks.trim()) {
+          sections.push(`## 6. Risks & Mitigations\n${risks}`)
+        }
+
+        return sections.join('\n\n')
+      }
+    } catch {
+      // Fall through to raw markdown if JSON parse fails
+    }
+  }
+
+  return text
+}
+
 export async function runAgentPlan({ task, context, signal, ledger = null }) {
   context = sanitizeWorkspaceContext(context)
   await ensureAgentContextServices(context, { signal })
   const memory = loadAgentMemory(context.currentFolder)
   // Phase 5: same bounded transient retry and request guard as the run loop.
   const raw = await withBoundedRetries(() => requestAIText({
-    systemMessage: `You are Prime AI, a senior software engineer preparing an execution plan inside a desktop IDE.
+    systemMessage: `You are Prime AI, a Principal Software Architect and Staff Engineer embedded in a desktop IDE.
 
-Use the workspace context to identify the affected files, risks, and verification command. Do not make edits or claim that work has been completed. Return concise Markdown with exactly these sections:
-1. Goal
-2. Design direction (for UI work: audience, visual concept, typography, colour, layout, responsive approach, and asset strategy; otherwise state N/A)
-3. Steps (numbered, grouped into no more than five independently completable milestones for large work)
-4. Affected files
-5. Verification
-6. Risks
+Your objective is to produce an exceptionally clear, highly intelligent, and actionable implementation plan in pure Markdown.
 
-The plan must be practical and specific to the open project. For website or UI work, include a visual QA milestone and do not propose placeholders as final content.`,
+CRITICAL FORMATTING GUIDELINES:
+- Output clean, professional GitHub-flavored Markdown.
+- DO NOT wrap your entire output in a JSON object or a single json code block.
+- Use clean Markdown headers (#, ##), numbered lists, code fences, and bullet points.
+
+Format your response with these exact sections:
+# Implementation Plan: [Short, descriptive task title]
+
+[Executive summary outlining the problem, architecture, and overall strategy.]
+
+## 1. Goal & Objectives
+[Specific, measurable goals of this change.]
+
+## 2. Design & Architecture
+[Architectural approach, component hierarchy, state flow, and design direction.]
+
+## 3. Implementation Steps
+[Sequential numbered steps. For large tasks, group into clear milestones.]
+1. **[Step 1 Title]** — [Specific implementation details]
+2. **[Step 2 Title]** — [Specific implementation details]
+3. **[Step 3 Title]** — [Specific implementation details]
+
+## 4. Affected Files
+[List files to be inspected, created, or modified with brief purpose:]
+- \`path/to/file\` — [Purpose]
+
+## 5. Verification Plan
+[Precise verification steps and terminal commands:]
+\`\`\`bash
+npm test
+\`\`\`
+
+## 6. Risks & Mitigations
+- [Key risk or edge case and how to prevent it]`,
     userMessage: buildUserPrompt({ task, context, observations: [], memory }),
     useCache: false,
     waitForRateLimit: false,
     temperature: 0.1,
-    maxTokens: 1200,
+    maxTokens: 2500,
     signal,
     // Phase 1 bounded runs: measure only. Null unless the caller runs inside
     // a ledger-owning agent run; behavior is unchanged either way.
@@ -404,7 +517,7 @@ The plan must be practical and specific to the open project. For website or UI w
     timeoutMs: DEFAULT_REQUEST_TIMEOUT_MS
   }), { maxAttempts: MAX_MODEL_ATTEMPTS_PER_TURN, signal })
 
-  return raw.trim()
+  return normalizePlanToMarkdown(raw.trim())
 }
 
 import { ToolCall } from './agentEngine/ToolDefinition.js'
