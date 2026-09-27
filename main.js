@@ -36,6 +36,7 @@ function broadcastReload() {
 }
 
 function createWindow() {
+  console.log('[MAIN] Creating BrowserWindow...')
   mainWindow = new BrowserWindow({
     width: 1200,
     height: 800,
@@ -49,17 +50,35 @@ function createWindow() {
     },
   })
 
-  if (process.env.VITE_DEV_SERVER_URL) {
-    mainWindow.loadURL(process.env.VITE_DEV_SERVER_URL)
+  mainWindow.webContents.on('did-finish-load', () => {
+    console.log('[MAIN] WebContents did-finish-load!')
+  })
+
+  mainWindow.webContents.on('did-fail-load', (e, code, desc) => {
+    console.error('[MAIN] WebContents did-fail-load:', code, desc)
+  })
+
+  mainWindow.webContents.on('console-message', (e, level, msg) => {
+    console.log('[RENDERER CONSOLE]', msg)
+  })
+
+  const targetUrl = process.env.VITE_DEV_SERVER_URL
+  if (targetUrl) {
+    console.log('[MAIN] Loading dev server URL:', targetUrl)
+    mainWindow.loadURL(targetUrl)
   } else {
-    mainWindow.loadFile(join(__dirname, '../dist/index.html'))
+    const indexPath = join(__dirname, '../dist/index.html')
+    console.log('[MAIN] Loading local file:', indexPath)
+    mainWindow.loadFile(indexPath)
   }
 
   mainWindow.once('ready-to-show', () => {
+    console.log('[MAIN] ready-to-show fired!')
     mainWindow.show()
     mainWindow.focus()
   })
 }
+
 
 app.whenReady().then(() => {
   createWindow()
