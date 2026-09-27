@@ -5,6 +5,8 @@ import { documentationFetcher } from './DocumentationFetcher.js'
 import { memoryManager } from '../memory/memoryManager.js'
 import { ToolDefinition, ToolCall, TOOL_PERMISSIONS, TOOL_CATEGORIES, zodToJsonSchema } from './ToolDefinition.js'
 import { FailureClassifier, FAILURE_CATEGORIES } from './FailureClassifier.js'
+import { CodeIntelligenceService } from './CodeIntelligenceService.js'
+import { globalContextEngine } from './ContextEngine.js'
 
 const IGNORED = ['node_modules', '.git', 'dist', 'build', 'coverage', '.next', 'target', 'vendor']
 
@@ -116,11 +118,12 @@ class ToolRegistry {
 }
 
 export class ToolRunner {
-  constructor(workspaceRoot, { onChange, abortSignal, api } = {}) {
+  constructor(workspaceRoot, { onChange, abortSignal, api, codeIntelligence } = {}) {
     this.root = workspaceRoot
     this.onChange = onChange
     this.abortSignal = abortSignal
     this.api = api || globalThis.window?.api
+    this.codeIntelligence = codeIntelligence || globalContextEngine?.codeIntelligence || new CodeIntelligenceService(workspaceRoot, { api: this.getApi(), abortSignal })
     this.registry = new ToolRegistry()
     this.taskProcessIds = new Set()
     this.changeManager = new ChangeManager(workspaceRoot, { api: this.getApi() })
@@ -340,6 +343,62 @@ export class ToolRunner {
       return response.results
     })
 
+    reg('find_definition', 'Find definition, location, signature, and context for a symbol (function, class, variable, interface).', z.object({
+      symbol: z.string(),
+      file: z.string().optional()
+    }), TOOL_PERMISSIONS.SAFE, TOOL_CATEGORIES.READ, async ({ symbol, file }) => {
+      if (this.codeIntelligence) {
+        const overview = this.codeIntelligence.getSymbolOverview(symbol)
+        if (overview?.definition) return overview
+        const defs = this.codeIntelligence.findDefinition(symbol, file)
+        return { symbol, definitions: defs, found: defs.length > 0 }
+      }
+      return { symbol, definitions: [], found: false }
+    })
+
+    reg('find_references', 'Find all references, usages, and call sites of a symbol across the workspace.', z.object({
+      symbol: z.string()
+    }), TOOL_PERMISSIONS.SAFE, TOOL_CATEGORIES.READ, async ({ symbol }) => {
+      const references = this.codeIntelligence ? this.codeIntelligence.findReferences(symbol) : []
+      return { symbol, references, count: references.length }
+    })
+
+    reg('find_symbol', 'Search for symbol declarations by name query and optional kind filter (function, class, component, interface, type, constant).', z.object({
+      query: z.string(),
+      kind: z.string().optional()
+    }), TOOL_PERMISSIONS.SAFE, TOOL_CATEGORIES.READ, async ({ query, kind }) => {
+      const symbols = this.codeIntelligence ? this.codeIntelligence.findSymbols(query, kind) : []
+      return { query, symbols, count: symbols.length }
+    })
+
+    reg('find_implementations', 'Find implementations or classes extending/implementing an interface or class.', z.object({
+      symbol: z.string()
+    }), TOOL_PERMISSIONS.SAFE, TOOL_CATEGORIES.READ, async ({ symbol }) => {
+      const implementations = this.codeIntelligence ? this.codeIntelligence.findImplementations(symbol) : []
+      return { symbol, implementations, count: implementations.length }
+    })
+
+    reg('get_diagnostics', 'Get syntax and AST parse diagnostics for a file or the entire workspace.', z.object({
+      path: z.string().optional()
+    }), TOOL_PERMISSIONS.SAFE, TOOL_CATEGORIES.READ, async ({ path }) => {
+      const diagnostics = this.codeIntelligence ? this.codeIntelligence.getDiagnostics(path) : []
+      return { path: path || 'workspace', diagnostics, errorCount: diagnostics.length }
+    })
+
+    reg('get_callers', 'Find which functions, methods, or components call a given function or symbol.', z.object({
+      symbol: z.string()
+    }), TOOL_PERMISSIONS.SAFE, TOOL_CATEGORIES.READ, async ({ symbol }) => {
+      const callers = this.codeIntelligence ? this.codeIntelligence.getCallers(symbol) : []
+      return { symbol, callers, count: callers.length }
+    })
+
+    reg('get_import_graph', 'Get the import and export dependency graph for a file.', z.object({
+      path: z.string()
+    }), TOOL_PERMISSIONS.SAFE, TOOL_CATEGORIES.READ, async ({ path }) => {
+      const graph = this.codeIntelligence ? this.codeIntelligence.getImportGraph(path) : { file: path, imports: [], importedBy: [], exports: [] }
+      return graph
+    })
+
     reg('write_file', 'Create or replace a workspace file.', z.object({
       path: z.string(),
       content: z.string()
@@ -385,6 +444,7 @@ export class ToolRunner {
       const before = await api.readFile(fullPath)
       const response = await api.deleteFile(fullPath)
       if (!response.success) throw new Error(response.error)
+      this.codeIntelligence?.removeFile(fullPath)
       this.onChange?.({ path: fullPath, operation: 'delete', before: before.success ? before.content : '', after: '' })
       return { path, operation: 'delete' }
     })
@@ -637,6 +697,8 @@ export class ToolRunner {
       await this.changeManager.recordChange({ path: fullPath, operation, before, after: content })
     }
 
+    this.codeIntelligence?.updateFile(fullPath, content)
+
     const change = { path: fullPath, operation, before, after: content, timestamp: Date.now() }
     this.onChange?.(change)
     return { path, operation, bytes: content.length, linesAdded: content.split('\n').length - before.split('\n').length, changed: before !== content }
@@ -657,6 +719,9 @@ export class ToolRunner {
     if (this.changeManager.currentTaskId) {
       await this.changeManager.recordChange({ path: toPath, operation, before: before.success ? before.content : '', after: before.success ? before.content : '', from: fromPath })
     }
+
+    this.codeIntelligence?.removeFile(fromPath)
+    this.codeIntelligence?.updateFile(toPath, before.success ? before.content : '')
 
     this.onChange?.({ path: toPath, from: fromPath, operation, before: before.success ? before.content : '', after: before.success ? before.content : '' })
     return { from, to, operation }
