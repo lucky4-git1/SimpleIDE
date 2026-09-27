@@ -1,6 +1,7 @@
 import { join } from 'path'
 import fs from 'fs/promises'
 import { existsSync } from 'fs'
+import { extractSymbolHeuristics } from '../../services/agentEngine/primeRouterSchemas.js'
 
 /**
  * Embedded calibrated weights derived from SimpleIDE Laya router fine-tuning dataset.
@@ -9,9 +10,9 @@ import { existsSync } from 'fs'
  */
 const EMBEDDED_TAXONOMY_RULES = [
   // 1. Hard negatives & compound requests: MUST be evaluated first
-  { pattern: /\b(tell me what|what does|explain what|how does|why does)\s+(npm test|git|rm|build|node|[a-zA-Z0-9_\-]+)\b/i, intent: 'explain', actionClass: 'main_llm', toolFamily: 'none', needsLLM: true, needsVerification: false, confidence: 0.96 },
-  { pattern: /\b(run .+ and explain|execute .+ and tell me why|run test and explain|run npm test and explain)\b/i, intent: 'debug', actionClass: 'main_llm', toolFamily: 'terminal', needsLLM: true, needsVerification: true, confidence: 0.93 },
-  { pattern: /\b(inspect .+ but don'?t modify|read .+ without change|look at .+ only)\b/i, intent: 'inspect', actionClass: 'local_tool', toolFamily: 'filesystem', needsLLM: false, needsVerification: false, confidence: 0.95 },
+  { pattern: /\b(tell me what|what does|explain what|how does|why does)\s+(npm test|git|rm|build|node|[a-zA-Z0-9_\-]+)\b/i, intent: 'explain', actionClass: 'main_llm', toolFamily: 'none', needsLLM: true, needsVerification: false, confidence: 0.96, isHardNegative: true },
+  { pattern: /\b(run .+ and explain|execute .+ and tell me why|run test and explain|run npm test and explain)\b/i, intent: 'debug', actionClass: 'main_llm', toolFamily: 'terminal', needsLLM: true, needsVerification: true, confidence: 0.93, isHardNegative: true },
+  { pattern: /\b(inspect .+ but don'?t modify|read .+ without change|look at .+ only)\b/i, intent: 'inspect', actionClass: 'local_tool', toolFamily: 'filesystem', needsLLM: false, needsVerification: false, confidence: 0.95, isHardNegative: true },
 
   // 2. Direct local commands (test / verify)
   { pattern: /\b(npm test|run test|unit test|jest|vitest|check test|run the tests)\b/i, intent: 'test', actionClass: 'local_tool', toolFamily: 'testing', needsLLM: false, needsVerification: true, confidence: 0.94 },
@@ -34,7 +35,7 @@ const EMBEDDED_TAXONOMY_RULES = [
 
   // Code modification / creation
   { pattern: /\b(create|add|implement|generate|new component|scaffold)\b/i, intent: 'create', actionClass: 'main_llm', toolFamily: 'editor', needsLLM: true, needsVerification: true, confidence: 0.91 },
-  { pattern: /\b(refactor|clean up|restructure|optimize|simplify)\b/i, intent: 'refactor', actionClass: 'main_llm', toolFamily: 'editor', needsLLM: true, needsVerification: true, confidence: 0.90 },
+  { pattern: /\b(refactor|rename|extract|clean up|restructure|optimize|simplify)\b/i, intent: 'refactor', actionClass: 'main_llm', toolFamily: 'editor', needsLLM: true, needsVerification: true, confidence: 0.92 },
   { pattern: /\b(fix|edit|update|change|modify|replace|patch)\b/i, intent: 'edit', actionClass: 'main_llm', toolFamily: 'editor', needsLLM: true, needsVerification: true, confidence: 0.89 },
 
   // Recovery & undo
@@ -143,15 +144,55 @@ export class LocalModelRuntime {
 
     const trimmedReq = String(request || '').trim()
 
-    // 1. If ONNX session is active, execute forward pass
+    // 1. Hard negatives & compound requests evaluated first to preserve intent safety
+    for (const rule of EMBEDDED_TAXONOMY_RULES) {
+      if (rule.isHardNegative && rule.pattern.test(trimmedReq)) {
+        const latencyMs = Date.now() - startTime
+        return {
+          intent: rule.intent,
+          actionClass: rule.actionClass,
+          toolFamily: rule.toolFamily,
+          needsLLM: rule.needsLLM,
+          needsVerification: rule.needsVerification,
+          confidence: rule.confidence,
+          symbol_navigation: 'none',
+          find_references: 'none',
+          suggested_tools: [],
+          symbol_query: null,
+          modelVersion: this.modelVersion,
+          latencyMs
+        }
+      }
+    }
+
+    // 2. Extract symbol intelligence heuristics (refactor, symbol navigation, usages)
+    const symbolHeuristics = extractSymbolHeuristics(trimmedReq)
+
+    // 3. If ONNX session is active, execute forward pass and complement with heuristics
     if (this.ortSession) {
       try {
-        // ONNX forward inference pass
         const ortResult = await this._runOnnxInference(trimmedReq, state, availableTools)
         if (ortResult) {
           const latencyMs = Date.now() - startTime
-          return {
+          const complemented = {
             ...ortResult,
+            symbol_navigation: ortResult.symbol_navigation || symbolHeuristics.symbol_navigation,
+            find_references: ortResult.find_references || symbolHeuristics.find_references,
+            suggested_tools: (Array.isArray(ortResult.suggested_tools) && ortResult.suggested_tools.length)
+              ? ortResult.suggested_tools
+              : symbolHeuristics.suggested_tools,
+            symbol_query: ortResult.symbol_query !== undefined
+              ? ortResult.symbol_query
+              : symbolHeuristics.symbol_query
+          }
+          if (symbolHeuristics.intent === 'refactor') {
+            complemented.intent = 'refactor'
+            complemented.symbol_navigation = 'required'
+            complemented.find_references = 'required'
+            complemented.needsVerification = true
+          }
+          return {
+            ...complemented,
             modelVersion: this.modelVersion,
             latencyMs
           }
@@ -161,9 +202,28 @@ export class LocalModelRuntime {
       }
     }
 
-    // 2. High-speed calibrated rule & boundary engine (sub-millisecond CPU latency)
+    // 4. High-precision Symbol Navigation & Refactoring rules
+    if (symbolHeuristics.matched) {
+      const latencyMs = Date.now() - startTime
+      return {
+        intent: symbolHeuristics.intent,
+        actionClass: symbolHeuristics.actionClass,
+        toolFamily: symbolHeuristics.toolFamily,
+        needsLLM: symbolHeuristics.needsLLM,
+        needsVerification: symbolHeuristics.needsVerification,
+        confidence: symbolHeuristics.confidence,
+        symbol_navigation: symbolHeuristics.symbol_navigation,
+        find_references: symbolHeuristics.find_references,
+        suggested_tools: symbolHeuristics.suggested_tools,
+        symbol_query: symbolHeuristics.symbol_query,
+        modelVersion: this.modelVersion,
+        latencyMs
+      }
+    }
+
+    // 5. High-speed calibrated rule & boundary engine (sub-millisecond CPU latency)
     for (const rule of EMBEDDED_TAXONOMY_RULES) {
-      if (rule.pattern.test(trimmedReq)) {
+      if (!rule.isHardNegative && rule.pattern.test(trimmedReq)) {
         const latencyMs = Date.now() - startTime
         return {
           intent: rule.intent,
@@ -172,6 +232,10 @@ export class LocalModelRuntime {
           needsLLM: rule.needsLLM,
           needsVerification: rule.needsVerification,
           confidence: rule.confidence,
+          symbol_navigation: rule.symbol_navigation || 'none',
+          find_references: rule.find_references || 'none',
+          suggested_tools: rule.suggested_tools || [],
+          symbol_query: rule.symbol_query || null,
           modelVersion: this.modelVersion,
           latencyMs
         }
@@ -187,6 +251,10 @@ export class LocalModelRuntime {
       needsLLM: true,
       needsVerification: false,
       confidence: 0.70,
+      symbol_navigation: 'none',
+      find_references: 'none',
+      suggested_tools: [],
+      symbol_query: null,
       modelVersion: this.modelVersion,
       latencyMs
     }

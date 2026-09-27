@@ -1289,7 +1289,7 @@ export async function runAgentTask({ taskId, task, context, tools = {}, onEvent,
         if (messageWindow.isEmpty()) {
           messageWindow.seed(NativeToolAdapter.createInitialMessages(apiConfig.provider, systemMessage, executionPrompt))
         }
-        const activeTools = filterToolsByFamily(runner.getAvailableTools(), routerDecision?.toolFamily)
+        const activeTools = filterToolsByFamily(runner.getAvailableTools(), routerDecision?.toolFamily, routerDecision?.suggested_tools)
         const formattedTools = NativeToolAdapter.formatToolsForProvider(apiConfig.provider, activeTools)
         // Phase 2 bounded runs: the request context is the composed window
         // (system anchor + facts + task state + recent exchanges), never the

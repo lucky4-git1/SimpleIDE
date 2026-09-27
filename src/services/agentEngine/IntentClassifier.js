@@ -87,7 +87,7 @@ const CODE_TASK_PATTERNS = [
   // Feature request
   { pattern: /\b(create|add|build|make|implement|generate|set\s*up|scaffold|new)\b/i, intent: INTENTS.FEATURE_REQUEST },
   // Refactoring
-  { pattern: /\b(refactor|clean\s*up|restructure|reorganize|simplify|optimize|improve|rewrite)\b/i, intent: INTENTS.REFACTORING },
+  { pattern: /\b(refactor|rename|extract|clean\s*up|restructure|reorganize|simplify|optimize|improve|rewrite)\b/i, intent: INTENTS.REFACTORING },
   // Code explanation
   { pattern: /\b(explain|what\s*(does|is)|how\s*does|walk\s*me\s*through|describe|tell\s*me\s*about)\b/i, intent: INTENTS.CODE_EXPLANATION },
   // Code review

@@ -18,22 +18,29 @@ export const MODEL_CAPABILITY_REGISTRY = {
 
 export const TOOL_FAMILY_MAP = {
   filesystem: ['read_file', 'write_file', 'create_file', 'edit_file', 'replace_in_file', 'delete_file', 'rename_file', 'move_file', 'list_files', 'directory_tree'],
-  editor: ['read_file', 'write_file', 'create_file', 'edit_file', 'replace_in_file', 'format_code'],
-  search: ['search_workspace', 'read_file', 'list_files'],
+  editor: ['read_file', 'write_file', 'create_file', 'edit_file', 'replace_in_file', 'format_code', 'find_definition', 'find_references', 'query_symbol_graph'],
+  search: ['search_workspace', 'read_file', 'list_files', 'find_definition', 'find_references', 'find_symbol', 'find_implementations', 'get_callers', 'get_import_graph', 'query_symbol_graph'],
   git: ['git_status', 'git_diff', 'git_stage', 'git_unstage', 'git_commit', 'git_push', 'git_pull'],
   terminal: ['run_command', 'read_process_output', 'stop_process', 'list_processes'],
   testing: ['run_command', 'verify', 'read_file'],
   browser: ['browser_action', 'open_in_browser'],
-  diagnostics: ['read_file', 'run_command', 'rollback']
+  diagnostics: ['read_file', 'run_command', 'rollback', 'get_diagnostics']
 }
 
-export function filterToolsByFamily(allTools, toolFamily) {
+export function filterToolsByFamily(allTools, toolFamily, suggestedTools = []) {
   if (!toolFamily || toolFamily === 'none' || !TOOL_FAMILY_MAP[toolFamily]) {
     return allTools
   }
   const allowed = new Set(TOOL_FAMILY_MAP[toolFamily])
   allowed.add('finish')
   allowed.add('read_file')
+  if (Array.isArray(suggestedTools)) {
+    for (const tool of suggestedTools) {
+      if (typeof tool === 'string' && tool.trim()) {
+        allowed.add(tool.trim())
+      }
+    }
+  }
 
   const filtered = (allTools || []).filter(tool => {
     const name = typeof tool === 'string' ? tool : tool?.name
