@@ -64,6 +64,8 @@ test('Agent UI Integration — Review state view model with plan steps', () => {
   assert.equal(vm.hasRun, true)
   assert.equal(vm.state, 'review')
   assert.equal(vm.isReview, true)
+  assert.equal(vm.isComplete, false)
+  assert.equal(vm.summary, '')
   assert.equal(vm.planSteps.length, 3)
   assert.equal(vm.planSteps[0].text, 'Inspect authentication tokens')
 })
@@ -151,6 +153,7 @@ test('Agent UI Integration — Completed run view model with verification and di
   })
 
   assert.equal(vm.state, 'completed')
+  assert.equal(vm.isComplete, true)
   assert.equal(vm.verification.passed, true)
   assert.equal(vm.changedFiles.length, 1)
   assert.equal(vm.diagnostics.turns, 3)

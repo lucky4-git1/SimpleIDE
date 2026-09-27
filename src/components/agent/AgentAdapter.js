@@ -266,7 +266,7 @@ export function buildAgentViewModel({
   const isReview = agentRun?.status === 'review'
   const isCancelled = agentRun?.status === 'cancelled'
   const isFailed = agentRun?.status === 'failed'
-  const isComplete = agentRun?.status === 'complete' || agentRun?.status === 'completed'
+  const isComplete = (agentRun?.status === 'complete' || agentRun?.status === 'completed') && !isLoading
   const isPlanning = agentRun?.status === 'planning'
   const isWorking = isLoading || agentRun?.status === 'working'
 
@@ -345,6 +345,7 @@ export function buildAgentViewModel({
     state,
     isWorking,
     isReview,
+    isComplete,
     currentAction,
     planSteps,
     planRaw: agentRun?.plan || '',
@@ -352,7 +353,8 @@ export function buildAgentViewModel({
     rawTools: agentRun?.tools || [],
     changedFiles,
     verification,
-    summary: agentRun?.summary || '',
+    summary: isReview ? '' : (agentRun?.summary || ''),
+    reviewMessage: isReview ? (agentRun?.summary || 'Review this implementation plan. You can edit it or add instructions before approving.') : '',
     resumable: Boolean(agentRun?.resumable),
     pendingApproval,
     diagnostics: runDiagnostics

@@ -1,7 +1,6 @@
 import React from 'react'
 import {
   Sparkles,
-  Square,
   Plus,
   Settings,
   BrainCircuit,
@@ -42,50 +41,50 @@ export const AgentHeader = React.memo(function AgentHeader({
       case 'running':
       case 'planning':
         return (
-          <div className="flex items-center gap-1.5 px-2 py-0.5 rounded-full text-[11px] font-medium bg-cyan-500/10 text-cyan-400 border border-cyan-500/30">
-            <span className="w-1.5 h-1.5 rounded-full bg-cyan-400 animate-pulse" />
-            <span>{state === 'planning' ? 'Planning' : 'Running'}</span>
-            {elapsedSeconds > 0 && <span className="opacity-70 font-mono text-[10px]">· {formatTime(elapsedSeconds)}</span>}
+          <div className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-full text-[9px] font-medium leading-none bg-cyan-500/10 text-cyan-400 border border-cyan-500/25 shrink-0">
+            <span className="w-1 h-1 rounded-full bg-cyan-400 animate-pulse" />
+            <span>{state === 'planning' ? 'Plan' : 'Run'}</span>
+            {elapsedSeconds > 0 && <span className="opacity-70 font-mono text-[9px]">· {formatTime(elapsedSeconds)}</span>}
           </div>
         )
       case 'waiting_approval':
         return (
-          <div className="flex items-center gap-1.5 px-2 py-0.5 rounded-full text-[11px] font-medium bg-amber-500/10 text-amber-400 border border-amber-500/30">
-            <span className="w-1.5 h-1.5 rounded-full bg-amber-400" />
-            <span>Waiting Approval</span>
+          <div className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-full text-[9px] font-medium leading-none bg-amber-500/10 text-amber-400 border border-amber-500/25 shrink-0">
+            <span className="w-1 h-1 rounded-full bg-amber-400" />
+            <span>Approval</span>
           </div>
         )
       case 'review':
         return (
-          <div className="flex items-center gap-1.5 px-2 py-0.5 rounded-full text-[11px] font-medium bg-indigo-500/10 text-indigo-400 border border-indigo-500/30">
-            <span className="w-1.5 h-1.5 rounded-full bg-indigo-400" />
-            <span>Review Plan</span>
+          <div className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-full text-[9px] font-medium leading-none bg-indigo-500/10 text-indigo-400 border border-indigo-500/25 shrink-0">
+            <span className="w-1 h-1 rounded-full bg-indigo-400" />
+            <span>Review</span>
           </div>
         )
       case 'completed':
         return (
-          <div className="flex items-center gap-1.5 px-2 py-0.5 rounded-full text-[11px] font-medium bg-emerald-500/10 text-emerald-400 border border-emerald-500/30">
-            <span className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
-            <span>Completed</span>
+          <div className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-full text-[9px] font-medium leading-none bg-emerald-500/10 text-emerald-400 border border-emerald-500/25 shrink-0">
+            <span className="w-1 h-1 rounded-full bg-emerald-400" />
+            <span>Done</span>
           </div>
         )
       case 'failed':
         return (
-          <div className="flex items-center gap-1.5 px-2 py-0.5 rounded-full text-[11px] font-medium bg-rose-500/10 text-rose-400 border border-rose-500/30">
-            <span className="w-1.5 h-1.5 rounded-full bg-rose-400" />
+          <div className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-full text-[9px] font-medium leading-none bg-rose-500/10 text-rose-400 border border-rose-500/25 shrink-0">
+            <span className="w-1 h-1 rounded-full bg-rose-400" />
             <span>Failed</span>
           </div>
         )
       case 'cancelled':
         return (
-          <div className="flex items-center gap-1.5 px-2 py-0.5 rounded-full text-[11px] font-medium bg-zinc-500/10 text-zinc-400 border border-zinc-500/30">
+          <div className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-full text-[9px] font-medium leading-none bg-zinc-500/10 text-zinc-400 border border-zinc-500/25 shrink-0">
             <span>Cancelled</span>
           </div>
         )
       default:
         return (
-          <div className="flex items-center gap-1.5 px-2 py-0.5 rounded-full text-[11px] font-medium bg-white/5 text-zinc-400 border border-white/10">
-            <span className="w-1.5 h-1.5 rounded-full bg-emerald-400/80" />
+          <div className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-full text-[9px] font-medium leading-none bg-white/5 text-zinc-400 border border-white/10 shrink-0">
+            <span className="w-1 h-1 rounded-full bg-emerald-400/80" />
             <span>Ready</span>
           </div>
         )
@@ -93,46 +92,30 @@ export const AgentHeader = React.memo(function AgentHeader({
   }
 
   return (
-    <header className="flex flex-col gap-2 px-3 py-2.5 border-b border-[var(--agent-border)] bg-[var(--agent-surface)] select-none">
-      <div className="flex items-center justify-between gap-2">
+    <header className="flex flex-col gap-1.5 px-3 py-2 border-b border-[var(--agent-border)] bg-[var(--agent-surface)] select-none overflow-hidden shrink-0">
+      <div className="flex items-center justify-between gap-1.5 min-w-0">
         {/* Brand & Task Title */}
-        <div className="flex items-center gap-2 min-w-0 flex-1">
-          <div className="flex items-center justify-center w-6 h-6 rounded-md bg-cyan-500/10 text-cyan-400 border border-cyan-500/20 shrink-0">
-            <Sparkles size={14} />
+        <div className="flex items-center gap-1.5 min-w-0 flex-1 overflow-hidden">
+          <div className="flex items-center justify-center w-5 h-5 rounded bg-cyan-500/10 text-cyan-400 border border-cyan-500/20 shrink-0">
+            <Sparkles size={12} />
           </div>
-          <div className="flex flex-col min-w-0">
-            <div className="flex items-center gap-2">
-              <span className="text-[13px] font-semibold text-[var(--agent-text)] truncate max-w-[180px]" title={taskTitle}>
-                {taskTitle}
-              </span>
-              {renderStatusBadge()}
-            </div>
-          </div>
+          <span className="text-xs font-semibold text-[var(--agent-text)] truncate" title={taskTitle}>
+            {taskTitle}
+          </span>
+          {renderStatusBadge()}
         </div>
 
         {/* Global Actions */}
-        <div className="flex items-center gap-1 shrink-0">
-          {isWorking ? (
-            <button
-              type="button"
-              onClick={onCancel}
-              className="flex items-center gap-1 px-2 py-1 rounded bg-rose-500/15 hover:bg-rose-500/25 text-rose-400 text-xs font-medium border border-rose-500/30 transition-colors"
-              title="Stop running agent task"
-            >
-              <Square size={11} fill="currentColor" />
-              <span>Stop</span>
-            </button>
-          ) : (
-            <button
-              type="button"
-              onClick={onNewChat}
-              className="p-1.5 rounded text-[var(--agent-text-muted)] hover:text-[var(--agent-text)] hover:bg-[var(--agent-surface-hover)] transition-colors"
-              title="New task / chat"
-              aria-label="New task"
-            >
-              <Plus size={15} />
-            </button>
-          )}
+        <div className="flex items-center gap-0.5 shrink-0">
+          <button
+            type="button"
+            onClick={onNewChat}
+            className="p-1.5 rounded text-[var(--agent-text-muted)] hover:text-[var(--agent-text)] hover:bg-[var(--agent-surface-hover)] transition-colors"
+            title="New task / chat"
+            aria-label="New task"
+          >
+            <Plus size={14} />
+          </button>
 
           {canUndo && (
             <button

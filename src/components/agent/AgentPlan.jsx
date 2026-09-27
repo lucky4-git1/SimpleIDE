@@ -7,7 +7,8 @@ import {
   Play,
   X,
   Edit3,
-  ListTodo
+  ListTodo,
+  FileCode2
 } from 'lucide-react'
 
 export const AgentPlan = React.memo(function AgentPlan({
@@ -20,7 +21,8 @@ export const AgentPlan = React.memo(function AgentPlan({
   onChangePlanDraft,
   onProceedPlan,
   onCancelPlan,
-  onSavePlanEdits
+  onSavePlanEdits,
+  onOpenInEditor
 }) {
   const [isEditingDraft, setIsEditingDraft] = useState(false)
 
@@ -42,20 +44,33 @@ export const AgentPlan = React.memo(function AgentPlan({
   // Interactive Plan Review Mode (Agent waiting for user approval of implementation plan)
   if (isReview) {
     return (
-      <div className="flex flex-col gap-2.5 p-3 rounded-xl bg-[var(--agent-surface)] border border-indigo-500/40 shadow-sm agent-fade-in select-none">
-        <div className="flex items-center justify-between text-xs font-semibold text-indigo-400">
-          <div className="flex items-center gap-1.5">
-            <ListTodo size={14} />
-            <span>Implementation Plan — Review Required</span>
+      <div className="flex flex-col gap-2.5 p-3 rounded-xl bg-[var(--agent-surface)] border border-indigo-500/40 shadow-sm agent-fade-in select-none min-w-0 max-w-full overflow-hidden">
+        <div className="flex items-center justify-between text-xs font-semibold text-indigo-400 min-w-0 gap-1.5">
+          <div className="flex items-center gap-1.5 min-w-0">
+            <ListTodo size={14} className="shrink-0" />
+            <span className="truncate">Implementation Plan — Review</span>
           </div>
-          <button
-            type="button"
-            onClick={() => setIsEditingDraft(!isEditingDraft)}
-            className="flex items-center gap-1 text-[11px] text-[var(--agent-text-muted)] hover:text-[var(--agent-text)] transition-colors cursor-pointer"
-          >
-            <Edit3 size={11} />
-            <span>{isEditingDraft ? 'Preview' : 'Edit Plan'}</span>
-          </button>
+          <div className="flex items-center gap-2 shrink-0">
+            {onOpenInEditor && (
+              <button
+                type="button"
+                onClick={onOpenInEditor}
+                className="flex items-center gap-1 text-[11px] text-[var(--agent-text-muted)] hover:text-cyan-400 transition-colors cursor-pointer"
+                title="View in Monaco editor"
+              >
+                <FileCode2 size={11} />
+                <span>Editor</span>
+              </button>
+            )}
+            <button
+              type="button"
+              onClick={() => setIsEditingDraft(!isEditingDraft)}
+              className="flex items-center gap-1 text-[11px] text-[var(--agent-text-muted)] hover:text-[var(--agent-text)] transition-colors cursor-pointer"
+            >
+              <Edit3 size={11} />
+              <span>{isEditingDraft ? 'Preview' : 'Edit'}</span>
+            </button>
+          </div>
         </div>
 
         {isEditingDraft ? (
@@ -76,37 +91,42 @@ export const AgentPlan = React.memo(function AgentPlan({
           </div>
         )}
 
-        <div className="flex items-center justify-between pt-2 border-t border-[var(--agent-border-subtle)]">
-          <button
-            type="button"
-            onClick={onCancelPlan}
-            className="px-2.5 py-1 rounded text-xs text-[var(--agent-text-muted)] hover:text-rose-400 hover:bg-rose-500/10 transition-colors cursor-pointer"
-          >
-            Cancel
-          </button>
-
-          <div className="flex items-center gap-2">
-            {isEditingDraft && (
-              <button
-                type="button"
-                onClick={() => {
-                  onSavePlanEdits?.()
-                  setIsEditingDraft(false)
-                }}
-                className="px-2.5 py-1 rounded text-xs font-medium bg-white/10 hover:bg-white/15 text-[var(--agent-text)] transition-colors cursor-pointer"
-              >
-                Save edits
-              </button>
-            )}
+        <div className="flex flex-col gap-2 pt-2 border-t border-[var(--agent-border-subtle)]">
+          <p className="text-[11px] text-[var(--agent-text-muted)] leading-tight">
+            Review the plan above or in the editor. Click <strong>Proceed with plan</strong> to begin autonomous execution.
+          </p>
+          <div className="flex items-center justify-between gap-2">
             <button
               type="button"
-              onClick={onProceedPlan}
-              disabled={isLoading}
-              className="flex items-center gap-1.5 px-3 py-1 rounded-lg text-xs font-medium bg-indigo-500 hover:bg-indigo-400 text-white shadow-sm transition-all cursor-pointer"
+              onClick={onCancelPlan}
+              className="px-2.5 py-1 rounded text-xs text-[var(--agent-text-muted)] hover:text-rose-400 hover:bg-rose-500/10 transition-colors cursor-pointer"
             >
-              <span>Proceed with plan</span>
-              <Play size={11} fill="currentColor" />
+              Cancel
             </button>
+
+            <div className="flex items-center gap-2">
+              {isEditingDraft && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    onSavePlanEdits?.()
+                    setIsEditingDraft(false)
+                  }}
+                  className="px-2.5 py-1 rounded text-xs font-medium bg-white/10 hover:bg-white/15 text-[var(--agent-text)] transition-colors cursor-pointer"
+                >
+                  Save edits
+                </button>
+              )}
+              <button
+                type="button"
+                onClick={onProceedPlan}
+                disabled={isLoading}
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold bg-indigo-500 hover:bg-indigo-400 text-white shadow transition-all cursor-pointer"
+              >
+                <span>Proceed with plan</span>
+                <Play size={11} fill="currentColor" />
+              </button>
+            </div>
           </div>
         </div>
       </div>

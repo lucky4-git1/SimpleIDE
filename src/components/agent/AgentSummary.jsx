@@ -20,21 +20,20 @@ export const AgentSummary = React.memo(function AgentSummary({
   isLoading = false
 }) {
   const [showDiagnostics, setShowDiagnostics] = useState(false)
-  if (!summary && status !== 'complete') return null
-
   const isComplete = status === 'complete' || status === 'completed'
+  if (!isComplete) return null
 
   return (
-    <div className="flex flex-col gap-2.5 p-3 rounded-xl bg-gradient-to-b from-[var(--agent-surface)] to-[var(--agent-surface-elevated)] border border-[var(--agent-border)] shadow-sm agent-fade-in select-none">
+    <div className="flex flex-col gap-2.5 p-3 rounded-xl bg-gradient-to-b from-[var(--agent-surface)] to-[var(--agent-surface-elevated)] border border-[var(--agent-border)] shadow-sm agent-fade-in select-none min-w-0 max-w-full overflow-hidden">
       {/* Header */}
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-1.5 text-xs font-semibold text-emerald-400">
-          <CheckCircle2 size={15} />
-          <span>Task Completed</span>
+      <div className="flex items-center justify-between min-w-0">
+        <div className="flex items-center gap-1.5 text-xs font-semibold text-emerald-400 min-w-0">
+          <CheckCircle2 size={15} className="shrink-0" />
+          <span className="truncate">Task Completed</span>
         </div>
 
         {diagnostics && (
-          <span className="text-[10px] text-[var(--agent-text-faint)] font-mono">
+          <span className="text-[10px] text-[var(--agent-text-faint)] font-mono shrink-0 ml-2">
             {diagnostics.turns} turns · {Math.round((diagnostics.durationMs || 0) / 1000)}s
           </span>
         )}
@@ -42,7 +41,7 @@ export const AgentSummary = React.memo(function AgentSummary({
 
       {/* Summary Text */}
       {summary && (
-        <div className="text-xs text-[var(--agent-text-secondary)] leading-relaxed whitespace-pre-wrap">
+        <div className="text-xs text-[var(--agent-text-secondary)] leading-relaxed whitespace-pre-wrap break-words min-w-0">
           {summary}
         </div>
       )}

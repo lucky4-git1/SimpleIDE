@@ -52,7 +52,7 @@ import { SkillsModal } from './SkillsModal'
 import './SkillsModal.css'
 import { memoryManager } from '../services/memory/memoryManager'
 import { getModelCapabilities } from '../services/agentEngine/LLMRouter'
-import { CrashRecoveryService } from '../services/agentEngine/CrashRecoveryService'
+import { useEditorStore } from '../store/editorStore'
 import { AgentWorkspace } from './agent/AgentWorkspace'
 import { buildAgentViewModel } from './agent/AgentAdapter'
 import './agent/agentTokens.css'
@@ -1040,6 +1040,29 @@ export default function AIPanel({
     }
   }, [activeFile, appendChatMessage, attachedFiles, autoApproveCommands, currentFolder, ensureProvider, includeActiveFile, includeOpenFiles, includeSelection, isLoading, messages, onAgentFileWrite, onAgentWorkspaceChange, openFiles, projectIndex, projectSummary, requestApproval, selectedCode, setMessages, writeToChat])
 
+  const presentPlanInEditor = useCallback(async (planText) => {
+    if (!planText) return
+    const planFileName = 'implementation_plan.md'
+    const planFilePath = currentFolder ? `${currentFolder.replace(/[/\\]+$/, '')}\\${planFileName}` : planFileName
+
+    // Save to disk if window.api is available and workspace is open
+    if (window.api?.writeFile && currentFolder) {
+      try {
+        await window.api.writeFile(planFilePath, planText)
+      } catch (err) {
+        // non-blocking fallback
+      }
+    }
+
+    // Open directly in Monaco Editor
+    useEditorStore.getState().openFile({
+      path: planFilePath,
+      name: planFileName,
+      content: planText,
+      isDirty: false
+    })
+  }, [currentFolder])
+
   const sendAgentTask = useCallback(async (prompt = '') => {
     const task = (typeof prompt === 'string' && prompt ? prompt : input).trim()
     if (!task || isLoading || !(await ensureProvider())) return
@@ -1077,7 +1100,8 @@ export default function AIPanel({
             .map(message => ({ role: message.role, content: String(message.content).slice(0, 900) }))
         }
       })
-      const reviewRun = run => run ? { ...run, status: 'review', plan, summary: 'Review this implementation plan. You can edit it or add instructions before approving.' } : run
+      await presentPlanInEditor(plan)
+      const reviewRun = run => run ? { ...run, status: 'review', plan, summary: 'Review this implementation plan in the editor. Choose Proceed to begin.' } : run
       if (isViewingTaskChat()) {
         setPlanDraft(plan)
         setAgentRun(reviewRun)
@@ -1086,7 +1110,10 @@ export default function AIPanel({
         const stored = conv.getAgentState(taskChatId)
         conv.setAgentState(taskChatId, { agentRun: reviewRun(stored?.agentRun || planningRun), planDraft: plan })
       }
-      appendChatMessage(taskChatId, { role: 'assistant', content: `Implementation plan:\n${plan}` })
+      appendChatMessage(taskChatId, {
+        role: 'assistant',
+        content: `📋 **Implementation plan generated and opened in editor: \`implementation_plan.md\`**\n\nReview the plan in the editor, and click **Proceed with plan** below to begin.`
+      })
       if (autoProceedPlan) {
         // Stop during planning must not auto-start execution afterwards.
         if (planController.signal.aborted) return
@@ -1110,7 +1137,7 @@ export default function AIPanel({
       if (agentAbortRef.current === planController) agentAbortRef.current = null
       setIsLoading(false)
     }
-  }, [activeFile, appendChatMessage, attachedFiles, autoProceedPlan, currentFolder, ensureProvider, includeActiveFile, includeOpenFiles, includeSelection, input, isLoading, messages, openFiles, projectIndex, projectSummary, runApprovedAgentTask, selectedCode])
+  }, [activeFile, appendChatMessage, attachedFiles, autoProceedPlan, currentFolder, ensureProvider, includeActiveFile, includeOpenFiles, includeSelection, input, isLoading, messages, openFiles, presentPlanInEditor, projectIndex, projectSummary, runApprovedAgentTask, selectedCode])
 
   const sendPlanTask = useCallback(async (prompt = '') => {
     const task = (prompt || input).trim()
@@ -1124,13 +1151,14 @@ export default function AIPanel({
         task,
         context: { currentFolder, activeFile: includeActiveFile ? activeFile : null, selectedCode: includeSelection ? selectedCode : null, projectIndex, projectSummary, openFiles: includeOpenFiles ? openFiles : [], attachedFiles, conversationHistory: messages.slice(-4) }
       })
+      await presentPlanInEditor(content)
       setPlanRun({ task, content, status: 'complete' })
     } catch (error) {
       setPlanRun({ task, content: error.message, status: 'failed' })
     } finally {
       setIsLoading(false)
     }
-  }, [activeFile, attachedFiles, currentFolder, ensureProvider, includeActiveFile, includeOpenFiles, includeSelection, input, isLoading, messages, openFiles, projectIndex, projectSummary, selectedCode])
+  }, [activeFile, attachedFiles, currentFolder, ensureProvider, includeActiveFile, includeOpenFiles, includeSelection, input, isLoading, messages, openFiles, presentPlanInEditor, projectIndex, projectSummary, selectedCode])
 
   const sendChat = useCallback(async (action = 'custom', prompt = '', retryRequest = null) => {
     const userMessage = retryRequest?.userMessage || (action === 'custom'
@@ -1423,6 +1451,7 @@ export default function AIPanel({
           onProceedPlan={() => runApprovedAgentTask(agentRun?.task, planDraft || agentRun?.plan)}
           onCancelPlan={() => { setAgentRun(null); setPlanDraft(''); }}
           onSavePlanEdits={() => { setAgentRun(p => p ? { ...p, plan: planDraft } : p) }}
+          onOpenPlanInEditor={() => presentPlanInEditor(planDraft || agentRun?.plan)}
           onResolveApproval={resolveApproval}
           lastChange={lastChange}
           onReviewChanges={(change) => setLastChange(change)}

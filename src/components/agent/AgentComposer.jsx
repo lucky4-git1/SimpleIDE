@@ -93,7 +93,7 @@ export function AgentComposer({
       )}
 
       {/* Main Composer Box */}
-      <div className="relative flex flex-col rounded-xl bg-[var(--agent-surface-elevated)] border border-[var(--agent-border)] focus-within:border-[var(--agent-border-strong)] transition-all shadow-sm">
+      <div className="relative flex flex-col rounded-xl bg-[var(--agent-surface-elevated)] border border-[var(--agent-border)] focus-within:border-[var(--agent-border-strong)] transition-all shadow-sm min-w-0 max-w-full overflow-hidden">
         <textarea
           ref={textareaRef}
           rows={1}
@@ -106,9 +106,9 @@ export function AgentComposer({
         />
 
         {/* Composer Action Bar */}
-        <div className="flex items-center justify-between px-2.5 py-1.5 border-t border-[var(--agent-border-subtle)] text-[11px] text-[var(--agent-text-muted)]">
+        <div className="flex items-center justify-between px-2.5 py-1.5 border-t border-[var(--agent-border-subtle)] text-[11px] text-[var(--agent-text-muted)] flex-wrap gap-y-1.5 gap-x-2 min-w-0 max-w-full">
           {/* Left tools: Mode, Attachments, Command approval */}
-          <div className="flex items-center gap-1.5">
+          <div className="flex items-center gap-1.5 min-w-0 shrink-0">
             {/* Mode Toggle Button */}
             <button
               type="button"
@@ -154,14 +154,14 @@ export function AgentComposer({
           </div>
 
           {/* Right tools: Model, Tokens, Send/Stop */}
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-1.5 min-w-0 ml-auto shrink-0">
             {/* Model Select */}
-            <div className="relative flex items-center">
+            <div className="relative flex items-center min-w-0">
               <select
                 value={aiConfig?.model || ''}
                 onChange={(e) => onModelChange?.(e.target.value)}
                 disabled={!aiConfig || modelsLoading}
-                className="bg-transparent text-[11px] text-[var(--agent-text-secondary)] outline-none cursor-pointer max-w-[120px] truncate pr-1 hover:text-[var(--agent-text)] transition-colors"
+                className="bg-transparent text-[11px] text-[var(--agent-text-secondary)] outline-none cursor-pointer max-w-[85px] sm:max-w-[120px] truncate pr-1 hover:text-[var(--agent-text)] transition-colors"
                 title={modelsError || (aiConfig ? `${modelOptions.length} models available` : 'Select model')}
               >
                 {(modelOptions.length ? modelOptions : (aiConfig?.model ? [{ id: aiConfig.model, current: true }] : [])).map((option) => (

@@ -70,6 +70,7 @@ export function AgentWorkspace({
   onProceedPlan,
   onCancelPlan,
   onSavePlanEdits,
+  onOpenPlanInEditor,
   onResolveApproval,
   lastChange = null,
   onReviewChanges,
@@ -205,7 +206,7 @@ export function AgentWorkspace({
       <main
         ref={scrollRef}
         onScroll={handleScroll}
-        className="flex-1 overflow-y-auto p-3 flex flex-col gap-3 relative"
+        className="flex-1 overflow-y-auto p-3 flex flex-col gap-3 relative min-w-0 max-w-full overflow-x-hidden"
       >
         {!viewModel.hasRun ? (
           <AgentEmptyState
@@ -219,11 +220,11 @@ export function AgentWorkspace({
           <>
             {/* Conversation Transcript (User requests & Assistant explanations) */}
             {messages.length > 0 && (
-              <div className="flex flex-col gap-2.5">
+              <div className="flex flex-col gap-2.5 min-w-0 max-w-full">
                 {messages.map((message, idx) => (
                   <div
                     key={message.id || idx}
-                    className={`flex flex-col p-2.5 rounded-xl text-xs ${
+                    className={`flex flex-col p-2.5 rounded-xl text-xs min-w-0 max-w-full overflow-hidden break-words ${
                       message.role === 'user'
                         ? 'bg-[var(--agent-surface-elevated)] border border-[var(--agent-border-subtle)] text-[var(--agent-text)] ml-4'
                         : 'bg-[var(--agent-surface)] border border-[var(--agent-border)] text-[var(--agent-text-secondary)] mr-2'
@@ -235,7 +236,7 @@ export function AgentWorkspace({
                         <span className="font-mono text-[10px] opacity-75">{message.context}</span>
                       )}
                     </div>
-                    <div>{renderMessageContent(message.content)}</div>
+                    <div className="break-words min-w-0">{renderMessageContent(message.content)}</div>
                   </div>
                 ))}
               </div>
@@ -254,7 +255,27 @@ export function AgentWorkspace({
                 onProceedPlan={onProceedPlan}
                 onCancelPlan={onCancelPlan}
                 onSavePlanEdits={onSavePlanEdits}
+                onOpenInEditor={onOpenPlanInEditor}
               />
+            )}
+
+            {/* Review Proceed Callout */}
+            {viewModel.isReview && (
+              <div className="flex items-center justify-between p-2.5 rounded-xl bg-indigo-500/10 border border-indigo-500/30 text-xs text-indigo-300 gap-2 min-w-0 max-w-full">
+                <div className="flex items-center gap-1.5 min-w-0">
+                  <span className="w-1.5 h-1.5 rounded-full bg-indigo-400 animate-pulse shrink-0" />
+                  <span className="truncate">Plan ready in editor. Click Proceed to begin work.</span>
+                </div>
+                <button
+                  type="button"
+                  onClick={onProceedPlan}
+                  disabled={isWorking}
+                  className="flex items-center gap-1 px-2.5 py-1 rounded bg-indigo-500 hover:bg-indigo-400 text-white font-medium transition-colors shrink-0 cursor-pointer"
+                >
+                  <span>Proceed</span>
+                  <Play size={10} fill="currentColor" />
+                </button>
+              </div>
             )}
 
             {/* Dominant Current Action Banner */}
@@ -295,8 +316,8 @@ export function AgentWorkspace({
               />
             )}
 
-            {/* Execution Summary / Completion Card */}
-            {viewModel.summary && viewModel.state !== 'failed' && (
+            {/* Execution Summary / Completion Card (Only when task actually completed) */}
+            {(viewModel.isComplete || (viewModel.summary && (viewModel.state === 'complete' || viewModel.state === 'completed'))) && (
               <AgentSummary
                 summary={viewModel.summary}
                 status={viewModel.state}

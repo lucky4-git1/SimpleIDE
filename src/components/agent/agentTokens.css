@@ -193,9 +193,26 @@
   background: rgba(144, 167, 197, 0.35);
 }
 
-/* Responsive Containment */
+/* Responsive Containment & Overflow Prevention */
+.prime-ai {
+  overflow-x: hidden !important;
+  max-width: 100% !important;
+}
+
 .prime-ai * {
   box-sizing: border-box;
+}
+
+.prime-ai main {
+  overflow-x: hidden !important;
+  max-width: 100% !important;
+}
+
+.prime-ai pre,
+.prime-ai code {
+  max-width: 100% !important;
+  overflow-x: auto !important;
+  word-break: break-word;
 }
 
 @container (max-width: 320px) {
