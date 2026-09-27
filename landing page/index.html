@@ -1,0 +1,327 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Simple IDE is an AI-native coding workspace with live assistance, agentic workflows, and a fast local-first developer experience.">
+    <title>Simple IDE | AI-Native Development Workspace</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+    <script src="https://unpkg.com/lucide@latest"></script>
+</head>
+<body>
+    <canvas id="live-bg" aria-hidden="true"></canvas>
+    <div class="page-noise"></div>
+    <div class="orb orb-one"></div>
+    <div class="orb orb-two"></div>
+    <div class="orb orb-three"></div>
+
+    <header class="site-header" id="navbar">
+        <div class="container nav-shell glass-panel">
+            <a class="brand" href="#top" aria-label="Simple IDE home">
+                <img class="brand-logo" src="assets/simple-ide-logo.png" alt="Simple IDE logo">
+                <span class="brand-text">Simple IDE</span>
+            </a>
+            <nav class="nav-links">
+                <a href="#features">Features</a>
+                <a href="#workflow">Workflow</a>
+                <a href="#showcase">Showcase</a>
+                <a href="#faq">FAQ</a>
+            </nav>
+            <div class="nav-actions">
+                <a href="#download" class="nav-link-muted">Docs</a>
+                <a href="#download" class="btn btn-primary magnetic">Download</a>
+            </div>
+        </div>
+    </header>
+
+    <main id="top">
+        <section class="hero container">
+            <div class="hero-copy reveal">
+                <div class="eyebrow">
+                    <i data-lucide="monitor"></i>
+                    <span>Desktop code editor built with Electron + React</span>
+                </div>
+                <h1>
+                    A clean, fast IDE for people who want to
+                    <span class="gradient-text" id="hero-rotator">build</span>
+                    <br>
+                    without the clutter.
+                </h1>
+                <p class="hero-description">
+                    Simple IDE is a lightweight desktop code editor that combines Monaco editing, real file management, terminal execution, live preview, and optional AI help in one focused workspace.
+                </p>
+                <div class="hero-actions">
+                    <a href="#download" class="btn btn-primary magnetic">
+                        Download `.exe`
+                        <i data-lucide="download"></i>
+                    </a>
+                    <a href="#showcase" class="btn btn-secondary magnetic">
+                        See the Interface
+                        <i data-lucide="play"></i>
+                    </a>
+                </div>
+                <div class="hero-meta">
+                    <div class="mini-proof">
+                        <i data-lucide="code-xml"></i>
+                        <span>Monaco-powered editor</span>
+                    </div>
+                    <div class="mini-proof">
+                        <i data-lucide="hard-drive"></i>
+                        <span>Works offline</span>
+                    </div>
+                    <div class="mini-proof">
+                        <i data-lucide="key"></i>
+                        <span>Bring your own AI key</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="hero-visual reveal" data-depth="18">
+                <div class="hero-float hero-float-left glass-panel" data-depth="28">
+                    <span class="pill-dot green"></span>
+                    <span>Open folders, edit files, run code</span>
+                </div>
+                <div class="hero-float hero-float-right glass-panel" data-depth="35">
+                    <span class="pill-dot blue"></span>
+                    <span>Live preview + AI assistance</span>
+                </div>
+
+                <div class="hero-stage glass-panel">
+                    <div class="stage-toolbar">
+                        <div class="traffic-lights">
+                            <span></span>
+                            <span></span>
+                            <span></span>
+                        </div>
+                        <div class="toolbar-title">Simple IDE desktop application</div>
+                        <div class="toolbar-status">Windows `.exe`</div>
+                    </div>
+
+                    <div class="stage-body">
+                        <div class="stage-preview">
+                            <img src="assets/simple-ide-ui.png" alt="Actual Simple IDE interface screenshot">
+                        </div>
+
+                        <aside class="command-panel">
+                            <div class="command-head">
+                                <span>What You Get</span>
+                                <span class="status-pill">Real Product</span>
+                            </div>
+                            <div class="command-list" id="command-list">
+                                <div class="command-item active">
+                                    <span class="command-dot"></span>
+                                    <div>
+                                        <strong>Real file explorer</strong>
+                                        <p>Create, rename, delete, and drag files inside actual folders.</p>
+                                    </div>
+                                </div>
+                                <div class="command-item">
+                                    <span class="command-dot"></span>
+                                    <div>
+                                        <strong>Built-in terminal + run support</strong>
+                                        <p>Run JavaScript and Python files without leaving the editor.</p>
+                                    </div>
+                                </div>
+                                <div class="command-item">
+                                    <span class="command-dot"></span>
+                                    <div>
+                                        <strong>Optional AI assistant</strong>
+                                        <p>Explain code, fix errors, optimize snippets, and apply changes.</p>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="code-block">
+<pre><code><span class="token-key">const</span> <span class="token-fn">workflow</span> = {
+  editor: <span class="token-fn">'monaco'</span>,
+  preview: <span class="token-fn">'live'</span>,
+  terminal: <span class="token-fn">'built-in'</span>,
+  ai: <span class="token-fn">'optional'</span>
+};</code></pre>
+                            </div>
+                        </aside>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section class="stats container reveal">
+            <div class="stats-grid glass-panel">
+                <div class="stat-card">
+                    <span class="stat-value stat-text">Monaco</span>
+                    <span class="stat-label">VS Code editor engine for fast, familiar editing.</span>
+                </div>
+                <div class="stat-card">
+                    <span class="stat-value stat-text">Electron</span>
+                    <span class="stat-label">Desktop-first app with a real local file workflow.</span>
+                </div>
+                <div class="stat-card">
+                    <span class="stat-value stat-text">Offline</span>
+                    <span class="stat-label">No browser required and no forced online dependency.</span>
+                </div>
+                <div class="stat-card">
+                    <span class="stat-value stat-text">`.exe`</span>
+                    <span class="stat-label">Packaged for easy installation on Windows.</span>
+                </div>
+            </div>
+        </section>
+
+        <section class="section container" id="features">
+            <div class="section-heading reveal">
+                <span class="section-kicker">Product Overview</span>
+                <h2>Simple IDE is made for focused coding, fast feedback, and everyday projects.</h2>
+                <p>It takes the core experience developers already like in larger editors and strips it down into a cleaner, lighter workspace that still feels powerful.</p>
+            </div>
+
+            <div class="feature-grid">
+                <article class="feature-card glass-panel reveal" data-depth="10">
+                    <div class="feature-icon"><i data-lucide="code-xml"></i></div>
+                    <h3>Monaco editor core</h3>
+                    <p>Simple IDE uses Monaco, the editor engine behind VS Code, for smooth editing, syntax support, and a familiar coding feel.</p>
+                </article>
+                <article class="feature-card glass-panel reveal" data-depth="14">
+                    <div class="feature-icon"><i data-lucide="folder-open"></i></div>
+                    <h3>Real file operations</h3>
+                    <p>Open folders, browse project files, create and delete items, rename them, and move them with drag and drop.</p>
+                </article>
+                <article class="feature-card glass-panel reveal" data-depth="18">
+                    <div class="feature-icon"><i data-lucide="panels-top-left"></i></div>
+                    <h3>Tabbed workspace</h3>
+                    <p>Edit multiple files at once with a cleaner multi-tab layout, status bar details, and a panel-based screen structure.</p>
+                </article>
+                <article class="feature-card glass-panel reveal" data-depth="22">
+                    <div class="feature-icon"><i data-lucide="bot"></i></div>
+                    <h3>Optional AI help</h3>
+                    <p>Bring your own API key to explain code, fix problems, optimize snippets, and apply generated code directly into the editor.</p>
+                </article>
+            </div>
+        </section>
+
+        <section class="section container split-section" id="workflow">
+            <div class="split-copy reveal">
+                <span class="section-kicker">Core Features</span>
+                <h2>Everything you need to write, run, preview, and improve code in one app.</h2>
+                <p>Simple IDE is especially useful for students, beginners, and developers who want a straightforward alternative to heavier editors without giving up the features that matter.</p>
+                <div class="bullet-list">
+                    <div><i data-lucide="check"></i><span>Built-in terminal and code execution for JavaScript and Python</span></div>
+                    <div><i data-lucide="check"></i><span>Live preview for HTML projects inside the IDE and in the browser</span></div>
+                    <div><i data-lucide="check"></i><span>Auto-reload support for a live-server style workflow</span></div>
+                    <div><i data-lucide="check"></i><span>Sidebar toggle, activity bar navigation, and command palette support</span></div>
+                </div>
+            </div>
+
+            <div class="workflow-stack reveal">
+                <div class="workflow-card glass-panel">
+                    <span class="workflow-step">01</span>
+                    <h3>Open a project folder</h3>
+                    <p>Browse real files and work with your existing local project structure.</p>
+                </div>
+                <div class="workflow-card glass-panel">
+                    <span class="workflow-step">02</span>
+                    <h3>Edit and test quickly</h3>
+                    <p>Write code in Monaco, switch files in tabs, then run or preview without breaking focus.</p>
+                </div>
+                <div class="workflow-card glass-panel">
+                    <span class="workflow-step">03</span>
+                    <h3>Use AI only when you want it</h3>
+                    <p>Get explanations, fixes, and optimizations while keeping full control over your provider and key.</p>
+                </div>
+            </div>
+        </section>
+
+        <section class="section container showcase-section" id="showcase">
+            <div class="showcase-shell glass-panel reveal">
+                <div class="showcase-copy">
+                    <span class="section-kicker">Actual Interface</span>
+                    <h2>A real screenshot, a real product, and a clearer story about what it does.</h2>
+                    <p>The page now uses your actual UI and branding so visitors immediately understand that Simple IDE is a usable desktop app, not just a concept.</p>
+                    <div class="showcase-pills">
+                        <span>Desktop app</span>
+                        <span>File explorer</span>
+                        <span>Terminal</span>
+                        <span>AI assistant</span>
+                    </div>
+                </div>
+                <div class="showcase-media" data-depth="16">
+                    <img src="assets/simple-ide-ui.png" alt="Simple IDE working interface">
+                </div>
+            </div>
+        </section>
+
+        <section class="section container testimonials">
+            <div class="section-heading reveal">
+                <span class="section-kicker">Why It Stands Out</span>
+                <h2>Simple IDE combines the tools most developers need without the extra weight.</h2>
+            </div>
+            <div class="testimonial-grid">
+                <article class="quote-card glass-panel reveal">
+                    <p>It keeps the experience simple: editor, files, terminal, preview, and AI support in one place.</p>
+                    <span>Less setup, faster start</span>
+                </article>
+                <article class="quote-card glass-panel reveal">
+                    <p>The AI model choice is yours. Add your own API key instead of being locked into a subscription.</p>
+                    <span>User-controlled AI</span>
+                </article>
+                <article class="quote-card glass-panel reveal">
+                    <p>It is especially approachable for learners and developers who want a lighter VS Code-style workflow.</p>
+                    <span>Built for practical everyday use</span>
+                </article>
+            </div>
+        </section>
+
+        <section class="section container faq-section" id="faq">
+            <div class="faq-shell glass-panel reveal">
+                <div class="faq-copy">
+                    <span class="section-kicker">Desktop Experience</span>
+                    <h2>Professional enough to ship, simple enough to adopt quickly.</h2>
+                </div>
+                <div class="faq-list">
+                    <details open>
+                        <summary>Who is Simple IDE for?</summary>
+                        <p>It is a strong fit for students, beginner to intermediate developers, and anyone who wants a lightweight coding environment with modern essentials.</p>
+                    </details>
+                    <details>
+                        <summary>Does it work without a browser?</summary>
+                        <p>Yes. Simple IDE is packaged as a desktop application, so the editor itself does not require a browser to run.</p>
+                    </details>
+                    <details>
+                        <summary>What makes it different from heavier editors?</summary>
+                        <p>It focuses on a cleaner workflow: core IDE features, live preview, and optional AI help without unnecessary complexity or forced cloud lock-in.</p>
+                    </details>
+                </div>
+            </div>
+        </section>
+
+        <section class="download-cta container" id="download">
+            <div class="download-shell glass-panel reveal">
+                <div>
+                    <span class="section-kicker">Download Simple IDE</span>
+                    <h2>A modern desktop code editor for developers who want speed, clarity, and control.</h2>
+                </div>
+                <div class="download-actions">
+                    <a href="#" class="btn btn-primary magnetic">
+                        Get Simple IDE
+                        <i data-lucide="download"></i>
+                    </a>
+                    <a href="#top" class="btn btn-secondary magnetic">
+                        Back to Top
+                        <i data-lucide="arrow-up"></i>
+                    </a>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <div class="sticky-cta glass-panel" id="sticky-cta">
+        <div>
+            <strong>Simple IDE</strong>
+            <p>Lightweight desktop IDE with Monaco, live preview, terminal, and optional AI.</p>
+        </div>
+        <a href="#download" class="btn btn-primary magnetic">Download</a>
+    </div>
+
+    <script src="main.js"></script>
+</body>
+</html>
