@@ -23,6 +23,7 @@ export class NativeToolAdapter {
     'get_diagnostics',
     'get_callers',
     'get_import_graph',
+    'query_symbol_graph',
     'search_documentation',
     'search_coding_knowledge',
     'browser_audit',

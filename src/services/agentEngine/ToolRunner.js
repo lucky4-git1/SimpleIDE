@@ -399,6 +399,17 @@ export class ToolRunner {
       return graph
     })
 
+    reg('query_symbol_graph', 'Query project symbol graph relationships (usages, dependencies, callers, callees, tests) as structured data and ASCII trees.', z.object({
+      symbol: z.string(),
+      direction: z.enum(['usages', 'dependencies', 'callers', 'callees']).optional().default('usages'),
+      depth: z.number().int().min(1).max(5).optional().default(1)
+    }), TOOL_PERMISSIONS.SAFE, TOOL_CATEGORIES.READ, async ({ symbol, direction = 'usages', depth = 1 }) => {
+      if (this.codeIntelligence) {
+        return this.codeIntelligence.querySymbolGraph(symbol, { direction, depth })
+      }
+      return { target: symbol, found: false, usages: [], treeText: `${symbol} (graph unavailable)` }
+    })
+
     reg('write_file', 'Create or replace a workspace file.', z.object({
       path: z.string(),
       content: z.string()

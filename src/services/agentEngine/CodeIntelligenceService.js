@@ -1,4 +1,5 @@
 import { globalLanguageRegistry, SymbolRecord } from './LanguageRegistry.js'
+import { SymbolGraph, SymbolNode, SymbolEdge, NODE_KINDS, EDGE_KINDS } from './SymbolGraph.js'
 
 export const INDEX_STATE = {
   IDLE: 'IDLE',
@@ -35,6 +36,7 @@ export class CodeIntelligenceService {
     this.abortSignal = abortSignal || null
     this.state = INDEX_STATE.IDLE
     this.languageRegistry = globalLanguageRegistry
+    this.symbolGraph = new SymbolGraph(workspaceRoot)
 
     // Core index stores
     this.symbolsByName = new Map() // symbol name -> SymbolRecord[]
@@ -98,6 +100,7 @@ export class CodeIntelligenceService {
     this.callsByCallee.clear()
     this.implementationsBySymbol.clear()
     this.diagnosticsByFile.clear()
+    this.symbolGraph?.clear()
     this.files.clear()
     this.folders.clear()
   }
@@ -212,6 +215,103 @@ export class CodeIntelligenceService {
       if (astResult.diagnostics?.length) {
         this.diagnosticsByFile.set(normPath, astResult.diagnostics)
       }
+
+      // 7. Populate SymbolGraph nodes and edges
+      if (this.symbolGraph) {
+        const fileKind = astResult.isTest ? NODE_KINDS.TEST : NODE_KINDS.FILE
+        const fileNode = new SymbolNode({
+          id: `file:${normPath}`,
+          name: normPath,
+          kind: fileKind,
+          file: normPath,
+          line: 1
+        })
+        this.symbolGraph.addNode(fileNode)
+
+        // Symbols
+        for (const sym of symbols) {
+          const kind = sym.kind === 'component' ? NODE_KINDS.COMPONENT
+            : sym.kind === 'class' ? NODE_KINDS.CLASS
+            : sym.kind === 'interface' ? NODE_KINDS.INTERFACE
+            : sym.kind === 'function' ? NODE_KINDS.FUNCTION
+            : NODE_KINDS.VARIABLE
+
+          const symNode = new SymbolNode({
+            id: `${kind}:${normPath}:${sym.name}`,
+            name: sym.name,
+            kind,
+            file: normPath,
+            line: sym.startLine,
+            metadata: { signature: sym.signature, exported: sym.exported, parent: sym.parent }
+          })
+          this.symbolGraph.addNode(symNode)
+
+          if (sym.exported) {
+            this.symbolGraph.addEdge(fileNode.id, symNode.id, EDGE_KINDS.EXPORTS)
+          } else {
+            this.symbolGraph.addEdge(fileNode.id, symNode.id, EDGE_KINDS.REFERENCES)
+          }
+        }
+
+        // Imports
+        for (const imp of astResult.imports || []) {
+          const targetRel = resolveRelativeImport(normPath, imp.source)
+          if (targetRel) {
+            this.symbolGraph.addEdge(fileNode.id, `file:${targetRel}`, EDGE_KINDS.IMPORTS, { source: imp.source })
+          }
+        }
+
+        // Calls
+        for (const call of calls) {
+          const callerMatches = this.symbolGraph.findNodes(call.caller)
+          const calleeMatches = this.symbolGraph.findNodes(call.callee)
+          const callerId = callerMatches[0]?.id || fileNode.id
+          const calleeId = calleeMatches[0]?.id || `function:${call.callee}`
+
+          if (!this.symbolGraph.getNode(calleeId)) {
+            this.symbolGraph.addNode(new SymbolNode({
+              id: calleeId,
+              name: call.callee,
+              kind: NODE_KINDS.FUNCTION,
+              file: ''
+            }))
+          }
+          this.symbolGraph.addEdge(callerId, calleeId, EDGE_KINDS.CALLS, { line: call.line })
+        }
+
+        // Implementations & Extends
+        for (const impl of impls) {
+          const classNode = this.symbolGraph.findNodes(impl.name, NODE_KINDS.CLASS)[0]
+          if (classNode) {
+            if (impl.extends) {
+              const superNode = this.symbolGraph.findNodes(impl.extends, NODE_KINDS.CLASS)[0]
+              const superId = superNode?.id || `class:${impl.extends}`
+              if (!this.symbolGraph.getNode(superId)) {
+                this.symbolGraph.addNode(new SymbolNode({ id: superId, name: impl.extends, kind: NODE_KINDS.CLASS }))
+              }
+              this.symbolGraph.addEdge(classNode.id, superId, EDGE_KINDS.EXTENDS)
+            }
+            for (const iface of impl.implements || []) {
+              const ifaceNode = this.symbolGraph.findNodes(iface, NODE_KINDS.INTERFACE)[0]
+              const ifaceId = ifaceNode?.id || `interface:${iface}`
+              if (!this.symbolGraph.getNode(ifaceId)) {
+                this.symbolGraph.addNode(new SymbolNode({ id: ifaceId, name: iface, kind: NODE_KINDS.INTERFACE }))
+              }
+              this.symbolGraph.addEdge(classNode.id, ifaceId, EDGE_KINDS.IMPLEMENTS)
+            }
+          }
+        }
+
+        // If this is a test file, link test edges
+        if (astResult.isTest) {
+          for (const call of calls) {
+            const targetNodes = this.symbolGraph.findNodes(call.callee)
+            for (const tNode of targetNodes) {
+              this.symbolGraph.addEdge(fileNode.id, tNode.id, EDGE_KINDS.TESTS)
+            }
+          }
+        }
+      }
     } else {
       // Fallback regex parsing for imports/exports if AST parsing failed/unsupported
       this.parseFileFallback(normPath, source)
@@ -248,6 +348,7 @@ export class CodeIntelligenceService {
   }
 
   removeFileFromIndex(normPath) {
+    this.symbolGraph?.removeFile(normPath)
     const oldSymbols = this.symbolsByFile.get(normPath) || []
     for (const sym of oldSymbols) {
       const list = this.symbolsByName.get(sym.name)
@@ -588,4 +689,19 @@ export class CodeIntelligenceService {
 
     return summaryLines.join('\n')
   }
+
+  querySymbolGraph(symbol, options = {}) {
+    if (!this.symbolGraph) {
+      return { target: symbol, found: false, usages: [], treeText: `${symbol} (graph unavailable)` }
+    }
+    const direction = options.direction || 'usages'
+    if (direction === 'dependencies') {
+      return this.symbolGraph.queryDependencies(symbol)
+    }
+    if (direction === 'callers' || direction === 'callees') {
+      return this.symbolGraph.queryCallGraph(symbol, direction, options.depth || 2)
+    }
+    return this.symbolGraph.queryUsages(symbol)
+  }
 }
+
