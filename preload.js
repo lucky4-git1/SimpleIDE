@@ -28,6 +28,7 @@ contextBridge.exposeInMainWorld('api', {
   getProcess: (id) => ipcRenderer.invoke('process-get', id),
   listProcesses: () => ipcRenderer.invoke('process-list'),
   readProcessOutput: (params) => ipcRenderer.invoke('process-output', params),
+  cleanupProcessRun: (runId) => ipcRenderer.invoke('process-cleanup-run', runId),
   browserAction: (opts) => ipcRenderer.invoke('browser-action', opts),
   startServer: (folderPath) => ipcRenderer.invoke('start-server', folderPath),
   openInBrowser: (relativePath) => ipcRenderer.invoke('open-in-browser', relativePath),

@@ -52,6 +52,7 @@ import { SkillsModal } from './SkillsModal'
 import './SkillsModal.css'
 import { memoryManager } from '../services/memory/memoryManager'
 import { getModelCapabilities } from '../services/agentEngine/LLMRouter'
+import { CrashRecoveryService } from '../services/agentEngine/CrashRecoveryService'
 
 const CHAT_ACTIONS = [
   { id: 'explain', label: 'Explain', icon: Sparkles },
@@ -529,6 +530,29 @@ export default function AIPanel({
     setLastChange(lastChangeRef.current)
     setChats(memoryManager.conversations.getChats())
     setProjectMemoryRecords(memoryManager.projects.records || [])
+
+    // Inspect and recover incomplete agent runs from crashes or abnormal termination
+    try {
+      const recoveryService = new CrashRecoveryService(currentFolder)
+      recoveryService.recoverWorkspaceRuns(currentFolder).then(recovery => {
+        if (recovery?.hasUnfinished && recovery.checkpoint?.resumable) {
+          console.info('[AIPanel] Detected unfinished agent run from crash:', recovery.run?.id)
+          setAgentRun(prev => prev || {
+            task: recovery.run?.user_prompt || 'Resumed agent task',
+            status: 'review',
+            plan: recovery.checkpoint.reconciledSteps?.map(s => s.title).join('\n') || '',
+            stages: emptyStages(),
+            tools: [],
+            changedFiles: recovery.checkpoint.verifiedFiles || [],
+            todos: recovery.checkpoint.reconciledSteps || [],
+            resumable: true,
+            recoveredRunId: recovery.run?.id
+          })
+        }
+      }).catch(err => {
+        console.warn('[AIPanel] Crash recovery detection failed:', err?.message)
+      })
+    } catch {}
     return () => {
       unsubscribe()
       clearTimeout(chatsRefreshTimerRef.current)

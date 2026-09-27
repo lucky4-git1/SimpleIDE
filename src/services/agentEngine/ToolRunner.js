@@ -414,9 +414,10 @@ export class ToolRunner {
       if (isCommandBlocked(command)) throw new Error(`run_command blocked for safety: ${command}`)
       const api = this.getApi()
       const requestId = `command-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`
+      const runId = this.activeTransactionId || null
       const cancel = () => api.cancelCommand?.(requestId)
       this.abortSignal?.addEventListener('abort', cancel, { once: true })
-      const response = await api.runCommand({ command, cwd: this.root, timeoutMs, requestId })
+      const response = await api.runCommand({ command, cwd: this.root, timeoutMs, requestId, runId })
       this.abortSignal?.removeEventListener('abort', cancel)
       if (this.abortSignal?.aborted || response.cancelled) {
         const error = new Error('Command cancelled by user.')
@@ -459,7 +460,8 @@ export class ToolRunner {
     }), TOOL_PERMISSIONS.CAUTION, TOOL_CATEGORIES.EXECUTE, async ({ command, id }) => {
       if (isCommandBlocked(command)) throw new Error(`start_process blocked for safety: ${command}`)
       const api = this.getApi()
-      const response = await api.startProcess({ command, id, cwd: this.root })
+      const runId = this.activeTransactionId || null
+      const response = await api.startProcess({ command, id, cwd: this.root, runId })
       if (!response.success) throw new Error(response.error)
       if (response.process?.id) this.taskProcessIds.add(response.process.id)
       return response.process

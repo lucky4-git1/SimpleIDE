@@ -23,6 +23,9 @@ function requestSignal(controller, timeoutMs) {
   return { signal, isTimeout: () => !controller.signal.aborted && signal.aborted }
 }
 
+import { isAllowedAIEndpoint, ALLOWED_AI_HOST_PATTERNS } from './aiSecurity.js'
+export { isAllowedAIEndpoint, ALLOWED_AI_HOST_PATTERNS }
+
 const aiConfigPath = () => join(app.getPath('userData'), 'prime-ai-config.json')
 
 const MODELS_ENDPOINTS = {
@@ -112,6 +115,9 @@ export function registerAiIPC() {
     if (requestId) activeAIRequests.set(requestId, controller)
     const { signal: reqSignal, isTimeout } = requestSignal(controller, timeoutMs)
     try {
+      if (!isAllowedAIEndpoint(endpoint)) {
+        return { error: 'Access denied: AI endpoint is not allowed by security policy.' }
+      }
       const secureConfig = await readAIConfig()
       const isLocalProvider = provider === 'ollama' || provider === 'lmstudio'
       const credential = isLocalProvider ? '' : (secureConfig.apiKey || apiKey)
@@ -194,6 +200,9 @@ export function registerAiIPC() {
     const { signal: reqSignal, isTimeout } = requestSignal(controller, timeoutMs)
     const send = (type, payload = {}) => event.sender.send('ai-stream:event', { requestId, type, ...payload })
     try {
+      if (!isAllowedAIEndpoint(endpoint)) {
+        throw new Error('Access denied: AI endpoint is not allowed by security policy.')
+      }
       const secureConfig = await readAIConfig()
       const isLocalProvider = provider === 'ollama' || provider === 'lmstudio'
       const credential = isLocalProvider ? '' : secureConfig.apiKey

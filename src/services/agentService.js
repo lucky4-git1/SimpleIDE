@@ -1960,3 +1960,12 @@ export async function runSmartChat({ mode = 'assistant', message, conversationHi
 
   return { intent: result.intent, streamed: true }
 }
+
+/**
+ * Programmatic helper to check and reconcile unfinished runs for a workspace.
+ */
+export async function checkCrashRecovery(workspaceRoot, options = {}) {
+  const service = new CrashRecoveryService(workspaceRoot, options)
+  return await service.recoverWorkspaceRuns(workspaceRoot)
+}
+
