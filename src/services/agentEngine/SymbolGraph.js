@@ -396,6 +396,354 @@ export class SymbolGraph {
     }
   }
 
+  /**
+   * Explores the context graph around a symbol or file with graph distance and relevance.
+   * Categorizes neighbors into the 9-point priority hierarchy:
+   * 1. Current Symbol
+   * 2. Definition
+   * 3. Direct References
+   * 4. Callers
+   * 5. Callees
+   * 6. Related Tests
+   * 7. Imports
+   * 8. Configuration
+   * 9. Documentation
+   *
+   * @param {string|string[]} symbolOrFile - Symbol name(s) or file path(s)
+   * @param {Object} [options]
+   * @param {number} [options.maxDepth=2]
+   * @returns {Object} Graph traversal result with categorized nodes and relevance scores
+   */
+  traverseContextGraph(symbolOrFile, { maxDepth = 2 } = {}) {
+    const queries = Array.isArray(symbolOrFile) ? symbolOrFile : [symbolOrFile]
+    const rootNodes = []
+    const seenNodeIds = new Set()
+
+    for (const raw of queries) {
+      const q = String(raw || '').trim()
+      if (!q) continue
+      const matched = this.findNodes(q)
+      if (matched.length > 0) {
+        for (const m of matched) {
+          if (!seenNodeIds.has(m.id)) {
+            seenNodeIds.add(m.id)
+            rootNodes.push(m)
+          }
+        }
+      } else {
+        const fileNorm = normalizePath(q)
+        const fileNodeIds = this.nodesByFile.get(fileNorm) || new Set()
+        for (const id of fileNodeIds) {
+          const n = this.getNode(id)
+          if (n && !seenNodeIds.has(n.id)) {
+            seenNodeIds.add(n.id)
+            rootNodes.push(n)
+          }
+        }
+      }
+    }
+
+    if (rootNodes.length === 0) {
+      return {
+        found: false,
+        target: String(symbolOrFile),
+        items: [],
+        categories: {
+          currentSymbols: [],
+          definitions: [],
+          references: [],
+          callers: [],
+          callees: [],
+          tests: [],
+          imports: [],
+          configs: [],
+          docs: []
+        }
+      }
+    }
+
+    const categories = {
+      currentSymbols: [],
+      definitions: [],
+      references: [],
+      callers: [],
+      callees: [],
+      tests: [],
+      imports: [],
+      configs: [],
+      docs: []
+    }
+
+    const items = []
+    const visited = new Set()
+
+    // 1. Current Symbol & Definition (Distance 0)
+    for (const node of rootNodes) {
+      if (visited.has(node.id)) continue
+      visited.add(node.id)
+
+      const isSymbol = node.kind !== NODE_KINDS.FILE && node.kind !== NODE_KINDS.TEST
+      if (isSymbol) {
+        const item = {
+          node,
+          category: 'current_symbol',
+          relation: 'current_symbol',
+          graphDistance: 0,
+          score: 1.0,
+          file: node.file,
+          name: node.name,
+          kind: node.kind,
+          line: node.line
+        }
+        categories.currentSymbols.push(item)
+        items.push(item)
+      }
+
+      const defItem = {
+        node,
+        category: 'definition',
+        relation: 'definition',
+        graphDistance: 0,
+        score: 0.98,
+        file: node.file,
+        name: node.name,
+        kind: node.kind,
+        line: node.line
+      }
+      categories.definitions.push(defItem)
+      items.push(defItem)
+    }
+
+    // 2. Explore Distance 1 Neighbors
+    for (const rootNode of rootNodes) {
+      // Incoming edges (References, Callers, Tests)
+      const inEdges = this.getIncomingEdges(rootNode.id)
+      for (const edge of inEdges) {
+        const sourceNode = this.getNode(edge.from)
+        if (!sourceNode || visited.has(sourceNode.id)) continue
+        visited.add(sourceNode.id)
+
+        const isTest = sourceNode.kind === NODE_KINDS.TEST ||
+          edge.kind === EDGE_KINDS.TESTS ||
+          /(?:test|spec)s?\/|\.(?:test|spec)\.[jt]sx?$/i.test(sourceNode.file || sourceNode.name)
+
+        if (isTest) {
+          const item = {
+            node: sourceNode,
+            category: 'tests',
+            relation: 'test',
+            graphDistance: 1,
+            score: 0.80,
+            file: sourceNode.file,
+            name: sourceNode.name,
+            kind: sourceNode.kind,
+            line: sourceNode.line
+          }
+          categories.tests.push(item)
+          items.push(item)
+        } else if (edge.kind === EDGE_KINDS.CALLS) {
+          const item = {
+            node: sourceNode,
+            category: 'callers',
+            relation: 'caller',
+            graphDistance: 1,
+            score: 0.88,
+            file: sourceNode.file,
+            name: sourceNode.name,
+            kind: sourceNode.kind,
+            line: sourceNode.line
+          }
+          categories.callers.push(item)
+          items.push(item)
+        } else {
+          const item = {
+            node: sourceNode,
+            category: 'references',
+            relation: 'reference',
+            graphDistance: 1,
+            score: 0.92,
+            file: sourceNode.file,
+            name: sourceNode.name,
+            kind: sourceNode.kind,
+            line: sourceNode.line
+          }
+          categories.references.push(item)
+          items.push(item)
+        }
+      }
+
+      // Outgoing edges (Callees, Imports)
+      const outEdges = this.getOutgoingEdges(rootNode.id)
+      for (const edge of outEdges) {
+        const destNode = this.getNode(edge.to)
+        if (!destNode || visited.has(destNode.id)) continue
+        visited.add(destNode.id)
+
+        const isConfig = /(?:config|\.env|rc\.)/i.test(destNode.file || destNode.name) ||
+          destNode.name === 'package.json'
+        const isDoc = /\.md$/i.test(destNode.file || destNode.name) ||
+          /docs\//i.test(destNode.file || '')
+
+        if (isConfig) {
+          const item = {
+            node: destNode,
+            category: 'configs',
+            relation: 'config',
+            graphDistance: 1,
+            score: 0.72,
+            file: destNode.file,
+            name: destNode.name,
+            kind: destNode.kind,
+            line: destNode.line
+          }
+          categories.configs.push(item)
+          items.push(item)
+        } else if (isDoc) {
+          const item = {
+            node: destNode,
+            category: 'docs',
+            relation: 'documentation',
+            graphDistance: 1,
+            score: 0.65,
+            file: destNode.file,
+            name: destNode.name,
+            kind: destNode.kind,
+            line: destNode.line
+          }
+          categories.docs.push(item)
+          items.push(item)
+        } else if (edge.kind === EDGE_KINDS.CALLS) {
+          const item = {
+            node: destNode,
+            category: 'callees',
+            relation: 'callee',
+            graphDistance: 1,
+            score: 0.84,
+            file: destNode.file,
+            name: destNode.name,
+            kind: destNode.kind,
+            line: destNode.line
+          }
+          categories.callees.push(item)
+          items.push(item)
+        } else if (edge.kind === EDGE_KINDS.IMPORTS) {
+          const item = {
+            node: destNode,
+            category: 'imports',
+            relation: 'import',
+            graphDistance: 1,
+            score: 0.76,
+            file: destNode.file,
+            name: destNode.name,
+            kind: destNode.kind,
+            line: destNode.line
+          }
+          categories.imports.push(item)
+          items.push(item)
+        }
+      }
+
+      // Check file node edges if rootNode is a symbol
+      if (rootNode.file) {
+        const fileNode = this.getNode(`file:${rootNode.file}`)
+        if (fileNode && fileNode.id !== rootNode.id) {
+          const fileOut = this.getOutgoingEdges(fileNode.id, [EDGE_KINDS.IMPORTS])
+          for (const edge of fileOut) {
+            const destNode = this.getNode(edge.to)
+            if (!destNode || visited.has(destNode.id)) continue
+            visited.add(destNode.id)
+
+            const isConfig = /(?:config|\.env|rc\.)/i.test(destNode.file || destNode.name) ||
+              destNode.name === 'package.json'
+            if (isConfig) {
+              const item = {
+                node: destNode,
+                category: 'configs',
+                relation: 'config',
+                graphDistance: 1,
+                score: 0.72,
+                file: destNode.file,
+                name: destNode.name,
+                kind: destNode.kind,
+                line: destNode.line
+              }
+              categories.configs.push(item)
+              items.push(item)
+            } else {
+              const item = {
+                node: destNode,
+                category: 'imports',
+                relation: 'import',
+                graphDistance: 1,
+                score: 0.76,
+                file: destNode.file,
+                name: destNode.name,
+                kind: destNode.kind,
+                line: destNode.line
+              }
+              categories.imports.push(item)
+              items.push(item)
+            }
+          }
+
+          const fileIn = this.getIncomingEdges(fileNode.id, [EDGE_KINDS.TESTS])
+          for (const edge of fileIn) {
+            const srcNode = this.getNode(edge.from)
+            if (!srcNode || visited.has(srcNode.id)) continue
+            visited.add(srcNode.id)
+            const item = {
+              node: srcNode,
+              category: 'tests',
+              relation: 'test',
+              graphDistance: 1,
+              score: 0.80,
+              file: srcNode.file,
+              name: srcNode.name,
+              kind: srcNode.kind,
+              line: srcNode.line
+            }
+            categories.tests.push(item)
+            items.push(item)
+          }
+        }
+      }
+    }
+
+    // 3. Multi-hop callers (Distance 2) if maxDepth >= 2
+    if (maxDepth >= 2) {
+      const distance1Callers = [...categories.callers]
+      for (const callerItem of distance1Callers) {
+        const callerEdges = this.getIncomingEdges(callerItem.node.id, [EDGE_KINDS.CALLS])
+        for (const edge of callerEdges) {
+          const secondHop = this.getNode(edge.from)
+          if (!secondHop || visited.has(secondHop.id)) continue
+          visited.add(secondHop.id)
+
+          const item = {
+            node: secondHop,
+            category: 'callers',
+            relation: 'caller',
+            graphDistance: 2,
+            score: 0.82,
+            file: secondHop.file,
+            name: secondHop.name,
+            kind: secondHop.kind,
+            line: secondHop.line
+          }
+          categories.callers.push(item)
+          items.push(item)
+        }
+      }
+    }
+
+    return {
+      found: true,
+      target: String(symbolOrFile),
+      items,
+      categories
+    }
+  }
+
   getGraphSummary() {
     let edgesCount = 0
     for (const map of this.outgoing.values()) {

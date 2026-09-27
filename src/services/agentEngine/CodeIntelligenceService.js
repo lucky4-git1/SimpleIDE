@@ -257,7 +257,17 @@ export class CodeIntelligenceService {
         for (const imp of astResult.imports || []) {
           const targetRel = resolveRelativeImport(normPath, imp.source)
           if (targetRel) {
-            this.symbolGraph.addEdge(fileNode.id, `file:${targetRel}`, EDGE_KINDS.IMPORTS, { source: imp.source })
+            const resolvedTarget = this.resolveFileWithExtensions(targetRel) || targetRel
+            const targetId = `file:${resolvedTarget}`
+            if (!this.symbolGraph.getNode(targetId)) {
+              this.symbolGraph.addNode(new SymbolNode({
+                id: targetId,
+                name: resolvedTarget,
+                kind: NODE_KINDS.FILE,
+                file: resolvedTarget
+              }))
+            }
+            this.symbolGraph.addEdge(fileNode.id, targetId, EDGE_KINDS.IMPORTS, { source: imp.source })
           }
         }
 
@@ -702,6 +712,13 @@ export class CodeIntelligenceService {
       return this.symbolGraph.queryCallGraph(symbol, direction, options.depth || 2)
     }
     return this.symbolGraph.queryUsages(symbol)
+  }
+
+  traverseContextGraph(symbol, options = {}) {
+    if (!this.symbolGraph) {
+      return { found: false, items: [], categories: {} }
+    }
+    return this.symbolGraph.traverseContextGraph(symbol, options)
   }
 }
 

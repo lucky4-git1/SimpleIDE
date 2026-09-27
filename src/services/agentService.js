@@ -1237,6 +1237,18 @@ export async function runAgentTask({ taskId, task, context, tools = {}, onEvent,
         openTabs: context.openFiles?.map(f => getRelativePath(f.path, context.currentFolder)) || []
       })
 
+      // Prime Router local decision pass
+      const routerDecision = await primeRouter.decide({
+        request: requestedTask,
+        state: runtime.getState(),
+        availableTools: runner.getAvailableTools().map(t => t.name || t),
+        recentContext: observations.slice(-5),
+        runContext: { turn, activeTaskId },
+        signal
+      })
+      timeline.emit('ROUTE_DECIDED', { turn, ...routerDecision })
+      onEvent?.({ type: 'prime_router.decided', decision: routerDecision })
+
       const relActiveFile = context.activeFile ? getRelativePath(context.activeFile.path, context.currentFolder) : null
       // Conservative mode narrows optional retrieval to half the window.
       // Facts, tools, verification, and task state are never touched.
@@ -1250,7 +1262,8 @@ export async function runAgentTask({ taskId, task, context, tools = {}, onEvent,
         openTabs: context.openFiles?.map(f => getRelativePath(f.path, context.currentFolder)) || [],
         writtenFiles,
         activeFileContent: context.activeFile?.content || null,
-        totalTokens: retrievalTokens
+        totalTokens: retrievalTokens,
+        symbolQuery: routerDecision?.symbol_query
       })
 
       const userMessageStr = PromptContextFormatter.formatPromptContext(contextPackage)
@@ -1262,18 +1275,6 @@ export async function runAgentTask({ taskId, task, context, tools = {}, onEvent,
         workspace: scannerState,
         dynamicContextStr: `${context.skillContext.text}\n\n${userMessageStr}`
       })
-
-      // Prime Router local decision pass
-      const routerDecision = await primeRouter.decide({
-        request: requestedTask,
-        state: runtime.getState(),
-        availableTools: runner.getAvailableTools().map(t => t.name || t),
-        recentContext: observations.slice(-5),
-        runContext: { turn, activeTaskId },
-        signal
-      })
-      timeline.emit('ROUTE_DECIDED', { turn, ...routerDecision })
-      onEvent?.({ type: 'prime_router.decided', decision: routerDecision })
 
       if (useNativeTools) {
         const systemMessage = buildSystemPrompt({
