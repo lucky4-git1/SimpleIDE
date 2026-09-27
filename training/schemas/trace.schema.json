@@ -1,0 +1,71 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "AgentExecutionTrace",
+  "description": "Structured internal trace format for capturing real agent decisions for telemetry and continual fine-tuning",
+  "type": "object",
+  "required": [
+    "traceId",
+    "timestamp",
+    "request",
+    "state",
+    "availableTools",
+    "routerDecision",
+    "actualAction",
+    "success",
+    "latencyMs"
+  ],
+  "properties": {
+    "traceId": {
+      "type": "string"
+    },
+    "timestamp": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "request": {
+      "type": "string",
+      "description": "Sanitized request string with any secrets or tokens redacted"
+    },
+    "state": {
+      "type": "string"
+    },
+    "availableTools": {
+      "type": "array",
+      "items": { "type": "string" }
+    },
+    "routerDecision": {
+      "type": "object",
+      "required": ["intent", "actionClass", "toolFamily", "needsLLM", "confidence"],
+      "properties": {
+        "intent": { "type": "string" },
+        "actionClass": { "type": "string" },
+        "toolFamily": { "type": "string" },
+        "needsLLM": { "type": "boolean" },
+        "needsVerification": { "type": "boolean" },
+        "confidence": { "type": "number" },
+        "modelVersion": { "type": "string" },
+        "latencyMs": { "type": "number" }
+      }
+    },
+    "actualAction": {
+      "type": "string",
+      "description": "The tool or LLM action actually executed"
+    },
+    "success": {
+      "type": "boolean"
+    },
+    "verificationPassed": {
+      "type": ["boolean", "null"],
+      "default": null
+    },
+    "latencyMs": {
+      "type": "number"
+    },
+    "userFeedback": {
+      "type": ["string", "null"],
+      "enum": ["accepted", "rejected", "modified", null],
+      "default": null
+    }
+  },
+  "additionalProperties": false
+}
