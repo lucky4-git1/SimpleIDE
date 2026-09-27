@@ -8,6 +8,7 @@ import { ToolDefinition, ToolCall, TOOL_PERMISSIONS, TOOL_CATEGORIES, zodToJsonS
 import { FailureClassifier, FAILURE_CATEGORIES } from './FailureClassifier.js'
 import { CodeIntelligenceService } from './CodeIntelligenceService.js'
 import { globalContextEngine } from './ContextEngine.js'
+import { devServerManager } from './DevServerManager.js'
 
 const IGNORED = ['node_modules', '.git', 'dist', 'build', 'coverage', '.next', 'target', 'vendor']
 
@@ -643,6 +644,26 @@ export class ToolRunner {
       const response = await api.readProcessOutput({ id, limit })
       if (!response.success) throw new Error(response.error)
       return response.output
+    })
+
+    reg('start_dev_server', 'Start a long-running development server (e.g. npm run dev, vite, pnpm dev) in the background without blocking the agent.', z.object({
+      command: z.string(),
+      id: z.string().optional()
+    }), TOOL_PERMISSIONS.CAUTION, TOOL_CATEGORIES.EXECUTE, async ({ command, id }) => {
+      if (isCommandBlocked(command)) throw new Error(`start_dev_server blocked for safety: ${command}`)
+      return devServerManager.startDevServer({ command, cwd: this.root, id })
+    })
+
+    reg('inspect_dev_server', 'Inspect status, detected local port, and logs of a running development server.', z.object({
+      id: z.string()
+    }), TOOL_PERMISSIONS.SAFE, TOOL_CATEGORIES.EXECUTE, async ({ id }) => {
+      return devServerManager.inspectDevServer(id)
+    })
+
+    reg('stop_dev_server', 'Stop a development server.', z.object({
+      id: z.string()
+    }), TOOL_PERMISSIONS.SAFE, TOOL_CATEGORIES.EXECUTE, async ({ id }) => {
+      return devServerManager.stopDevServer(id)
     })
 
     // Git Tools
