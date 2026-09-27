@@ -20,6 +20,7 @@ import { getLanguageFromFile } from './utils/language'
 import { buildFileIndex, getProjectSummary } from './services/fileIndex'
 import { ProjectIndexer } from './services/agentEngine/ProjectIndexer'
 import { globalContextEngine } from './services/agentEngine/ContextEngine'
+import { editorBridge } from './services/editorBridge'
 import { useWorkspaceStore } from './store/workspaceStore'
 import { useEditorStore } from './store/editorStore'
 import { useUIStore } from './store/uiStore'
@@ -367,8 +368,23 @@ export default function App() {
   }
 
   const handleAgentFileWrite = (filePath, content, previousContent = '', metadata = {}) => {
-    setAIEditHistory(prev => [...prev, { filePath, previousContent, content, taskId: metadata.taskId, operation: metadata.operation || 'write', timestamp: Date.now() }].slice(-60))
+    setAIEditHistory(prev => [...prev, {
+      filePath,
+      previousContent,
+      content,
+      taskId: metadata.taskId,
+      operation: metadata.operation || 'write',
+      patch: metadata.patch,
+      edits: metadata.edits,
+      timestamp: Date.now()
+    }].slice(-60))
     updateSingleIndexedFile(filePath, content)
+
+    const edits = metadata.edits || metadata.patch?.edits
+    if (edits && edits.length > 0 && editorBridge.isEditorOpen(filePath)) {
+      editorBridge.applyEditsToEditor(filePath, edits, { source: 'prime-agent' })
+    }
+
     setOpenFiles(openFiles.map(f => {
       const normalizedF = f.path.replace(/\\/g, '/').toLowerCase()
       const normalizedTarget = filePath.replace(/\\/g, '/').toLowerCase()

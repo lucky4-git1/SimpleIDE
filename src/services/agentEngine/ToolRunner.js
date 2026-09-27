@@ -1,5 +1,6 @@
 import { z } from 'zod'
 import { ChangeManager } from './ChangeManager.js'
+import { PatchEngine } from './PatchEngine.js'
 import { knowledgeBase } from './KnowledgeBase.js'
 import { documentationFetcher } from './DocumentationFetcher.js'
 import { memoryManager } from '../memory/memoryManager.js'
@@ -420,6 +421,67 @@ export class ToolRunner {
       content: z.string().optional().default('')
     }), TOOL_PERMISSIONS.CAUTION, TOOL_CATEGORIES.WRITE, async ({ path, content = '' }) => this.write(path, content, 'create'))
 
+    reg('apply_patch', 'Apply structured incremental edits (insert, replace, delete, move, rename, multi-range edit) as a patch to a workspace file without replacing the entire file.', z.object({
+      path: z.string(),
+      patch: z.object({
+        file: z.string().optional(),
+        edits: z.array(z.object({
+          type: z.enum(['insert', 'replace', 'delete', 'move', 'rename']).optional(),
+          startLine: z.number().int().min(1).optional(),
+          endLine: z.number().int().min(1).optional(),
+          startColumn: z.number().int().min(1).optional(),
+          endColumn: z.number().int().min(1).optional(),
+          line: z.number().int().min(1).optional(),
+          column: z.number().int().min(1).optional(),
+          replacement: z.string().optional(),
+          text: z.string().optional(),
+          find: z.string().optional(),
+          replace: z.string().optional(),
+          wholeWord: z.boolean().optional(),
+          fromStartLine: z.number().int().min(1).optional(),
+          fromEndLine: z.number().int().min(1).optional(),
+          toLine: z.number().int().min(1).optional()
+        }))
+      }).optional(),
+      edits: z.array(z.object({
+        type: z.enum(['insert', 'replace', 'delete', 'move', 'rename']).optional(),
+        startLine: z.number().int().min(1).optional(),
+        endLine: z.number().int().min(1).optional(),
+        startColumn: z.number().int().min(1).optional(),
+        endColumn: z.number().int().min(1).optional(),
+        line: z.number().int().min(1).optional(),
+        column: z.number().int().min(1).optional(),
+        replacement: z.string().optional(),
+        text: z.string().optional(),
+        find: z.string().optional(),
+        replace: z.string().optional(),
+        wholeWord: z.boolean().optional(),
+        fromStartLine: z.number().int().min(1).optional(),
+        fromEndLine: z.number().int().min(1).optional(),
+        toLine: z.number().int().min(1).optional()
+      })).optional()
+    }), TOOL_PERMISSIONS.CAUTION, TOOL_CATEGORIES.WRITE, async ({ path, patch, edits: rawEditsList }) => {
+      const fullPath = resolvePath(this.root, path)
+      const api = this.getApi()
+      const read = await api.readFile(fullPath)
+      if (!read.success) {
+        throw new Error(`File "${path}" does not exist. Cannot apply patch.`)
+      }
+      const rawEdits = patch?.edits || rawEditsList || []
+      if (!Array.isArray(rawEdits) || rawEdits.length === 0) {
+        throw new Error('apply_patch requires at least one edit operation in patch.edits or edits.')
+      }
+
+      const normalizedEdits = PatchEngine.normalizeEdits(rawEdits, read.content)
+      const updatedContent = PatchEngine.applyEdits(read.content, rawEdits)
+      const structuredPatch = { file: path, edits: normalizedEdits }
+
+      return this.write(path, updatedContent, 'patch', read.content, {
+        patch: structuredPatch,
+        edits: normalizedEdits
+      })
+    })
+
     reg('edit_file', 'Replace one exact occurrence in a workspace file.', z.object({
       path: z.string(),
       find: z.string(),
@@ -438,7 +500,8 @@ export class ToolRunner {
       }
       const updated = replaceExactOrNewlineInsensitive(read.content, find, replace || '')
       if (updated === null) throw new Error(`Expected exactly one match (allowing only line-ending differences); re-read "${path}" and use a unique snippet.`)
-      return this.write(path, updated, 'edit', read.content)
+      const patch = PatchEngine.createPatch(path, read.content, updated)
+      return this.write(path, updated, 'edit', read.content, { patch, edits: patch.edits })
     })
 
     reg('replace_in_file', 'Compatibility alias for edit_file.', z.object({
@@ -683,7 +746,7 @@ export class ToolRunner {
     })
   }
 
-  async write(path, content, operation, beforeOverride) {
+  async write(path, content, operation, beforeOverride, metadata = {}) {
     if (typeof content !== 'string') throw new Error('File content must be a string.')
     if (/\.html?$/i.test(path) && /<!doctype\s+html/i.test(content)) {
       const inspection = inspectStandaloneHtml(content)
@@ -704,15 +767,18 @@ export class ToolRunner {
       throw err
     }
 
+    const patch = metadata.patch || (before && content && before !== content ? PatchEngine.createPatch(fullPath, before, content) : null)
+    const edits = metadata.edits || patch?.edits || []
+
     if (this.changeManager.currentTaskId) {
-      await this.changeManager.recordChange({ path: fullPath, operation, before, after: content })
+      await this.changeManager.recordChange({ path: fullPath, operation, before, after: content, patch, edits })
     }
 
     this.codeIntelligence?.updateFile(fullPath, content)
 
-    const change = { path: fullPath, operation, before, after: content, timestamp: Date.now() }
+    const change = { path: fullPath, operation, before, after: content, patch, edits, timestamp: Date.now() }
     this.onChange?.(change)
-    return { path, operation, bytes: content.length, linesAdded: content.split('\n').length - before.split('\n').length, changed: before !== content }
+    return { path, operation, bytes: content.length, linesAdded: content.split('\n').length - before.split('\n').length, changed: before !== content, patch, edits }
   }
 
   async move(from, to, operation) {
