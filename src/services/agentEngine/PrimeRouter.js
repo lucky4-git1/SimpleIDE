@@ -53,7 +53,8 @@ export class PrimeRouter {
     this.cacheTtlMs = Math.max(1000, Number(cacheTtlMs) || 60000)
     this.enabled = Boolean(enabled)
     this.mode = Object.values(ROUTER_MODES).includes(mode) ? mode : ROUTER_MODES.ASSIST
-    const resolvedLayaMode = layaMode || process.env.SIMPLEIDE_LAYA_MODE || (adapter ? LAYA_ROLLOUT_MODES.LEGACY : LAYA_ROLLOUT_MODES.HYBRID)
+    const envLayaMode = typeof process !== 'undefined' && process.env ? process.env.SIMPLEIDE_LAYA_MODE : null
+    const resolvedLayaMode = layaMode || envLayaMode || (adapter ? LAYA_ROLLOUT_MODES.LEGACY : LAYA_ROLLOUT_MODES.HYBRID)
     this.layaMode = Object.values(LAYA_ROLLOUT_MODES).includes(resolvedLayaMode) ? resolvedLayaMode : LAYA_ROLLOUT_MODES.HYBRID
     this.modelVersion = modelVersion
     this.cache = new Map() // LRU cache: key -> { decision, expiresAt }

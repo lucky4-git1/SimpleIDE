@@ -4,6 +4,33 @@ import path from 'path'
 import os from 'os'
 import crypto from 'crypto'
 
+const isNode = typeof process !== 'undefined' && Boolean(process.versions?.node)
+
+function getEnv(key) {
+  if (typeof process !== 'undefined' && process.env) {
+    return process.env[key]
+  }
+  return undefined
+}
+
+function getCwd() {
+  if (typeof process !== 'undefined' && typeof process.cwd === 'function') {
+    try {
+      return process.cwd()
+    } catch (_) {}
+  }
+  return '.'
+}
+
+function getHomeDir() {
+  if (typeof os !== 'undefined' && typeof os.homedir === 'function') {
+    try {
+      return os.homedir()
+    } catch (_) {}
+  }
+  return '.'
+}
+
 /**
  * LayaModelManager: Handles discovery, verification, atomic caching,
  * rollback, corruption detection, and retrieval for the official pretrained
@@ -22,15 +49,20 @@ export class LayaModelManager {
     baseManifestPath = null,
     simpleideManifestPath = null
   } = {}) {
-    this.cacheDir = cacheDir || process.env.SIMPLEIDE_LAYA_MODEL_DIR || path.join(
-      process.env.LOCALAPPDATA || (process.platform === 'darwin' ? path.join(os.homedir(), 'Library', 'Application Support') : path.join(os.homedir(), '.config')),
-      'SimpleIDE',
-      'models',
-      'laya'
-    )
-    this.tempDir = path.join(this.cacheDir, '.tmp')
-    this.baseManifestPath = baseManifestPath || path.resolve(process.cwd(), 'models', 'laya', 'base', 'manifest.json')
-    this.simpleideManifestPath = simpleideManifestPath || path.resolve(process.cwd(), 'models', 'laya', 'simpleide', 'manifest.json')
+    const cwd = getCwd()
+    const homedir = getHomeDir()
+    const platform = typeof process !== 'undefined' ? process.platform : 'win32'
+    const localAppData = getEnv('LOCALAPPDATA')
+    const envCache = getEnv('SIMPLEIDE_LAYA_MODEL_DIR')
+
+    const defaultCacheBase = localAppData || (platform === 'darwin'
+      ? (path?.join ? path.join(homedir, 'Library', 'Application Support') : '.')
+      : (path?.join ? path.join(homedir, '.config') : '.'))
+
+    this.cacheDir = cacheDir || envCache || (path?.join ? path.join(defaultCacheBase, 'SimpleIDE', 'models', 'laya') : 'models/laya')
+    this.tempDir = path?.join ? path.join(this.cacheDir, '.tmp') : '.tmp'
+    this.baseManifestPath = baseManifestPath || (path?.resolve ? path.resolve(cwd, 'models', 'laya', 'base', 'manifest.json') : 'models/laya/base/manifest.json')
+    this.simpleideManifestPath = simpleideManifestPath || (path?.resolve ? path.resolve(cwd, 'models', 'laya', 'simpleide', 'manifest.json') : 'models/laya/simpleide/manifest.json')
   }
 
   /**
@@ -39,7 +71,7 @@ export class LayaModelManager {
   getManifest(variant = 'simpleide') {
     const targetFile = variant === 'base' ? this.baseManifestPath : this.simpleideManifestPath
     try {
-      if (fs.existsSync(targetFile)) {
+      if (typeof fs !== 'undefined' && typeof fs.existsSync === 'function' && fs.existsSync(targetFile)) {
         const parsed = JSON.parse(fs.readFileSync(targetFile, 'utf8'))
         return parsed
       }
@@ -104,46 +136,51 @@ export class LayaModelManager {
    * 5. Legacy prime-router fallback
    */
   resolveLocalModelPath(variant = 'simpleide', version = null) {
+    if (!isNode) return null
     const filename = variant === 'base' ? 'laya.onnx' : 'simpleide-laya.onnx'
+    const cwd = getCwd()
 
     // 1. Explicit env override
-    if (process.env.SIMPLEIDE_LAYA_MODEL_PATH && fs.existsSync(process.env.SIMPLEIDE_LAYA_MODEL_PATH)) {
-      return process.env.SIMPLEIDE_LAYA_MODEL_PATH
+    const explicitEnvPath = getEnv('SIMPLEIDE_LAYA_MODEL_PATH')
+    if (explicitEnvPath && typeof fs !== 'undefined' && typeof fs.existsSync === 'function' && fs.existsSync(explicitEnvPath)) {
+      return explicitEnvPath
     }
 
     // 2. Check local application cache directory (versioned subfolder if specified)
-    if (version) {
-      const versionedPath = path.join(this.cacheDir, variant, `v${version}`, filename)
-      if (fs.existsSync(versionedPath)) return versionedPath
-    }
-    const cachedPath = path.join(this.cacheDir, variant, filename)
-    if (fs.existsSync(cachedPath)) {
-      return cachedPath
-    }
-
-    // 3. Check workspace directory
-    if (version) {
-      const workspaceVersioned = path.resolve(process.cwd(), 'models', 'laya', variant, `v${version}`, filename)
-      if (fs.existsSync(workspaceVersioned)) return workspaceVersioned
-    }
-    const workspaceDevPath = path.resolve(process.cwd(), 'models', 'laya', variant, filename)
-    if (fs.existsSync(workspaceDevPath)) {
-      return workspaceDevPath
-    }
-
-    // 4. Check packaged extraResources
-    if (process.resourcesPath) {
-      const resourcePath = path.join(process.resourcesPath, 'assets', 'models', 'laya', variant, filename)
-      if (fs.existsSync(resourcePath)) {
-        return resourcePath
+    if (path?.join && typeof fs !== 'undefined' && typeof fs.existsSync === 'function') {
+      if (version) {
+        const versionedPath = path.join(this.cacheDir, variant, `v${version}`, filename)
+        if (fs.existsSync(versionedPath)) return versionedPath
       }
-    }
+      const cachedPath = path.join(this.cacheDir, variant, filename)
+      if (fs.existsSync(cachedPath)) {
+        return cachedPath
+      }
 
-    // 5. Check legacy prime-router location if requested
-    if (variant === 'legacy' || variant === 'prime-router') {
-      const legacyPath = path.resolve(process.cwd(), 'assets', 'models', 'prime-router', 'prime-router.onnx')
-      if (fs.existsSync(legacyPath)) {
-        return legacyPath
+      // 3. Check workspace directory
+      if (version) {
+        const workspaceVersioned = path.resolve(cwd, 'models', 'laya', variant, `v${version}`, filename)
+        if (fs.existsSync(workspaceVersioned)) return workspaceVersioned
+      }
+      const workspaceDevPath = path.resolve(cwd, 'models', 'laya', variant, filename)
+      if (fs.existsSync(workspaceDevPath)) {
+        return workspaceDevPath
+      }
+
+      // 4. Check packaged extraResources
+      if (typeof process !== 'undefined' && process.resourcesPath) {
+        const resourcePath = path.join(process.resourcesPath, 'assets', 'models', 'laya', variant, filename)
+        if (fs.existsSync(resourcePath)) {
+          return resourcePath
+        }
+      }
+
+      // 5. Check legacy prime-router location if requested
+      if (variant === 'legacy' || variant === 'prime-router') {
+        const legacyPath = path.resolve(cwd, 'assets', 'models', 'prime-router', 'prime-router.onnx')
+        if (fs.existsSync(legacyPath)) {
+          return legacyPath
+        }
       }
     }
 

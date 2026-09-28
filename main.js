@@ -62,6 +62,13 @@ function createWindow() {
     console.log('[RENDERER CONSOLE]', msg)
   })
 
+  // Enable F12 and Ctrl+Shift+I to toggle DevTools
+  mainWindow.webContents.on('before-input-event', (event, input) => {
+    if (input.key === 'F12' || (input.control && input.shift && input.key.toLowerCase() === 'i')) {
+      mainWindow.webContents.toggleDevTools()
+    }
+  })
+
   const targetUrl = process.env.VITE_DEV_SERVER_URL
   if (targetUrl) {
     console.log('[MAIN] Loading dev server URL:', targetUrl)
