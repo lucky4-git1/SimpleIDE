@@ -1,0 +1,318 @@
+{
+  "workloadTasks": 10,
+  "tokenReductionPercent": 4,
+  "unnecessaryExpansionsEliminated": 100,
+  "baselineSystemA": {
+    "totalTokens": 22065,
+    "avgTokensPerTask": 2207,
+    "filesInspected": 33,
+    "symbolsQueried": 27,
+    "unnecessaryExpansions": 5,
+    "totalToolCalls": 19,
+    "successfulTasks": 10,
+    "avgLatencyMs": 2.14
+  },
+  "layaControlledSystemB": {
+    "totalTokens": 21179,
+    "avgTokensPerTask": 2118,
+    "filesInspected": 16,
+    "symbolsQueried": 11,
+    "unnecessaryExpansions": 0,
+    "totalToolCalls": 4,
+    "successfulTasks": 10,
+    "avgLatencyMs": 0.9,
+    "avgLayaOverheadMs": 0.58
+  },
+  "detailedComparisons": [
+    {
+      "taskId": "task-1-hard-negative-css",
+      "category": "hard_negative_styling",
+      "expectedSemNav": false,
+      "baseline": {
+        "tokens": 2000,
+        "files": 0,
+        "hasSymbolChunks": false,
+        "unnecessary": 0,
+        "latencyMs": 2.96
+      },
+      "layaControlled": {
+        "tokens": 2000,
+        "files": 0,
+        "hasSymbolChunks": false,
+        "unnecessary": 0,
+        "layaLatencyMs": 1.71,
+        "totalLatencyMs": 2.26,
+        "decision": {
+          "intent": "edit",
+          "contextBreadth": "focused",
+          "graphDepth": 0,
+          "semanticNavigationRequired": false,
+          "testsRequired": false,
+          "verificationRequired": false
+        },
+        "reasonForStopping": "Semantic navigation suppressed by Laya (hard negative / non-symbol task)"
+      }
+    },
+    {
+      "taskId": "task-2-hard-negative-doc",
+      "category": "hard_negative_doc",
+      "expectedSemNav": false,
+      "baseline": {
+        "tokens": 2223,
+        "files": 5,
+        "hasSymbolChunks": true,
+        "unnecessary": 1,
+        "latencyMs": 0.96
+      },
+      "layaControlled": {
+        "tokens": 2000,
+        "files": 0,
+        "hasSymbolChunks": false,
+        "unnecessary": 0,
+        "layaLatencyMs": 0.68,
+        "totalLatencyMs": 0.89,
+        "decision": {
+          "intent": "explain",
+          "contextBreadth": "focused",
+          "graphDepth": 0,
+          "semanticNavigationRequired": false,
+          "testsRequired": false,
+          "verificationRequired": false
+        },
+        "reasonForStopping": "Semantic navigation suppressed by Laya (hard negative / non-symbol task)"
+      }
+    },
+    {
+      "taskId": "task-3-nav-symbol",
+      "category": "symbol_navigation",
+      "expectedSemNav": true,
+      "baseline": {
+        "tokens": 2252,
+        "files": 5,
+        "hasSymbolChunks": true,
+        "unnecessary": 0,
+        "latencyMs": 14.99
+      },
+      "layaControlled": {
+        "tokens": 2239,
+        "files": 4,
+        "hasSymbolChunks": true,
+        "unnecessary": 0,
+        "layaLatencyMs": 0.92,
+        "totalLatencyMs": 1.45,
+        "decision": {
+          "intent": "navigate",
+          "contextBreadth": "focused",
+          "graphDepth": 1,
+          "semanticNavigationRequired": true,
+          "testsRequired": false,
+          "verificationRequired": false
+        },
+        "reasonForStopping": "Context sufficient: target definition and primary usages captured"
+      }
+    },
+    {
+      "taskId": "task-4-refactor-method",
+      "category": "refactor",
+      "expectedSemNav": true,
+      "baseline": {
+        "tokens": 2267,
+        "files": 4,
+        "hasSymbolChunks": true,
+        "unnecessary": 0,
+        "latencyMs": 1.11
+      },
+      "layaControlled": {
+        "tokens": 2267,
+        "files": 4,
+        "hasSymbolChunks": true,
+        "unnecessary": 0,
+        "layaLatencyMs": 0.49,
+        "totalLatencyMs": 0.81,
+        "decision": {
+          "intent": "refactor",
+          "contextBreadth": "wide",
+          "graphDepth": 2,
+          "semanticNavigationRequired": true,
+          "testsRequired": false,
+          "verificationRequired": false
+        },
+        "reasonForStopping": "Context sufficient: target definition and primary usages captured"
+      }
+    },
+    {
+      "taskId": "task-5-test-inspection",
+      "category": "testing",
+      "expectedSemNav": false,
+      "baseline": {
+        "tokens": 2340,
+        "files": 4,
+        "hasSymbolChunks": true,
+        "unnecessary": 1,
+        "latencyMs": 0.27
+      },
+      "layaControlled": {
+        "tokens": 2000,
+        "files": 0,
+        "hasSymbolChunks": false,
+        "unnecessary": 0,
+        "layaLatencyMs": 0.08,
+        "totalLatencyMs": 0.23,
+        "decision": {
+          "intent": "test",
+          "contextBreadth": "focused",
+          "graphDepth": 0,
+          "semanticNavigationRequired": false,
+          "testsRequired": false,
+          "verificationRequired": false
+        },
+        "reasonForStopping": "Semantic navigation suppressed by Laya (hard negative / non-symbol task)"
+      }
+    },
+    {
+      "taskId": "task-6-adversarial-comment",
+      "category": "adversarial_comment",
+      "expectedSemNav": false,
+      "baseline": {
+        "tokens": 2019,
+        "files": 1,
+        "hasSymbolChunks": true,
+        "unnecessary": 1,
+        "latencyMs": 0.11
+      },
+      "layaControlled": {
+        "tokens": 2000,
+        "files": 0,
+        "hasSymbolChunks": false,
+        "unnecessary": 0,
+        "layaLatencyMs": 0.29,
+        "totalLatencyMs": 0.41,
+        "decision": {
+          "intent": "explain",
+          "contextBreadth": "focused",
+          "graphDepth": 0,
+          "semanticNavigationRequired": false,
+          "testsRequired": false,
+          "verificationRequired": false
+        },
+        "reasonForStopping": "Semantic navigation suppressed by Laya (hard negative / non-symbol task)"
+      }
+    },
+    {
+      "taskId": "task-7-debug-middleware",
+      "category": "debugging",
+      "expectedSemNav": true,
+      "baseline": {
+        "tokens": 2342,
+        "files": 4,
+        "hasSymbolChunks": true,
+        "unnecessary": 0,
+        "latencyMs": 0.31
+      },
+      "layaControlled": {
+        "tokens": 2342,
+        "files": 4,
+        "hasSymbolChunks": true,
+        "unnecessary": 0,
+        "layaLatencyMs": 0.66,
+        "totalLatencyMs": 1.16,
+        "decision": {
+          "intent": "debug",
+          "contextBreadth": "focused",
+          "graphDepth": 1,
+          "semanticNavigationRequired": true,
+          "testsRequired": false,
+          "verificationRequired": false
+        },
+        "reasonForStopping": "Reached maximum query limit (4)"
+      }
+    },
+    {
+      "taskId": "task-8-edit-simple",
+      "category": "simple_edit",
+      "expectedSemNav": false,
+      "baseline": {
+        "tokens": 2210,
+        "files": 4,
+        "hasSymbolChunks": true,
+        "unnecessary": 1,
+        "latencyMs": 0.21
+      },
+      "layaControlled": {
+        "tokens": 2000,
+        "files": 0,
+        "hasSymbolChunks": false,
+        "unnecessary": 0,
+        "layaLatencyMs": 0.12,
+        "totalLatencyMs": 0.26,
+        "decision": {
+          "intent": "edit",
+          "contextBreadth": "focused",
+          "graphDepth": 0,
+          "semanticNavigationRequired": false,
+          "testsRequired": false,
+          "verificationRequired": false
+        },
+        "reasonForStopping": "Semantic navigation suppressed by Laya (hard negative / non-symbol task)"
+      }
+    },
+    {
+      "taskId": "task-9-nav-callers",
+      "category": "symbol_navigation",
+      "expectedSemNav": true,
+      "baseline": {
+        "tokens": 2343,
+        "files": 5,
+        "hasSymbolChunks": true,
+        "unnecessary": 0,
+        "latencyMs": 0.24
+      },
+      "layaControlled": {
+        "tokens": 2331,
+        "files": 4,
+        "hasSymbolChunks": true,
+        "unnecessary": 0,
+        "layaLatencyMs": 0.53,
+        "totalLatencyMs": 1.02,
+        "decision": {
+          "intent": "navigate",
+          "contextBreadth": "focused",
+          "graphDepth": 1,
+          "semanticNavigationRequired": true,
+          "testsRequired": false,
+          "verificationRequired": false
+        },
+        "reasonForStopping": "Context sufficient: target definition and primary usages captured"
+      }
+    },
+    {
+      "taskId": "task-10-hard-negative-ui",
+      "category": "hard_negative_ui",
+      "expectedSemNav": false,
+      "baseline": {
+        "tokens": 2069,
+        "files": 1,
+        "hasSymbolChunks": true,
+        "unnecessary": 1,
+        "latencyMs": 0.23
+      },
+      "layaControlled": {
+        "tokens": 2000,
+        "files": 0,
+        "hasSymbolChunks": false,
+        "unnecessary": 0,
+        "layaLatencyMs": 0.34,
+        "totalLatencyMs": 0.49,
+        "decision": {
+          "intent": "edit",
+          "contextBreadth": "focused",
+          "graphDepth": 0,
+          "semanticNavigationRequired": false,
+          "testsRequired": false,
+          "verificationRequired": false
+        },
+        "reasonForStopping": "Semantic navigation suppressed by Laya (hard negative / non-symbol task)"
+      }
+    }
+  ]
+}

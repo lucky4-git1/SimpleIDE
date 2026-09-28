@@ -75,6 +75,20 @@ export class FailureParser {
           stackFrames.push({ symbol: symbol || null, file, line: lineNum })
           if (symbol) relatedSymbols.add(symbol)
         }
+      } else {
+        // Compiler error format: src/app.ts:24:5 - error TS2322... or src/app.ts(24,5): error...
+        const compilerMatch = /^([a-zA-Z0-9_./\\-]+\.[a-zA-Z0-9]+)[:(](\d+)/.exec(line.trim())
+        if (compilerMatch) {
+          const file = compilerMatch[1].replace(/\\/g, '/')
+          const lineNum = parseInt(compilerMatch[2], 10)
+          if (!file.includes('node_modules') && !file.includes('internal/')) {
+            if (!failingFile) {
+              failingFile = file
+              failingLine = lineNum
+            }
+            stackFrames.push({ symbol: null, file, line: lineNum })
+          }
+        }
       }
     }
 

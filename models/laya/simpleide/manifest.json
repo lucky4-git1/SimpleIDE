@@ -1,0 +1,60 @@
+{
+  "name": "simpleide-laya",
+  "baseModel": "convaiinnovations/laya",
+  "onnxSource": "receptron/laya-onnx",
+  "baseRevision": "4e7492c6b3e9a11db9cfcbf14be791197ad679ba",
+  "version": "1.0.0",
+  "task": "coding-agent-decision",
+  "runtime": "onnxruntime-node",
+  "executionProvider": "cpu",
+  "precision": "fp32",
+  "encoder": "ModernBERT-large",
+  "fineTuningExperimentId": "exp-laya-ft-20260928-v1",
+  "datasetVersion": "simpleide-laya-pilot-v1",
+  "datasetHashes": {
+    "train": "CDBE8B5AC92B94D58FD44B2664F0E745DCA0BCB4CDE4CA604D4BD0BE6D1DB335",
+    "val": "726BE70011B2031B3C38E13EC3437763C413AFB1D832ECEFC7B2F78B1B21007C",
+    "test": "890B621186FE4E7CA98E3A83044EF407A249B2EA140979848C018DFFE9801DCC"
+  },
+  "tokenizer": {
+    "name": "ModernBERT-large",
+    "vocabSize": 50368,
+    "version": "4.49.0"
+  },
+  "onnxOpset": 18,
+  "tensorContract": {
+    "inputs": {
+      "input_ids": { "type": "int64", "shape": ["batch_size", "sequence_length"], "dynamic": true },
+      "attention_mask": { "type": "int64", "shape": ["batch_size", "sequence_length"], "dynamic": true },
+      "marker_pos": { "type": "int64", "shape": ["batch_size", "max_markers"], "dynamic": true },
+      "marker_mask": { "type": "bool", "shape": ["batch_size", "max_markers"], "dynamic": true },
+      "qtype": { "type": "int64", "shape": ["batch_size"], "dynamic": true }
+    },
+    "outputs": {
+      "logits": { "type": "float32", "shape": ["batch_size", 16], "dynamic": true },
+      "act_probs": { "type": "float32", "shape": ["batch_size", 2], "dynamic": true }
+    }
+  },
+  "dynamicAxes": ["batch_size", "sequence_length"],
+  "sha256": "3a88c750b299e5fc6c5f784e27fdf0081e7d23d8816ab9e5c46d88b4ee0192e1",
+  "fileSizeBytes": 1712482304,
+  "maxContextTokens": 512,
+  "maxOptionTokens": 192,
+  "taxonomies": {
+    "intent": 13,
+    "tool_family": 9,
+    "context_breadth": 4,
+    "graph_depth": 4,
+    "risk": 4,
+    "noul_decisions": 5
+  },
+  "calibration": {
+    "temperature": 1.15,
+    "brierScore": 0.0312,
+    "ece": 0.0210,
+    "highConfidenceThreshold": 0.85,
+    "mediumConfidenceThreshold": 0.60
+  },
+  "license": "Apache-2.0",
+  "attribution": "Specialized for SimpleIDE Agent Controller"
+}

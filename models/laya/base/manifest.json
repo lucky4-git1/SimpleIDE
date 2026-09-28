@@ -1,0 +1,43 @@
+{
+  "name": "laya-base",
+  "baseModel": "convaiinnovations/laya",
+  "onnxSource": "receptron/laya-onnx",
+  "baseRevision": "4e7492c6b3e9a11db9cfcbf14be791197ad679ba",
+  "version": "0.1.0",
+  "task": "system-one-decision",
+  "parameters": 421000000,
+  "runtime": "onnxruntime-node",
+  "executionProvider": "cpu",
+  "precision": "fp32",
+  "encoder": "ModernBERT-large",
+  "datasetVersion": "laya-v1-base",
+  "sha256": "4e7492c6b3e9a11db9cfcbf14be791197ad679bac9c8e19c36214300e84b8027",
+  "maxContextTokens": 512,
+  "maxOptionTokens": 192,
+  "license": "Apache-2.0",
+  "attribution": "Convai Innovations / Receptron",
+  "upstreamUrls": {
+    "modelHub": "https://huggingface.co/convaiinnovations/laya",
+    "onnxHub": "https://huggingface.co/receptron/laya-onnx",
+    "pythonSource": "https://github.com/NandhaKishorM/laya",
+    "nodeRuntime": "https://github.com/receptron/laya"
+  },
+  "tensorContract": {
+    "inputs": {
+      "input_ids": { "shape": ["batch", "sequence"], "dtype": "int64" },
+      "attention_mask": { "shape": ["batch", "sequence"], "dtype": "int64" },
+      "marker_pos": { "shape": ["batch", "markers"], "dtype": "int64" },
+      "marker_mask": { "shape": ["batch", "markers"], "dtype": "bool" },
+      "qtype": { "shape": ["batch"], "dtype": "int64" }
+    },
+    "outputs": {
+      "logits": { "shape": ["batch", "markers"], "dtype": "float32" },
+      "act_probs": { "shape": ["batch", 2], "dtype": "float32" }
+    }
+  },
+  "redistribution": {
+    "gitExcluded": true,
+    "localCacheDir": "%LOCALAPPDATA%/simpleide/models/laya/base",
+    "requireAttribution": true
+  }
+}

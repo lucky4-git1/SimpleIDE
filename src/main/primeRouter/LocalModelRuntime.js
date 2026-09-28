@@ -2,6 +2,7 @@ import { join } from 'path'
 import fs from 'fs/promises'
 import { existsSync } from 'fs'
 import { extractSymbolHeuristics } from '../../services/agentEngine/primeRouterSchemas.js'
+import { layaModelManager } from '../../services/agentEngine/LayaModelManager.js'
 
 /**
  * Embedded calibrated weights derived from SimpleIDE Laya router fine-tuning dataset.
@@ -62,13 +63,25 @@ export class LocalModelRuntime {
   }
 
   resolveModelPath() {
-    // Check extraResources / packaged resources first
+    // 1. Check specialized SimpleIDE Laya model
+    const simpleidePath = layaModelManager.resolveLocalModelPath('simpleide')
+    if (simpleidePath && existsSync(simpleidePath)) {
+      return simpleidePath
+    }
+
+    // 2. Check base Laya model
+    const basePath = layaModelManager.resolveLocalModelPath('base')
+    if (basePath && existsSync(basePath)) {
+      return basePath
+    }
+
+    // 3. Check extraResources / packaged resources
     const packagedPath = join(process.resourcesPath || '', 'assets', 'models', 'prime-router', 'prime-router.onnx')
     if (existsSync(packagedPath)) {
       return packagedPath
     }
 
-    // Check development path
+    // 4. Check development path
     const devPath = join(process.cwd(), 'assets', 'models', 'prime-router', 'prime-router.onnx')
     if (existsSync(devPath)) {
       return devPath

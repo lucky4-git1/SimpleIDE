@@ -5,6 +5,7 @@ import { ContextRetrievalPipeline } from './ContextRetrievalPipeline.js'
 import { ContextBudgetManager } from './ContextBudgetManager.js'
 import { ObservationManager } from './ObservationManager.js'
 import { PromptContextFormatter } from './PromptContextFormatter.js'
+import { ContextPlanner } from './ContextPlanner.js'
 
 function normalizeWorkspacePath(value) {
   return String(value || '')
@@ -14,7 +15,7 @@ function normalizeWorkspacePath(value) {
 }
 
 export class ContextEngine {
-  constructor() {
+  constructor({ contextPlanner = null } = {}) {
     this.state = {
       workspacePath: null,
       activeFile: null,
@@ -34,11 +35,15 @@ export class ContextEngine {
     this.pipeline = new ContextRetrievalPipeline()
     this.budgetManager = new ContextBudgetManager()
     this.observationManager = new ObservationManager()
+    this.contextPlanner = contextPlanner || new ContextPlanner()
   }
 
   setCodeIntelligence(codeIntelligenceService) {
     this.codeIntelligence = codeIntelligenceService
     this.pipeline.codeIntelligence = codeIntelligenceService
+    if (this.contextPlanner) {
+      this.contextPlanner.setCodeIntelligence(codeIntelligenceService)
+    }
   }
 
   setFileIndex(fileIndex) {
@@ -114,8 +119,32 @@ export class ContextEngine {
     activeFileContent = null,
     totalTokens = 128000,
     symbolQuery = null,
-    graphDepth = 2
+    graphDepth = null,
+    contextPlan = null,
+    abortSignal = null
   } = {}) {
+    // 0. Consult ContextPlanner if contextPlan is not pre-computed
+    let plan = contextPlan
+    let observability = null
+
+    if (!plan && this.contextPlanner) {
+      const planRes = await this.contextPlanner.planContext({
+        task,
+        activeFile,
+        activeFileContent,
+        diagnostics,
+        openTabs,
+        symbolQuery,
+        abortSignal
+      })
+      plan = planRes.plan
+      observability = planRes.observability
+    }
+
+    const effectiveDepth = (graphDepth !== null && graphDepth !== undefined)
+      ? graphDepth
+      : (plan?.graphDepth ?? 2)
+
     this.budgetManager.configure({ totalTokens })
 
     // 1. Retrieve raw candidate chunks
@@ -124,21 +153,33 @@ export class ContextEngine {
       activeFile,
       selection,
       openTabs,
-      diagnostics,
+      diagnostics: (plan?.verificationRequired !== false) ? diagnostics : [],
       writtenFiles,
       activeFileContent,
       codeIntelligence: this.codeIntelligence,
       fileIndex: this.fileIndex,
       symbolQuery,
-      graphDepth
+      graphDepth: effectiveDepth
     })
+
+    // Filter candidate chunks by plan.allowedFiles if bounded
+    let candidateChunks = retrievedChunks
+    if (plan?.allowedFiles && plan.allowedFiles.length > 0) {
+      const allowedSet = new Set(plan.allowedFiles.map(f => String(f).replace(/\\/g, '/').toLowerCase()))
+      candidateChunks = retrievedChunks.filter(c => {
+        const chunkPath = String(c.path || c.source || '').replace(/\\/g, '/').toLowerCase()
+        if (!chunkPath) return true
+        if (allowedSet.has(chunkPath)) return true
+        return c.priority >= 75 // Critical (100) or High (75, active file) always retained
+      })
+    }
 
     // 2. Add compressed observation chunks
     const obsChunks = this.observationManager.compressObservations()
-    const allChunks = [...retrievedChunks, ...obsChunks]
+    const allChunks = [...candidateChunks, ...obsChunks]
 
-    // 3. Pack chunks according to ContextBudgetManager
-    const packed = this.budgetManager.packChunks(allChunks)
+    // 3. Pack chunks according to ContextBudgetManager with bounded expansion budget
+    const packed = this.budgetManager.packChunks(allChunks, plan?.tokenBudget)
 
     // 4. Construct ContextPackage canonical representation
     const pkg = new ContextPackage({
@@ -153,7 +194,8 @@ export class ContextEngine {
       retrievalMetadata: {
         sources: Array.from(new Set(packed.includedChunks.map(c => c.source))),
         rankingMethod: 'STRUCTURAL_LEXICAL_PRIORITY',
-        timestamp: Date.now()
+        timestamp: Date.now(),
+        layaObservability: observability || this.contextPlanner?.getLastObservability()
       }
     })
 

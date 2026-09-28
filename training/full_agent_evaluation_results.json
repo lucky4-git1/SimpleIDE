@@ -1,0 +1,62 @@
+{
+  "benchmarkDate": "2026-09-28T08:05:23.323Z",
+  "totalTasks": 30,
+  "dimensionsCovered": 15,
+  "metrics": {
+    "systemA_legacy": {
+      "name": "System A (Legacy)",
+      "success": 30,
+      "llmCalls": 30,
+      "toolCalls": 59,
+      "unnecessaryToolCalls": 20,
+      "tokens": 68256,
+      "files": 117,
+      "symQueries": 58,
+      "expansions": 29,
+      "retries": 8,
+      "stuckEpisodes": 2,
+      "recoverySuccess": 2,
+      "verifSuccess": 2,
+      "totalLatencyMs": 13.798299999999983,
+      "layaLatencyMs": 0
+    },
+    "systemB_baseLaya": {
+      "name": "System B (Pretrained Laya Base)",
+      "success": 30,
+      "llmCalls": 30,
+      "toolCalls": 50,
+      "unnecessaryToolCalls": 6,
+      "tokens": 66254,
+      "files": 81,
+      "symQueries": 57,
+      "expansions": 20,
+      "retries": 2,
+      "stuckEpisodes": 2,
+      "recoverySuccess": 2,
+      "verifSuccess": 2,
+      "totalLatencyMs": 5.992899999999963,
+      "layaLatencyMs": 2.5300000000000002
+    },
+    "systemC_fineTunedLaya": {
+      "name": "System C (Fine-Tuned SimpleIDE-Laya)",
+      "success": 30,
+      "llmCalls": 28,
+      "toolCalls": 7,
+      "unnecessaryToolCalls": 1,
+      "tokens": 62140,
+      "files": 28,
+      "symQueries": 20,
+      "expansions": 7,
+      "retries": 0,
+      "stuckEpisodes": 0,
+      "recoverySuccess": 4,
+      "verifSuccess": 2,
+      "totalLatencyMs": 4.9525000000001285,
+      "layaLatencyMs": 2.2899999999999996
+    }
+  },
+  "memory": {
+    "peakRssMb": 69.11,
+    "heapUsedMb": 14.47
+  }
+}

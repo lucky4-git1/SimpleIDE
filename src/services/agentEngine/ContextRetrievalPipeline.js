@@ -105,7 +105,7 @@ export class ContextRetrievalPipeline {
     const graphFiles = new Set()
     if (activeFile) graphFiles.add(activeFile)
 
-    if (codeIntel) {
+    if (codeIntel && graphDepth > 0) {
       const candidateSymbols = new Set()
       if (symbolQuery) {
         candidateSymbols.add(String(symbolQuery).trim())
@@ -129,8 +129,8 @@ export class ContextRetrievalPipeline {
         }
       }
 
-      // If symbol graph is available, perform intelligent context graph traversal
-      if (codeIntel.symbolGraph && (foundSymbols.size > 0 || activeFile)) {
+      // If symbol graph is available and graph depth is > 0, perform intelligent context graph traversal
+      if (graphDepth > 0 && codeIntel.symbolGraph && (foundSymbols.size > 0 || activeFile)) {
         const targetQueries = []
         if (symbolQuery) targetQueries.push(symbolQuery)
         for (const sym of foundSymbols.values()) {

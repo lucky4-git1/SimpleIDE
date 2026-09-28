@@ -1,0 +1,31 @@
+{
+  "datasetSize": 400,
+  "numericalEquivalence": {
+    "maxLogitDifference": 1.9073486345888568e-7,
+    "maxProbabilityDifference": 4.086710476969291e-9,
+    "maxConfidenceDifference": 0,
+    "classMatchRate": 100,
+    "booleanMatchRate": 100,
+    "tolerance": 0.0001,
+    "equivalencePassed": true
+  },
+  "onnxEvaluation": {
+    "overallAccuracy": 99.3,
+    "decisionHeads": {
+      "intent": 100,
+      "tool_family": 93,
+      "context_breadth": 100,
+      "graph_depth": 100,
+      "risk": 100,
+      "semantic_navigation_required": 100,
+      "verification_required": 100,
+      "tests_required": 100,
+      "stuck": 100,
+      "strategy_change": 100
+    },
+    "hardNegativeAccuracy": 100,
+    "falsePositiveSemanticNavigation": 0,
+    "brierScore": 0.0003,
+    "ece": 0.0543
+  }
+}

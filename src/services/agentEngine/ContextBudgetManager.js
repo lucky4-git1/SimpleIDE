@@ -103,10 +103,14 @@ export class ContextBudgetManager {
     }
   }
 
-  packChunks(chunks = []) {
+  packChunks(chunks = [], maxBudget = null) {
     const included = []
     const discarded = []
     const seenKeys = new Set()
+
+    const effectiveBudget = (maxBudget !== null && maxBudget !== undefined && Number(maxBudget) > 0)
+      ? Math.min(Number(maxBudget), this.availableTokens)
+      : this.availableTokens
 
     // 1. Deduplicate chunks
     const uniqueChunks = []
@@ -127,7 +131,7 @@ export class ContextBudgetManager {
     let usedTokens = 0
     for (const chunk of uniqueChunks) {
       const chunkTokens = chunk.tokens || estimateTokens(chunk.content)
-      if (usedTokens + chunkTokens <= this.availableTokens) {
+      if (usedTokens + chunkTokens <= effectiveBudget) {
         included.push(chunk)
         usedTokens += chunkTokens
       } else {

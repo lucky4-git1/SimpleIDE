@@ -1,0 +1,2866 @@
+{
+  "evaluatedAt": "2026-09-28T08:04:28.016Z",
+  "totalTasks": 50,
+  "summary": {
+    "totalDecisions": 50,
+    "agreementRate": 48,
+    "disagreementRate": 52,
+    "confidenceDistribution": {
+      "below60": 0,
+      "medium60to85": 0,
+      "high85to95": 32,
+      "veryHigh95plus": 18
+    },
+    "legacyLatency": {
+      "p50": 0,
+      "p95": 0,
+      "p99": 1,
+      "mean": 0.04
+    },
+    "layaLatency": {
+      "p50": 0,
+      "p95": 1,
+      "p99": 3,
+      "mean": 0.1
+    },
+    "fallbackCount": 50,
+    "fallbackFrequency": 100,
+    "categoryDisagreements": {
+      "intent": 21,
+      "actionClass": 4,
+      "toolFamily": 22,
+      "needsLLM": 4
+    },
+    "contextSelectionDifferences": 28
+  },
+  "telemetry": [
+    {
+      "timestamp": 1790582668010,
+      "request": "Find definition of verifyToken and who calls it",
+      "legacyDecision": {
+        "intent": "search",
+        "actionClass": "local_tool",
+        "toolFamily": "search",
+        "needsLLM": false,
+        "needsVerification": false,
+        "confidence": 0.86,
+        "latencyMs": 0
+      },
+      "layaDecision": {
+        "intent": "navigate",
+        "actionClass": "local_tool",
+        "toolFamily": "editor",
+        "needsLLM": false,
+        "needsVerification": false,
+        "confidence": 0.96,
+        "inferenceSource": "fallback",
+        "modelVersion": "simpleide-laya-1.0.0",
+        "symbol_navigation": "required",
+        "context_breadth": "focused",
+        "graph_depth": "1",
+        "risk": "low",
+        "stuck": false,
+        "latencyMs": 1
+      },
+      "agreement": false,
+      "disagreements": {
+        "intent": true,
+        "actionClass": false,
+        "toolFamily": true,
+        "needsLLM": false
+      },
+      "confidence": {
+        "legacy": 0.86,
+        "laya": 0.96
+      },
+      "latency": {
+        "legacyMs": 0,
+        "layaMs": 1
+      },
+      "fallback": true,
+      "fallbackReason": null,
+      "inferenceSource": "fallback",
+      "modelVersion": "simpleide-laya-1.0.0",
+      "contextDecision": {
+        "breadth": "focused",
+        "depth": "1",
+        "symbol_navigation": "required"
+      },
+      "toolFamilyDecision": {
+        "legacy": "search",
+        "laya": "editor"
+      },
+      "riskDecision": "low"
+    },
+    {
+      "timestamp": 1790582668010,
+      "request": "Where is generateToken defined in tokenService.js?",
+      "legacyDecision": {
+        "intent": "search",
+        "actionClass": "local_tool",
+        "toolFamily": "search",
+        "needsLLM": false,
+        "needsVerification": false,
+        "confidence": 0.86,
+        "latencyMs": 1
+      },
+      "layaDecision": {
+        "intent": "navigate",
+        "actionClass": "local_tool",
+        "toolFamily": "editor",
+        "needsLLM": false,
+        "needsVerification": false,
+        "confidence": 0.96,
+        "inferenceSource": "fallback",
+        "modelVersion": "simpleide-laya-1.0.0",
+        "symbol_navigation": "required",
+        "context_breadth": "focused",
+        "graph_depth": "1",
+        "risk": "low",
+        "stuck": false,
+        "latencyMs": 3
+      },
+      "agreement": false,
+      "disagreements": {
+        "intent": true,
+        "actionClass": false,
+        "toolFamily": true,
+        "needsLLM": false
+      },
+      "confidence": {
+        "legacy": 0.86,
+        "laya": 0.96
+      },
+      "latency": {
+        "legacyMs": 1,
+        "layaMs": 3
+      },
+      "fallback": true,
+      "fallbackReason": null,
+      "inferenceSource": "fallback",
+      "modelVersion": "simpleide-laya-1.0.0",
+      "contextDecision": {
+        "breadth": "focused",
+        "depth": "1",
+        "symbol_navigation": "required"
+      },
+      "toolFamilyDecision": {
+        "legacy": "search",
+        "laya": "editor"
+      },
+      "riskDecision": "low"
+    },
+    {
+      "timestamp": 1790582668011,
+      "request": "Where is authenticateUser implemented?",
+      "legacyDecision": {
+        "intent": "search",
+        "actionClass": "local_tool",
+        "toolFamily": "search",
+        "needsLLM": false,
+        "needsVerification": false,
+        "confidence": 0.86,
+        "latencyMs": 0
+      },
+      "layaDecision": {
+        "intent": "navigate",
+        "actionClass": "local_tool",
+        "toolFamily": "editor",
+        "needsLLM": false,
+        "needsVerification": false,
+        "confidence": 0.96,
+        "inferenceSource": "fallback",
+        "modelVersion": "simpleide-laya-1.0.0",
+        "symbol_navigation": "required",
+        "context_breadth": "focused",
+        "graph_depth": "1",
+        "risk": "low",
+        "stuck": false,
+        "latencyMs": 0
+      },
+      "agreement": false,
+      "disagreements": {
+        "intent": true,
+        "actionClass": false,
+        "toolFamily": true,
+        "needsLLM": false
+      },
+      "confidence": {
+        "legacy": 0.86,
+        "laya": 0.96
+      },
+      "latency": {
+        "legacyMs": 0,
+        "layaMs": 0
+      },
+      "fallback": true,
+      "fallbackReason": null,
+      "inferenceSource": "fallback",
+      "modelVersion": "simpleide-laya-1.0.0",
+      "contextDecision": {
+        "breadth": "focused",
+        "depth": "1",
+        "symbol_navigation": "required"
+      },
+      "toolFamilyDecision": {
+        "legacy": "search",
+        "laya": "editor"
+      },
+      "riskDecision": "low"
+    },
+    {
+      "timestamp": 1790582668011,
+      "request": "Find all callers of handleLogin across controllers",
+      "legacyDecision": {
+        "intent": "search",
+        "actionClass": "local_tool",
+        "toolFamily": "search",
+        "needsLLM": false,
+        "needsVerification": false,
+        "confidence": 0.88,
+        "latencyMs": 0
+      },
+      "layaDecision": {
+        "intent": "navigate",
+        "actionClass": "local_tool",
+        "toolFamily": "editor",
+        "needsLLM": false,
+        "needsVerification": false,
+        "confidence": 0.96,
+        "inferenceSource": "fallback",
+        "modelVersion": "simpleide-laya-1.0.0",
+        "symbol_navigation": "required",
+        "context_breadth": "focused",
+        "graph_depth": "1",
+        "risk": "low",
+        "stuck": false,
+        "latencyMs": 0
+      },
+      "agreement": false,
+      "disagreements": {
+        "intent": true,
+        "actionClass": false,
+        "toolFamily": true,
+        "needsLLM": false
+      },
+      "confidence": {
+        "legacy": 0.88,
+        "laya": 0.96
+      },
+      "latency": {
+        "legacyMs": 0,
+        "layaMs": 0
+      },
+      "fallback": true,
+      "fallbackReason": null,
+      "inferenceSource": "fallback",
+      "modelVersion": "simpleide-laya-1.0.0",
+      "contextDecision": {
+        "breadth": "focused",
+        "depth": "1",
+        "symbol_navigation": "required"
+      },
+      "toolFamilyDecision": {
+        "legacy": "search",
+        "laya": "editor"
+      },
+      "riskDecision": "low"
+    },
+    {
+      "timestamp": 1790582668011,
+      "request": "Find references of SessionStore in src/session",
+      "legacyDecision": {
+        "intent": "search",
+        "actionClass": "local_tool",
+        "toolFamily": "search",
+        "needsLLM": false,
+        "needsVerification": false,
+        "confidence": 0.86,
+        "latencyMs": 0
+      },
+      "layaDecision": {
+        "intent": "navigate",
+        "actionClass": "local_tool",
+        "toolFamily": "editor",
+        "needsLLM": false,
+        "needsVerification": false,
+        "confidence": 0.96,
+        "inferenceSource": "fallback",
+        "modelVersion": "simpleide-laya-1.0.0",
+        "symbol_navigation": "required",
+        "context_breadth": "focused",
+        "graph_depth": "1",
+        "risk": "low",
+        "stuck": false,
+        "latencyMs": 0
+      },
+      "agreement": false,
+      "disagreements": {
+        "intent": true,
+        "actionClass": false,
+        "toolFamily": true,
+        "needsLLM": false
+      },
+      "confidence": {
+        "legacy": 0.86,
+        "laya": 0.96
+      },
+      "latency": {
+        "legacyMs": 0,
+        "layaMs": 0
+      },
+      "fallback": true,
+      "fallbackReason": null,
+      "inferenceSource": "fallback",
+      "modelVersion": "simpleide-laya-1.0.0",
+      "contextDecision": {
+        "breadth": "focused",
+        "depth": "1",
+        "symbol_navigation": "required"
+      },
+      "toolFamilyDecision": {
+        "legacy": "search",
+        "laya": "editor"
+      },
+      "riskDecision": "low"
+    },
+    {
+      "timestamp": 1790582668012,
+      "request": "Refactor verifyToken signature to accept token options object",
+      "legacyDecision": {
+        "intent": "edit",
+        "actionClass": "main_llm",
+        "toolFamily": "editor",
+        "needsLLM": true,
+        "needsVerification": false,
+        "confidence": 0.85,
+        "latencyMs": 0
+      },
+      "layaDecision": {
+        "intent": "refactor",
+        "actionClass": "main_llm",
+        "toolFamily": "editor",
+        "needsLLM": true,
+        "needsVerification": true,
+        "confidence": 0.94,
+        "inferenceSource": "fallback",
+        "modelVersion": "simpleide-laya-1.0.0",
+        "symbol_navigation": "required",
+        "context_breadth": "wide",
+        "graph_depth": "2",
+        "risk": "medium",
+        "stuck": false,
+        "latencyMs": 0
+      },
+      "agreement": false,
+      "disagreements": {
+        "intent": true,
+        "actionClass": false,
+        "toolFamily": false,
+        "needsLLM": false
+      },
+      "confidence": {
+        "legacy": 0.85,
+        "laya": 0.94
+      },
+      "latency": {
+        "legacyMs": 0,
+        "layaMs": 0
+      },
+      "fallback": true,
+      "fallbackReason": null,
+      "inferenceSource": "fallback",
+      "modelVersion": "simpleide-laya-1.0.0",
+      "contextDecision": {
+        "breadth": "wide",
+        "depth": "2",
+        "symbol_navigation": "required"
+      },
+      "toolFamilyDecision": {
+        "legacy": "editor",
+        "laya": "editor"
+      },
+      "riskDecision": "medium"
+    },
+    {
+      "timestamp": 1790582668012,
+      "request": "Rename method getUserById to fetchUserRecord across all files",
+      "legacyDecision": {
+        "intent": "edit",
+        "actionClass": "main_llm",
+        "toolFamily": "editor",
+        "needsLLM": true,
+        "needsVerification": false,
+        "confidence": 0.85,
+        "latencyMs": 0
+      },
+      "layaDecision": {
+        "intent": "refactor",
+        "actionClass": "main_llm",
+        "toolFamily": "editor",
+        "needsLLM": true,
+        "needsVerification": true,
+        "confidence": 0.94,
+        "inferenceSource": "fallback",
+        "modelVersion": "simpleide-laya-1.0.0",
+        "symbol_navigation": "required",
+        "context_breadth": "wide",
+        "graph_depth": "2",
+        "risk": "medium",
+        "stuck": false,
+        "latencyMs": 1
+      },
+      "agreement": false,
+      "disagreements": {
+        "intent": true,
+        "actionClass": false,
+        "toolFamily": false,
+        "needsLLM": false
+      },
+      "confidence": {
+        "legacy": 0.85,
+        "laya": 0.94
+      },
+      "latency": {
+        "legacyMs": 0,
+        "layaMs": 1
+      },
+      "fallback": true,
+      "fallbackReason": null,
+      "inferenceSource": "fallback",
+      "modelVersion": "simpleide-laya-1.0.0",
+      "contextDecision": {
+        "breadth": "wide",
+        "depth": "2",
+        "symbol_navigation": "required"
+      },
+      "toolFamilyDecision": {
+        "legacy": "editor",
+        "laya": "editor"
+      },
+      "riskDecision": "medium"
+    },
+    {
+      "timestamp": 1790582668012,
+      "request": "Extract method parseHeaders from authenticateUser",
+      "legacyDecision": {
+        "intent": "edit",
+        "actionClass": "main_llm",
+        "toolFamily": "editor",
+        "needsLLM": true,
+        "needsVerification": false,
+        "confidence": 0.85,
+        "latencyMs": 0
+      },
+      "layaDecision": {
+        "intent": "refactor",
+        "actionClass": "main_llm",
+        "toolFamily": "editor",
+        "needsLLM": true,
+        "needsVerification": true,
+        "confidence": 0.94,
+        "inferenceSource": "fallback",
+        "modelVersion": "simpleide-laya-1.0.0",
+        "symbol_navigation": "required",
+        "context_breadth": "wide",
+        "graph_depth": "2",
+        "risk": "medium",
+        "stuck": false,
+        "latencyMs": 0
+      },
+      "agreement": false,
+      "disagreements": {
+        "intent": true,
+        "actionClass": false,
+        "toolFamily": false,
+        "needsLLM": false
+      },
+      "confidence": {
+        "legacy": 0.85,
+        "laya": 0.94
+      },
+      "latency": {
+        "legacyMs": 0,
+        "layaMs": 0
+      },
+      "fallback": true,
+      "fallbackReason": null,
+      "inferenceSource": "fallback",
+      "modelVersion": "simpleide-laya-1.0.0",
+      "contextDecision": {
+        "breadth": "wide",
+        "depth": "2",
+        "symbol_navigation": "required"
+      },
+      "toolFamilyDecision": {
+        "legacy": "editor",
+        "laya": "editor"
+      },
+      "riskDecision": "medium"
+    },
+    {
+      "timestamp": 1790582668012,
+      "request": "Move token validation logic into a new helper function",
+      "legacyDecision": {
+        "intent": "edit",
+        "actionClass": "main_llm",
+        "toolFamily": "editor",
+        "needsLLM": true,
+        "needsVerification": false,
+        "confidence": 0.85,
+        "latencyMs": 0
+      },
+      "layaDecision": {
+        "intent": "explain",
+        "actionClass": "main_llm",
+        "toolFamily": "none",
+        "needsLLM": true,
+        "needsVerification": false,
+        "confidence": 0.88,
+        "inferenceSource": "fallback",
+        "modelVersion": "simpleide-laya-1.0.0",
+        "symbol_navigation": "none",
+        "risk": "low",
+        "stuck": false,
+        "latencyMs": 0
+      },
+      "agreement": false,
+      "disagreements": {
+        "intent": true,
+        "actionClass": false,
+        "toolFamily": true,
+        "needsLLM": false
+      },
+      "confidence": {
+        "legacy": 0.85,
+        "laya": 0.88
+      },
+      "latency": {
+        "legacyMs": 0,
+        "layaMs": 0
+      },
+      "fallback": true,
+      "fallbackReason": null,
+      "inferenceSource": "fallback",
+      "modelVersion": "simpleide-laya-1.0.0",
+      "contextDecision": {
+        "breadth": "focused",
+        "depth": 0,
+        "symbol_navigation": "none"
+      },
+      "toolFamilyDecision": {
+        "legacy": "editor",
+        "laya": "none"
+      },
+      "riskDecision": "low"
+    },
+    {
+      "timestamp": 1790582668013,
+      "request": "Refactor database connection pool singleton",
+      "legacyDecision": {
+        "intent": "edit",
+        "actionClass": "main_llm",
+        "toolFamily": "editor",
+        "needsLLM": true,
+        "needsVerification": false,
+        "confidence": 0.85,
+        "latencyMs": 0
+      },
+      "layaDecision": {
+        "intent": "refactor",
+        "actionClass": "main_llm",
+        "toolFamily": "editor",
+        "needsLLM": true,
+        "needsVerification": true,
+        "confidence": 0.94,
+        "inferenceSource": "fallback",
+        "modelVersion": "simpleide-laya-1.0.0",
+        "symbol_navigation": "required",
+        "context_breadth": "wide",
+        "graph_depth": "2",
+        "risk": "medium",
+        "stuck": false,
+        "latencyMs": 0
+      },
+      "agreement": false,
+      "disagreements": {
+        "intent": true,
+        "actionClass": false,
+        "toolFamily": false,
+        "needsLLM": false
+      },
+      "confidence": {
+        "legacy": 0.85,
+        "laya": 0.94
+      },
+      "latency": {
+        "legacyMs": 0,
+        "layaMs": 0
+      },
+      "fallback": true,
+      "fallbackReason": null,
+      "inferenceSource": "fallback",
+      "modelVersion": "simpleide-laya-1.0.0",
+      "contextDecision": {
+        "breadth": "wide",
+        "depth": "2",
+        "symbol_navigation": "required"
+      },
+      "toolFamilyDecision": {
+        "legacy": "editor",
+        "laya": "editor"
+      },
+      "riskDecision": "medium"
+    },
+    {
+      "timestamp": 1790582668013,
+      "request": "npm test tests/token.test.js",
+      "legacyDecision": {
+        "intent": "test",
+        "actionClass": "local_tool",
+        "toolFamily": "testing",
+        "needsLLM": false,
+        "needsVerification": true,
+        "confidence": 0.91,
+        "latencyMs": 1
+      },
+      "layaDecision": {
+        "intent": "test",
+        "actionClass": "local_tool",
+        "toolFamily": "testing",
+        "needsLLM": false,
+        "needsVerification": true,
+        "confidence": 0.95,
+        "inferenceSource": "fallback",
+        "modelVersion": "simpleide-laya-1.0.0",
+        "symbol_navigation": "none",
+        "risk": "low",
+        "stuck": false,
+        "latencyMs": 0
+      },
+      "agreement": true,
+      "disagreements": {
+        "intent": false,
+        "actionClass": false,
+        "toolFamily": false,
+        "needsLLM": false
+      },
+      "confidence": {
+        "legacy": 0.91,
+        "laya": 0.95
+      },
+      "latency": {
+        "legacyMs": 1,
+        "layaMs": 0
+      },
+      "fallback": true,
+      "fallbackReason": null,
+      "inferenceSource": "fallback",
+      "modelVersion": "simpleide-laya-1.0.0",
+      "contextDecision": {
+        "breadth": "focused",
+        "depth": 0,
+        "symbol_navigation": "none"
+      },
+      "toolFamilyDecision": {
+        "legacy": "testing",
+        "laya": "testing"
+      },
+      "riskDecision": "low"
+    },
+    {
+      "timestamp": 1790582668013,
+      "request": "Run unit test for authController",
+      "legacyDecision": {
+        "intent": "test",
+        "actionClass": "local_tool",
+        "toolFamily": "testing",
+        "needsLLM": false,
+        "needsVerification": true,
+        "confidence": 0.91,
+        "latencyMs": 0
+      },
+      "layaDecision": {
+        "intent": "test",
+        "actionClass": "local_tool",
+        "toolFamily": "testing",
+        "needsLLM": false,
+        "needsVerification": true,
+        "confidence": 0.95,
+        "inferenceSource": "fallback",
+        "modelVersion": "simpleide-laya-1.0.0",
+        "symbol_navigation": "none",
+        "risk": "low",
+        "stuck": false,
+        "latencyMs": 0
+      },
+      "agreement": true,
+      "disagreements": {
+        "intent": false,
+        "actionClass": false,
+        "toolFamily": false,
+        "needsLLM": false
+      },
+      "confidence": {
+        "legacy": 0.91,
+        "laya": 0.95
+      },
+      "latency": {
+        "legacyMs": 0,
+        "layaMs": 0
+      },
+      "fallback": true,
+      "fallbackReason": null,
+      "inferenceSource": "fallback",
+      "modelVersion": "simpleide-laya-1.0.0",
+      "contextDecision": {
+        "breadth": "focused",
+        "depth": 0,
+        "symbol_navigation": "none"
+      },
+      "toolFamilyDecision": {
+        "legacy": "testing",
+        "laya": "testing"
+      },
+      "riskDecision": "low"
+    },
+    {
+      "timestamp": 1790582668013,
+      "request": "Run jest suite on session module",
+      "legacyDecision": {
+        "intent": "test",
+        "actionClass": "local_tool",
+        "toolFamily": "testing",
+        "needsLLM": false,
+        "needsVerification": true,
+        "confidence": 0.91,
+        "latencyMs": 0
+      },
+      "layaDecision": {
+        "intent": "test",
+        "actionClass": "local_tool",
+        "toolFamily": "testing",
+        "needsLLM": false,
+        "needsVerification": true,
+        "confidence": 0.95,
+        "inferenceSource": "fallback",
+        "modelVersion": "simpleide-laya-1.0.0",
+        "symbol_navigation": "none",
+        "risk": "low",
+        "stuck": false,
+        "latencyMs": 0
+      },
+      "agreement": true,
+      "disagreements": {
+        "intent": false,
+        "actionClass": false,
+        "toolFamily": false,
+        "needsLLM": false
+      },
+      "confidence": {
+        "legacy": 0.91,
+        "laya": 0.95
+      },
+      "latency": {
+        "legacyMs": 0,
+        "layaMs": 0
+      },
+      "fallback": true,
+      "fallbackReason": null,
+      "inferenceSource": "fallback",
+      "modelVersion": "simpleide-laya-1.0.0",
+      "contextDecision": {
+        "breadth": "focused",
+        "depth": 0,
+        "symbol_navigation": "none"
+      },
+      "toolFamilyDecision": {
+        "legacy": "testing",
+        "laya": "testing"
+      },
+      "riskDecision": "low"
+    },
+    {
+      "timestamp": 1790582668013,
+      "request": "Run all unit tests across the workspace",
+      "legacyDecision": {
+        "intent": "test",
+        "actionClass": "local_tool",
+        "toolFamily": "testing",
+        "needsLLM": false,
+        "needsVerification": true,
+        "confidence": 0.91,
+        "latencyMs": 0
+      },
+      "layaDecision": {
+        "intent": "explain",
+        "actionClass": "main_llm",
+        "toolFamily": "none",
+        "needsLLM": true,
+        "needsVerification": false,
+        "confidence": 0.88,
+        "inferenceSource": "fallback",
+        "modelVersion": "simpleide-laya-1.0.0",
+        "symbol_navigation": "none",
+        "risk": "low",
+        "stuck": false,
+        "latencyMs": 0
+      },
+      "agreement": false,
+      "disagreements": {
+        "intent": true,
+        "actionClass": true,
+        "toolFamily": true,
+        "needsLLM": true
+      },
+      "confidence": {
+        "legacy": 0.91,
+        "laya": 0.88
+      },
+      "latency": {
+        "legacyMs": 0,
+        "layaMs": 0
+      },
+      "fallback": true,
+      "fallbackReason": null,
+      "inferenceSource": "fallback",
+      "modelVersion": "simpleide-laya-1.0.0",
+      "contextDecision": {
+        "breadth": "focused",
+        "depth": 0,
+        "symbol_navigation": "none"
+      },
+      "toolFamilyDecision": {
+        "legacy": "testing",
+        "laya": "none"
+      },
+      "riskDecision": "low"
+    },
+    {
+      "timestamp": 1790582668013,
+      "request": "Check tests in tests/m1.5_integration.test.js",
+      "legacyDecision": {
+        "intent": "edit",
+        "actionClass": "main_llm",
+        "toolFamily": "editor",
+        "needsLLM": true,
+        "needsVerification": false,
+        "confidence": 0.85,
+        "latencyMs": 0
+      },
+      "layaDecision": {
+        "intent": "explain",
+        "actionClass": "main_llm",
+        "toolFamily": "none",
+        "needsLLM": true,
+        "needsVerification": false,
+        "confidence": 0.88,
+        "inferenceSource": "fallback",
+        "modelVersion": "simpleide-laya-1.0.0",
+        "symbol_navigation": "none",
+        "risk": "low",
+        "stuck": false,
+        "latencyMs": 0
+      },
+      "agreement": false,
+      "disagreements": {
+        "intent": true,
+        "actionClass": false,
+        "toolFamily": true,
+        "needsLLM": false
+      },
+      "confidence": {
+        "legacy": 0.85,
+        "laya": 0.88
+      },
+      "latency": {
+        "legacyMs": 0,
+        "layaMs": 0
+      },
+      "fallback": true,
+      "fallbackReason": null,
+      "inferenceSource": "fallback",
+      "modelVersion": "simpleide-laya-1.0.0",
+      "contextDecision": {
+        "breadth": "focused",
+        "depth": 0,
+        "symbol_navigation": "none"
+      },
+      "toolFamilyDecision": {
+        "legacy": "editor",
+        "laya": "none"
+      },
+      "riskDecision": "low"
+    },
+    {
+      "timestamp": 1790582668013,
+      "request": "Debug 401 Unauthorized in authMiddleware when verifying token",
+      "legacyDecision": {
+        "intent": "debug",
+        "actionClass": "main_llm",
+        "toolFamily": "filesystem",
+        "needsLLM": true,
+        "needsVerification": true,
+        "confidence": 0.87,
+        "latencyMs": 0
+      },
+      "layaDecision": {
+        "intent": "debug",
+        "actionClass": "main_llm",
+        "toolFamily": "diagnostics",
+        "needsLLM": true,
+        "needsVerification": true,
+        "confidence": 0.91,
+        "inferenceSource": "fallback",
+        "modelVersion": "simpleide-laya-1.0.0",
+        "symbol_navigation": "required",
+        "risk": "medium",
+        "stuck": false,
+        "latencyMs": 0
+      },
+      "agreement": false,
+      "disagreements": {
+        "intent": false,
+        "actionClass": false,
+        "toolFamily": true,
+        "needsLLM": false
+      },
+      "confidence": {
+        "legacy": 0.87,
+        "laya": 0.91
+      },
+      "latency": {
+        "legacyMs": 0,
+        "layaMs": 0
+      },
+      "fallback": true,
+      "fallbackReason": null,
+      "inferenceSource": "fallback",
+      "modelVersion": "simpleide-laya-1.0.0",
+      "contextDecision": {
+        "breadth": "focused",
+        "depth": 1,
+        "symbol_navigation": "required"
+      },
+      "toolFamilyDecision": {
+        "legacy": "filesystem",
+        "laya": "diagnostics"
+      },
+      "riskDecision": "medium"
+    },
+    {
+      "timestamp": 1790582668013,
+      "request": "Why did test in token.test.js fail with AssertionError?",
+      "legacyDecision": {
+        "intent": "debug",
+        "actionClass": "main_llm",
+        "toolFamily": "filesystem",
+        "needsLLM": true,
+        "needsVerification": true,
+        "confidence": 0.87,
+        "latencyMs": 0
+      },
+      "layaDecision": {
+        "intent": "debug",
+        "actionClass": "main_llm",
+        "toolFamily": "diagnostics",
+        "needsLLM": true,
+        "needsVerification": true,
+        "confidence": 0.91,
+        "inferenceSource": "fallback",
+        "modelVersion": "simpleide-laya-1.0.0",
+        "symbol_navigation": "required",
+        "risk": "medium",
+        "stuck": false,
+        "latencyMs": 0
+      },
+      "agreement": false,
+      "disagreements": {
+        "intent": false,
+        "actionClass": false,
+        "toolFamily": true,
+        "needsLLM": false
+      },
+      "confidence": {
+        "legacy": 0.87,
+        "laya": 0.91
+      },
+      "latency": {
+        "legacyMs": 0,
+        "layaMs": 0
+      },
+      "fallback": true,
+      "fallbackReason": null,
+      "inferenceSource": "fallback",
+      "modelVersion": "simpleide-laya-1.0.0",
+      "contextDecision": {
+        "breadth": "focused",
+        "depth": 1,
+        "symbol_navigation": "required"
+      },
+      "toolFamilyDecision": {
+        "legacy": "filesystem",
+        "laya": "diagnostics"
+      },
+      "riskDecision": "medium"
+    },
+    {
+      "timestamp": 1790582668013,
+      "request": "Debug TypeError: cannot read properties of undefined in Login.jsx",
+      "legacyDecision": {
+        "intent": "debug",
+        "actionClass": "main_llm",
+        "toolFamily": "filesystem",
+        "needsLLM": true,
+        "needsVerification": true,
+        "confidence": 0.87,
+        "latencyMs": 0
+      },
+      "layaDecision": {
+        "intent": "debug",
+        "actionClass": "main_llm",
+        "toolFamily": "diagnostics",
+        "needsLLM": true,
+        "needsVerification": true,
+        "confidence": 0.91,
+        "inferenceSource": "fallback",
+        "modelVersion": "simpleide-laya-1.0.0",
+        "symbol_navigation": "required",
+        "risk": "medium",
+        "stuck": false,
+        "latencyMs": 0
+      },
+      "agreement": false,
+      "disagreements": {
+        "intent": false,
+        "actionClass": false,
+        "toolFamily": true,
+        "needsLLM": false
+      },
+      "confidence": {
+        "legacy": 0.87,
+        "laya": 0.91
+      },
+      "latency": {
+        "legacyMs": 0,
+        "layaMs": 0
+      },
+      "fallback": true,
+      "fallbackReason": null,
+      "inferenceSource": "fallback",
+      "modelVersion": "simpleide-laya-1.0.0",
+      "contextDecision": {
+        "breadth": "focused",
+        "depth": 1,
+        "symbol_navigation": "required"
+      },
+      "toolFamilyDecision": {
+        "legacy": "filesystem",
+        "laya": "diagnostics"
+      },
+      "riskDecision": "medium"
+    },
+    {
+      "timestamp": 1790582668013,
+      "request": "Investigate stack trace from crash recovery handler",
+      "legacyDecision": {
+        "intent": "debug",
+        "actionClass": "main_llm",
+        "toolFamily": "filesystem",
+        "needsLLM": true,
+        "needsVerification": true,
+        "confidence": 0.87,
+        "latencyMs": 0
+      },
+      "layaDecision": {
+        "intent": "debug",
+        "actionClass": "main_llm",
+        "toolFamily": "diagnostics",
+        "needsLLM": true,
+        "needsVerification": true,
+        "confidence": 0.91,
+        "inferenceSource": "fallback",
+        "modelVersion": "simpleide-laya-1.0.0",
+        "symbol_navigation": "required",
+        "risk": "medium",
+        "stuck": false,
+        "latencyMs": 0
+      },
+      "agreement": false,
+      "disagreements": {
+        "intent": false,
+        "actionClass": false,
+        "toolFamily": true,
+        "needsLLM": false
+      },
+      "confidence": {
+        "legacy": 0.87,
+        "laya": 0.91
+      },
+      "latency": {
+        "legacyMs": 0,
+        "layaMs": 0
+      },
+      "fallback": true,
+      "fallbackReason": null,
+      "inferenceSource": "fallback",
+      "modelVersion": "simpleide-laya-1.0.0",
+      "contextDecision": {
+        "breadth": "focused",
+        "depth": 1,
+        "symbol_navigation": "required"
+      },
+      "toolFamilyDecision": {
+        "legacy": "filesystem",
+        "laya": "diagnostics"
+      },
+      "riskDecision": "medium"
+    },
+    {
+      "timestamp": 1790582668013,
+      "request": "Fix broken assertion in auth pipeline test",
+      "legacyDecision": {
+        "intent": "edit",
+        "actionClass": "main_llm",
+        "toolFamily": "editor",
+        "needsLLM": true,
+        "needsVerification": false,
+        "confidence": 0.85,
+        "latencyMs": 0
+      },
+      "layaDecision": {
+        "intent": "edit",
+        "actionClass": "main_llm",
+        "toolFamily": "editor",
+        "needsLLM": true,
+        "needsVerification": true,
+        "confidence": 0.89,
+        "inferenceSource": "fallback",
+        "modelVersion": "simpleide-laya-1.0.0",
+        "symbol_navigation": "optional",
+        "risk": "medium",
+        "stuck": false,
+        "latencyMs": 0
+      },
+      "agreement": true,
+      "disagreements": {
+        "intent": false,
+        "actionClass": false,
+        "toolFamily": false,
+        "needsLLM": false
+      },
+      "confidence": {
+        "legacy": 0.85,
+        "laya": 0.89
+      },
+      "latency": {
+        "legacyMs": 0,
+        "layaMs": 0
+      },
+      "fallback": true,
+      "fallbackReason": null,
+      "inferenceSource": "fallback",
+      "modelVersion": "simpleide-laya-1.0.0",
+      "contextDecision": {
+        "breadth": "focused",
+        "depth": 0,
+        "symbol_navigation": "optional"
+      },
+      "toolFamilyDecision": {
+        "legacy": "editor",
+        "laya": "editor"
+      },
+      "riskDecision": "medium"
+    },
+    {
+      "timestamp": 1790582668013,
+      "request": "git status",
+      "legacyDecision": {
+        "intent": "git",
+        "actionClass": "local_tool",
+        "toolFamily": "git",
+        "needsLLM": false,
+        "needsVerification": false,
+        "confidence": 0.9,
+        "latencyMs": 0
+      },
+      "layaDecision": {
+        "intent": "git",
+        "actionClass": "local_tool",
+        "toolFamily": "git",
+        "needsLLM": false,
+        "needsVerification": false,
+        "confidence": 0.96,
+        "inferenceSource": "fallback",
+        "modelVersion": "simpleide-laya-1.0.0",
+        "symbol_navigation": "none",
+        "risk": "low",
+        "stuck": false,
+        "latencyMs": 0
+      },
+      "agreement": true,
+      "disagreements": {
+        "intent": false,
+        "actionClass": false,
+        "toolFamily": false,
+        "needsLLM": false
+      },
+      "confidence": {
+        "legacy": 0.9,
+        "laya": 0.96
+      },
+      "latency": {
+        "legacyMs": 0,
+        "layaMs": 0
+      },
+      "fallback": true,
+      "fallbackReason": null,
+      "inferenceSource": "fallback",
+      "modelVersion": "simpleide-laya-1.0.0",
+      "contextDecision": {
+        "breadth": "focused",
+        "depth": 0,
+        "symbol_navigation": "none"
+      },
+      "toolFamilyDecision": {
+        "legacy": "git",
+        "laya": "git"
+      },
+      "riskDecision": "low"
+    },
+    {
+      "timestamp": 1790582668013,
+      "request": "git diff HEAD",
+      "legacyDecision": {
+        "intent": "git",
+        "actionClass": "local_tool",
+        "toolFamily": "git",
+        "needsLLM": false,
+        "needsVerification": false,
+        "confidence": 0.9,
+        "latencyMs": 0
+      },
+      "layaDecision": {
+        "intent": "git",
+        "actionClass": "local_tool",
+        "toolFamily": "git",
+        "needsLLM": false,
+        "needsVerification": false,
+        "confidence": 0.96,
+        "inferenceSource": "fallback",
+        "modelVersion": "simpleide-laya-1.0.0",
+        "symbol_navigation": "none",
+        "risk": "low",
+        "stuck": false,
+        "latencyMs": 0
+      },
+      "agreement": true,
+      "disagreements": {
+        "intent": false,
+        "actionClass": false,
+        "toolFamily": false,
+        "needsLLM": false
+      },
+      "confidence": {
+        "legacy": 0.9,
+        "laya": 0.96
+      },
+      "latency": {
+        "legacyMs": 0,
+        "layaMs": 0
+      },
+      "fallback": true,
+      "fallbackReason": null,
+      "inferenceSource": "fallback",
+      "modelVersion": "simpleide-laya-1.0.0",
+      "contextDecision": {
+        "breadth": "focused",
+        "depth": 0,
+        "symbol_navigation": "none"
+      },
+      "toolFamilyDecision": {
+        "legacy": "git",
+        "laya": "git"
+      },
+      "riskDecision": "low"
+    },
+    {
+      "timestamp": 1790582668014,
+      "request": "git log -n 5",
+      "legacyDecision": {
+        "intent": "git",
+        "actionClass": "local_tool",
+        "toolFamily": "git",
+        "needsLLM": false,
+        "needsVerification": false,
+        "confidence": 0.9,
+        "latencyMs": 0
+      },
+      "layaDecision": {
+        "intent": "git",
+        "actionClass": "local_tool",
+        "toolFamily": "git",
+        "needsLLM": false,
+        "needsVerification": false,
+        "confidence": 0.96,
+        "inferenceSource": "fallback",
+        "modelVersion": "simpleide-laya-1.0.0",
+        "symbol_navigation": "none",
+        "risk": "low",
+        "stuck": false,
+        "latencyMs": 0
+      },
+      "agreement": true,
+      "disagreements": {
+        "intent": false,
+        "actionClass": false,
+        "toolFamily": false,
+        "needsLLM": false
+      },
+      "confidence": {
+        "legacy": 0.9,
+        "laya": 0.96
+      },
+      "latency": {
+        "legacyMs": 0,
+        "layaMs": 0
+      },
+      "fallback": true,
+      "fallbackReason": null,
+      "inferenceSource": "fallback",
+      "modelVersion": "simpleide-laya-1.0.0",
+      "contextDecision": {
+        "breadth": "focused",
+        "depth": 0,
+        "symbol_navigation": "none"
+      },
+      "toolFamilyDecision": {
+        "legacy": "git",
+        "laya": "git"
+      },
+      "riskDecision": "low"
+    },
+    {
+      "timestamp": 1790582668014,
+      "request": "git checkout feat/modern-agent-ui",
+      "legacyDecision": {
+        "intent": "git",
+        "actionClass": "local_tool",
+        "toolFamily": "git",
+        "needsLLM": false,
+        "needsVerification": false,
+        "confidence": 0.9,
+        "latencyMs": 0
+      },
+      "layaDecision": {
+        "intent": "git",
+        "actionClass": "local_tool",
+        "toolFamily": "git",
+        "needsLLM": false,
+        "needsVerification": false,
+        "confidence": 0.96,
+        "inferenceSource": "fallback",
+        "modelVersion": "simpleide-laya-1.0.0",
+        "symbol_navigation": "none",
+        "risk": "low",
+        "stuck": false,
+        "latencyMs": 0
+      },
+      "agreement": true,
+      "disagreements": {
+        "intent": false,
+        "actionClass": false,
+        "toolFamily": false,
+        "needsLLM": false
+      },
+      "confidence": {
+        "legacy": 0.9,
+        "laya": 0.96
+      },
+      "latency": {
+        "legacyMs": 0,
+        "layaMs": 0
+      },
+      "fallback": true,
+      "fallbackReason": null,
+      "inferenceSource": "fallback",
+      "modelVersion": "simpleide-laya-1.0.0",
+      "contextDecision": {
+        "breadth": "focused",
+        "depth": 0,
+        "symbol_navigation": "none"
+      },
+      "toolFamilyDecision": {
+        "legacy": "git",
+        "laya": "git"
+      },
+      "riskDecision": "low"
+    },
+    {
+      "timestamp": 1790582668014,
+      "request": "git branch --list",
+      "legacyDecision": {
+        "intent": "git",
+        "actionClass": "local_tool",
+        "toolFamily": "git",
+        "needsLLM": false,
+        "needsVerification": false,
+        "confidence": 0.9,
+        "latencyMs": 0
+      },
+      "layaDecision": {
+        "intent": "git",
+        "actionClass": "local_tool",
+        "toolFamily": "git",
+        "needsLLM": false,
+        "needsVerification": false,
+        "confidence": 0.96,
+        "inferenceSource": "fallback",
+        "modelVersion": "simpleide-laya-1.0.0",
+        "symbol_navigation": "none",
+        "risk": "low",
+        "stuck": false,
+        "latencyMs": 0
+      },
+      "agreement": true,
+      "disagreements": {
+        "intent": false,
+        "actionClass": false,
+        "toolFamily": false,
+        "needsLLM": false
+      },
+      "confidence": {
+        "legacy": 0.9,
+        "laya": 0.96
+      },
+      "latency": {
+        "legacyMs": 0,
+        "layaMs": 0
+      },
+      "fallback": true,
+      "fallbackReason": null,
+      "inferenceSource": "fallback",
+      "modelVersion": "simpleide-laya-1.0.0",
+      "contextDecision": {
+        "breadth": "focused",
+        "depth": 0,
+        "symbol_navigation": "none"
+      },
+      "toolFamilyDecision": {
+        "legacy": "git",
+        "laya": "git"
+      },
+      "riskDecision": "low"
+    },
+    {
+      "timestamp": 1790582668014,
+      "request": "Search for JWT_SECRET in config files",
+      "legacyDecision": {
+        "intent": "search",
+        "actionClass": "local_tool",
+        "toolFamily": "search",
+        "needsLLM": false,
+        "needsVerification": false,
+        "confidence": 0.88,
+        "latencyMs": 0
+      },
+      "layaDecision": {
+        "intent": "search",
+        "actionClass": "local_tool",
+        "toolFamily": "search",
+        "needsLLM": false,
+        "needsVerification": false,
+        "confidence": 0.92,
+        "inferenceSource": "fallback",
+        "modelVersion": "simpleide-laya-1.0.0",
+        "symbol_navigation": "optional",
+        "risk": "low",
+        "stuck": false,
+        "latencyMs": 0
+      },
+      "agreement": true,
+      "disagreements": {
+        "intent": false,
+        "actionClass": false,
+        "toolFamily": false,
+        "needsLLM": false
+      },
+      "confidence": {
+        "legacy": 0.88,
+        "laya": 0.92
+      },
+      "latency": {
+        "legacyMs": 0,
+        "layaMs": 0
+      },
+      "fallback": true,
+      "fallbackReason": null,
+      "inferenceSource": "fallback",
+      "modelVersion": "simpleide-laya-1.0.0",
+      "contextDecision": {
+        "breadth": "focused",
+        "depth": 0,
+        "symbol_navigation": "optional"
+      },
+      "toolFamilyDecision": {
+        "legacy": "search",
+        "laya": "search"
+      },
+      "riskDecision": "low"
+    },
+    {
+      "timestamp": 1790582668014,
+      "request": "Find all occurrences of localStorage.getItem",
+      "legacyDecision": {
+        "intent": "search",
+        "actionClass": "local_tool",
+        "toolFamily": "search",
+        "needsLLM": false,
+        "needsVerification": false,
+        "confidence": 0.88,
+        "latencyMs": 0
+      },
+      "layaDecision": {
+        "intent": "search",
+        "actionClass": "local_tool",
+        "toolFamily": "search",
+        "needsLLM": false,
+        "needsVerification": false,
+        "confidence": 0.92,
+        "inferenceSource": "fallback",
+        "modelVersion": "simpleide-laya-1.0.0",
+        "symbol_navigation": "optional",
+        "risk": "low",
+        "stuck": false,
+        "latencyMs": 0
+      },
+      "agreement": true,
+      "disagreements": {
+        "intent": false,
+        "actionClass": false,
+        "toolFamily": false,
+        "needsLLM": false
+      },
+      "confidence": {
+        "legacy": 0.88,
+        "laya": 0.92
+      },
+      "latency": {
+        "legacyMs": 0,
+        "layaMs": 0
+      },
+      "fallback": true,
+      "fallbackReason": null,
+      "inferenceSource": "fallback",
+      "modelVersion": "simpleide-laya-1.0.0",
+      "contextDecision": {
+        "breadth": "focused",
+        "depth": 0,
+        "symbol_navigation": "optional"
+      },
+      "toolFamilyDecision": {
+        "legacy": "search",
+        "laya": "search"
+      },
+      "riskDecision": "low"
+    },
+    {
+      "timestamp": 1790582668014,
+      "request": "Grep for FIXME comments in src/",
+      "legacyDecision": {
+        "intent": "search",
+        "actionClass": "local_tool",
+        "toolFamily": "search",
+        "needsLLM": false,
+        "needsVerification": false,
+        "confidence": 0.88,
+        "latencyMs": 0
+      },
+      "layaDecision": {
+        "intent": "search",
+        "actionClass": "local_tool",
+        "toolFamily": "search",
+        "needsLLM": false,
+        "needsVerification": false,
+        "confidence": 0.92,
+        "inferenceSource": "fallback",
+        "modelVersion": "simpleide-laya-1.0.0",
+        "symbol_navigation": "optional",
+        "risk": "low",
+        "stuck": false,
+        "latencyMs": 0
+      },
+      "agreement": true,
+      "disagreements": {
+        "intent": false,
+        "actionClass": false,
+        "toolFamily": false,
+        "needsLLM": false
+      },
+      "confidence": {
+        "legacy": 0.88,
+        "laya": 0.92
+      },
+      "latency": {
+        "legacyMs": 0,
+        "layaMs": 0
+      },
+      "fallback": true,
+      "fallbackReason": null,
+      "inferenceSource": "fallback",
+      "modelVersion": "simpleide-laya-1.0.0",
+      "contextDecision": {
+        "breadth": "focused",
+        "depth": 0,
+        "symbol_navigation": "optional"
+      },
+      "toolFamilyDecision": {
+        "legacy": "search",
+        "laya": "search"
+      },
+      "riskDecision": "low"
+    },
+    {
+      "timestamp": 1790582668014,
+      "request": "Locate database connection string",
+      "legacyDecision": {
+        "intent": "search",
+        "actionClass": "local_tool",
+        "toolFamily": "search",
+        "needsLLM": false,
+        "needsVerification": false,
+        "confidence": 0.88,
+        "latencyMs": 0
+      },
+      "layaDecision": {
+        "intent": "search",
+        "actionClass": "local_tool",
+        "toolFamily": "search",
+        "needsLLM": false,
+        "needsVerification": false,
+        "confidence": 0.92,
+        "inferenceSource": "fallback",
+        "modelVersion": "simpleide-laya-1.0.0",
+        "symbol_navigation": "optional",
+        "risk": "low",
+        "stuck": false,
+        "latencyMs": 0
+      },
+      "agreement": true,
+      "disagreements": {
+        "intent": false,
+        "actionClass": false,
+        "toolFamily": false,
+        "needsLLM": false
+      },
+      "confidence": {
+        "legacy": 0.88,
+        "laya": 0.92
+      },
+      "latency": {
+        "legacyMs": 0,
+        "layaMs": 0
+      },
+      "fallback": true,
+      "fallbackReason": null,
+      "inferenceSource": "fallback",
+      "modelVersion": "simpleide-laya-1.0.0",
+      "contextDecision": {
+        "breadth": "focused",
+        "depth": 0,
+        "symbol_navigation": "optional"
+      },
+      "toolFamilyDecision": {
+        "legacy": "search",
+        "laya": "search"
+      },
+      "riskDecision": "low"
+    },
+    {
+      "timestamp": 1790582668014,
+      "request": "Find where cors middleware is configured",
+      "legacyDecision": {
+        "intent": "edit",
+        "actionClass": "main_llm",
+        "toolFamily": "editor",
+        "needsLLM": true,
+        "needsVerification": false,
+        "confidence": 0.85,
+        "latencyMs": 0
+      },
+      "layaDecision": {
+        "intent": "search",
+        "actionClass": "local_tool",
+        "toolFamily": "search",
+        "needsLLM": false,
+        "needsVerification": false,
+        "confidence": 0.92,
+        "inferenceSource": "fallback",
+        "modelVersion": "simpleide-laya-1.0.0",
+        "symbol_navigation": "optional",
+        "risk": "low",
+        "stuck": false,
+        "latencyMs": 0
+      },
+      "agreement": false,
+      "disagreements": {
+        "intent": true,
+        "actionClass": true,
+        "toolFamily": true,
+        "needsLLM": true
+      },
+      "confidence": {
+        "legacy": 0.85,
+        "laya": 0.92
+      },
+      "latency": {
+        "legacyMs": 0,
+        "layaMs": 0
+      },
+      "fallback": true,
+      "fallbackReason": null,
+      "inferenceSource": "fallback",
+      "modelVersion": "simpleide-laya-1.0.0",
+      "contextDecision": {
+        "breadth": "focused",
+        "depth": 0,
+        "symbol_navigation": "optional"
+      },
+      "toolFamilyDecision": {
+        "legacy": "editor",
+        "laya": "search"
+      },
+      "riskDecision": "low"
+    },
+    {
+      "timestamp": 1790582668014,
+      "request": "Change button background color to dark navy in theme.css",
+      "legacyDecision": {
+        "intent": "edit",
+        "actionClass": "main_llm",
+        "toolFamily": "editor",
+        "needsLLM": true,
+        "needsVerification": false,
+        "confidence": 0.85,
+        "latencyMs": 0
+      },
+      "layaDecision": {
+        "intent": "edit",
+        "actionClass": "main_llm",
+        "toolFamily": "editor",
+        "needsLLM": true,
+        "needsVerification": false,
+        "confidence": 0.94,
+        "inferenceSource": "fallback",
+        "modelVersion": "simpleide-laya-1.0.0",
+        "symbol_navigation": "none",
+        "risk": "low",
+        "stuck": false,
+        "latencyMs": 0
+      },
+      "agreement": true,
+      "disagreements": {
+        "intent": false,
+        "actionClass": false,
+        "toolFamily": false,
+        "needsLLM": false
+      },
+      "confidence": {
+        "legacy": 0.85,
+        "laya": 0.94
+      },
+      "latency": {
+        "legacyMs": 0,
+        "layaMs": 0
+      },
+      "fallback": true,
+      "fallbackReason": "Styling / markup edit: symbol navigation excluded (hard negative)",
+      "inferenceSource": "fallback",
+      "modelVersion": "simpleide-laya-1.0.0",
+      "contextDecision": {
+        "breadth": "focused",
+        "depth": 0,
+        "symbol_navigation": "none"
+      },
+      "toolFamilyDecision": {
+        "legacy": "editor",
+        "laya": "editor"
+      },
+      "riskDecision": "low"
+    },
+    {
+      "timestamp": 1790582668014,
+      "request": "Adjust padding and margin of header bar in HeaderComponent.jsx",
+      "legacyDecision": {
+        "intent": "edit",
+        "actionClass": "main_llm",
+        "toolFamily": "editor",
+        "needsLLM": true,
+        "needsVerification": false,
+        "confidence": 0.85,
+        "latencyMs": 0
+      },
+      "layaDecision": {
+        "intent": "edit",
+        "actionClass": "main_llm",
+        "toolFamily": "editor",
+        "needsLLM": true,
+        "needsVerification": false,
+        "confidence": 0.94,
+        "inferenceSource": "fallback",
+        "modelVersion": "simpleide-laya-1.0.0",
+        "symbol_navigation": "none",
+        "risk": "low",
+        "stuck": false,
+        "latencyMs": 0
+      },
+      "agreement": true,
+      "disagreements": {
+        "intent": false,
+        "actionClass": false,
+        "toolFamily": false,
+        "needsLLM": false
+      },
+      "confidence": {
+        "legacy": 0.85,
+        "laya": 0.94
+      },
+      "latency": {
+        "legacyMs": 0,
+        "layaMs": 0
+      },
+      "fallback": true,
+      "fallbackReason": "Styling / markup edit: symbol navigation excluded (hard negative)",
+      "inferenceSource": "fallback",
+      "modelVersion": "simpleide-laya-1.0.0",
+      "contextDecision": {
+        "breadth": "focused",
+        "depth": 0,
+        "symbol_navigation": "none"
+      },
+      "toolFamilyDecision": {
+        "legacy": "editor",
+        "laya": "editor"
+      },
+      "riskDecision": "low"
+    },
+    {
+      "timestamp": 1790582668014,
+      "request": "Fix heading text font size in Login.jsx",
+      "legacyDecision": {
+        "intent": "edit",
+        "actionClass": "main_llm",
+        "toolFamily": "editor",
+        "needsLLM": true,
+        "needsVerification": false,
+        "confidence": 0.85,
+        "latencyMs": 0
+      },
+      "layaDecision": {
+        "intent": "edit",
+        "actionClass": "main_llm",
+        "toolFamily": "editor",
+        "needsLLM": true,
+        "needsVerification": false,
+        "confidence": 0.94,
+        "inferenceSource": "fallback",
+        "modelVersion": "simpleide-laya-1.0.0",
+        "symbol_navigation": "none",
+        "risk": "low",
+        "stuck": false,
+        "latencyMs": 0
+      },
+      "agreement": true,
+      "disagreements": {
+        "intent": false,
+        "actionClass": false,
+        "toolFamily": false,
+        "needsLLM": false
+      },
+      "confidence": {
+        "legacy": 0.85,
+        "laya": 0.94
+      },
+      "latency": {
+        "legacyMs": 0,
+        "layaMs": 0
+      },
+      "fallback": true,
+      "fallbackReason": "Styling / markup edit: symbol navigation excluded (hard negative)",
+      "inferenceSource": "fallback",
+      "modelVersion": "simpleide-laya-1.0.0",
+      "contextDecision": {
+        "breadth": "focused",
+        "depth": 0,
+        "symbol_navigation": "none"
+      },
+      "toolFamilyDecision": {
+        "legacy": "editor",
+        "laya": "editor"
+      },
+      "riskDecision": "low"
+    },
+    {
+      "timestamp": 1790582668014,
+      "request": "Change flex alignment of navigation tab items",
+      "legacyDecision": {
+        "intent": "edit",
+        "actionClass": "main_llm",
+        "toolFamily": "editor",
+        "needsLLM": true,
+        "needsVerification": false,
+        "confidence": 0.85,
+        "latencyMs": 0
+      },
+      "layaDecision": {
+        "intent": "explain",
+        "actionClass": "main_llm",
+        "toolFamily": "none",
+        "needsLLM": true,
+        "needsVerification": false,
+        "confidence": 0.88,
+        "inferenceSource": "fallback",
+        "modelVersion": "simpleide-laya-1.0.0",
+        "symbol_navigation": "none",
+        "risk": "low",
+        "stuck": false,
+        "latencyMs": 0
+      },
+      "agreement": false,
+      "disagreements": {
+        "intent": true,
+        "actionClass": false,
+        "toolFamily": true,
+        "needsLLM": false
+      },
+      "confidence": {
+        "legacy": 0.85,
+        "laya": 0.88
+      },
+      "latency": {
+        "legacyMs": 0,
+        "layaMs": 0
+      },
+      "fallback": true,
+      "fallbackReason": null,
+      "inferenceSource": "fallback",
+      "modelVersion": "simpleide-laya-1.0.0",
+      "contextDecision": {
+        "breadth": "focused",
+        "depth": 0,
+        "symbol_navigation": "none"
+      },
+      "toolFamilyDecision": {
+        "legacy": "editor",
+        "laya": "none"
+      },
+      "riskDecision": "low"
+    },
+    {
+      "timestamp": 1790582668014,
+      "request": "Update primary button hover state background color",
+      "legacyDecision": {
+        "intent": "edit",
+        "actionClass": "main_llm",
+        "toolFamily": "editor",
+        "needsLLM": true,
+        "needsVerification": false,
+        "confidence": 0.85,
+        "latencyMs": 0
+      },
+      "layaDecision": {
+        "intent": "edit",
+        "actionClass": "main_llm",
+        "toolFamily": "editor",
+        "needsLLM": true,
+        "needsVerification": false,
+        "confidence": 0.94,
+        "inferenceSource": "fallback",
+        "modelVersion": "simpleide-laya-1.0.0",
+        "symbol_navigation": "none",
+        "risk": "low",
+        "stuck": false,
+        "latencyMs": 0
+      },
+      "agreement": true,
+      "disagreements": {
+        "intent": false,
+        "actionClass": false,
+        "toolFamily": false,
+        "needsLLM": false
+      },
+      "confidence": {
+        "legacy": 0.85,
+        "laya": 0.94
+      },
+      "latency": {
+        "legacyMs": 0,
+        "layaMs": 0
+      },
+      "fallback": true,
+      "fallbackReason": "Styling / markup edit: symbol navigation excluded (hard negative)",
+      "inferenceSource": "fallback",
+      "modelVersion": "simpleide-laya-1.0.0",
+      "contextDecision": {
+        "breadth": "focused",
+        "depth": 0,
+        "symbol_navigation": "none"
+      },
+      "toolFamilyDecision": {
+        "legacy": "editor",
+        "laya": "editor"
+      },
+      "riskDecision": "low"
+    },
+    {
+      "timestamp": 1790582668014,
+      "request": "Explain how the ContextEngine pipeline retrieves chunks",
+      "legacyDecision": {
+        "intent": "explain",
+        "actionClass": "main_llm",
+        "toolFamily": "none",
+        "needsLLM": true,
+        "needsVerification": false,
+        "confidence": 0.89,
+        "latencyMs": 0
+      },
+      "layaDecision": {
+        "intent": "explain",
+        "actionClass": "main_llm",
+        "toolFamily": "none",
+        "needsLLM": true,
+        "needsVerification": false,
+        "confidence": 0.88,
+        "inferenceSource": "fallback",
+        "modelVersion": "simpleide-laya-1.0.0",
+        "symbol_navigation": "none",
+        "risk": "low",
+        "stuck": false,
+        "latencyMs": 0
+      },
+      "agreement": true,
+      "disagreements": {
+        "intent": false,
+        "actionClass": false,
+        "toolFamily": false,
+        "needsLLM": false
+      },
+      "confidence": {
+        "legacy": 0.89,
+        "laya": 0.88
+      },
+      "latency": {
+        "legacyMs": 0,
+        "layaMs": 0
+      },
+      "fallback": true,
+      "fallbackReason": null,
+      "inferenceSource": "fallback",
+      "modelVersion": "simpleide-laya-1.0.0",
+      "contextDecision": {
+        "breadth": "focused",
+        "depth": 0,
+        "symbol_navigation": "none"
+      },
+      "toolFamilyDecision": {
+        "legacy": "none",
+        "laya": "none"
+      },
+      "riskDecision": "low"
+    },
+    {
+      "timestamp": 1790582668014,
+      "request": "Explain the difference between SymbolGraph and lexical search",
+      "legacyDecision": {
+        "intent": "explain",
+        "actionClass": "main_llm",
+        "toolFamily": "none",
+        "needsLLM": true,
+        "needsVerification": false,
+        "confidence": 0.89,
+        "latencyMs": 0
+      },
+      "layaDecision": {
+        "intent": "search",
+        "actionClass": "local_tool",
+        "toolFamily": "search",
+        "needsLLM": false,
+        "needsVerification": false,
+        "confidence": 0.92,
+        "inferenceSource": "fallback",
+        "modelVersion": "simpleide-laya-1.0.0",
+        "symbol_navigation": "optional",
+        "risk": "low",
+        "stuck": false,
+        "latencyMs": 0
+      },
+      "agreement": false,
+      "disagreements": {
+        "intent": true,
+        "actionClass": true,
+        "toolFamily": true,
+        "needsLLM": true
+      },
+      "confidence": {
+        "legacy": 0.89,
+        "laya": 0.92
+      },
+      "latency": {
+        "legacyMs": 0,
+        "layaMs": 0
+      },
+      "fallback": true,
+      "fallbackReason": null,
+      "inferenceSource": "fallback",
+      "modelVersion": "simpleide-laya-1.0.0",
+      "contextDecision": {
+        "breadth": "focused",
+        "depth": 0,
+        "symbol_navigation": "optional"
+      },
+      "toolFamilyDecision": {
+        "legacy": "none",
+        "laya": "search"
+      },
+      "riskDecision": "low"
+    },
+    {
+      "timestamp": 1790582668014,
+      "request": "Update README.md with installation instructions for ONNX runtime",
+      "legacyDecision": {
+        "intent": "edit",
+        "actionClass": "main_llm",
+        "toolFamily": "editor",
+        "needsLLM": true,
+        "needsVerification": false,
+        "confidence": 0.85,
+        "latencyMs": 0
+      },
+      "layaDecision": {
+        "intent": "explain",
+        "actionClass": "main_llm",
+        "toolFamily": "none",
+        "needsLLM": true,
+        "needsVerification": false,
+        "confidence": 0.88,
+        "inferenceSource": "fallback",
+        "modelVersion": "simpleide-laya-1.0.0",
+        "symbol_navigation": "none",
+        "risk": "low",
+        "stuck": false,
+        "latencyMs": 0
+      },
+      "agreement": false,
+      "disagreements": {
+        "intent": true,
+        "actionClass": false,
+        "toolFamily": true,
+        "needsLLM": false
+      },
+      "confidence": {
+        "legacy": 0.85,
+        "laya": 0.88
+      },
+      "latency": {
+        "legacyMs": 0,
+        "layaMs": 0
+      },
+      "fallback": true,
+      "fallbackReason": null,
+      "inferenceSource": "fallback",
+      "modelVersion": "simpleide-laya-1.0.0",
+      "contextDecision": {
+        "breadth": "focused",
+        "depth": 0,
+        "symbol_navigation": "none"
+      },
+      "toolFamilyDecision": {
+        "legacy": "editor",
+        "laya": "none"
+      },
+      "riskDecision": "low"
+    },
+    {
+      "timestamp": 1790582668014,
+      "request": "Document the recovery protocol in docs/architecture.md",
+      "legacyDecision": {
+        "intent": "edit",
+        "actionClass": "main_llm",
+        "toolFamily": "editor",
+        "needsLLM": true,
+        "needsVerification": false,
+        "confidence": 0.85,
+        "latencyMs": 0
+      },
+      "layaDecision": {
+        "intent": "explain",
+        "actionClass": "main_llm",
+        "toolFamily": "none",
+        "needsLLM": true,
+        "needsVerification": false,
+        "confidence": 0.88,
+        "inferenceSource": "fallback",
+        "modelVersion": "simpleide-laya-1.0.0",
+        "symbol_navigation": "none",
+        "risk": "low",
+        "stuck": false,
+        "latencyMs": 0
+      },
+      "agreement": false,
+      "disagreements": {
+        "intent": true,
+        "actionClass": false,
+        "toolFamily": true,
+        "needsLLM": false
+      },
+      "confidence": {
+        "legacy": 0.85,
+        "laya": 0.88
+      },
+      "latency": {
+        "legacyMs": 0,
+        "layaMs": 0
+      },
+      "fallback": true,
+      "fallbackReason": null,
+      "inferenceSource": "fallback",
+      "modelVersion": "simpleide-laya-1.0.0",
+      "contextDecision": {
+        "breadth": "focused",
+        "depth": 0,
+        "symbol_navigation": "none"
+      },
+      "toolFamilyDecision": {
+        "legacy": "editor",
+        "laya": "none"
+      },
+      "riskDecision": "low"
+    },
+    {
+      "timestamp": 1790582668015,
+      "request": "What is the purpose of LocalModelRuntime?",
+      "legacyDecision": {
+        "intent": "explain",
+        "actionClass": "main_llm",
+        "toolFamily": "none",
+        "needsLLM": true,
+        "needsVerification": false,
+        "confidence": 0.89,
+        "latencyMs": 0
+      },
+      "layaDecision": {
+        "intent": "explain",
+        "actionClass": "main_llm",
+        "toolFamily": "none",
+        "needsLLM": true,
+        "needsVerification": false,
+        "confidence": 0.88,
+        "inferenceSource": "fallback",
+        "modelVersion": "simpleide-laya-1.0.0",
+        "symbol_navigation": "none",
+        "risk": "low",
+        "stuck": false,
+        "latencyMs": 0
+      },
+      "agreement": true,
+      "disagreements": {
+        "intent": false,
+        "actionClass": false,
+        "toolFamily": false,
+        "needsLLM": false
+      },
+      "confidence": {
+        "legacy": 0.89,
+        "laya": 0.88
+      },
+      "latency": {
+        "legacyMs": 0,
+        "layaMs": 0
+      },
+      "fallback": true,
+      "fallbackReason": null,
+      "inferenceSource": "fallback",
+      "modelVersion": "simpleide-laya-1.0.0",
+      "contextDecision": {
+        "breadth": "focused",
+        "depth": 0,
+        "symbol_navigation": "none"
+      },
+      "toolFamilyDecision": {
+        "legacy": "none",
+        "laya": "none"
+      },
+      "riskDecision": "low"
+    },
+    {
+      "timestamp": 1790582668015,
+      "request": "Fix syntax error on line 42 of authController.js",
+      "legacyDecision": {
+        "intent": "edit",
+        "actionClass": "main_llm",
+        "toolFamily": "editor",
+        "needsLLM": true,
+        "needsVerification": false,
+        "confidence": 0.85,
+        "latencyMs": 0
+      },
+      "layaDecision": {
+        "intent": "edit",
+        "actionClass": "main_llm",
+        "toolFamily": "editor",
+        "needsLLM": true,
+        "needsVerification": false,
+        "confidence": 0.95,
+        "inferenceSource": "fallback",
+        "modelVersion": "simpleide-laya-1.0.0",
+        "symbol_navigation": "none",
+        "context_breadth": "focused",
+        "graph_depth": "0",
+        "risk": "low",
+        "stuck": false,
+        "latencyMs": 0
+      },
+      "agreement": true,
+      "disagreements": {
+        "intent": false,
+        "actionClass": false,
+        "toolFamily": false,
+        "needsLLM": false
+      },
+      "confidence": {
+        "legacy": 0.85,
+        "laya": 0.95
+      },
+      "latency": {
+        "legacyMs": 0,
+        "layaMs": 0
+      },
+      "fallback": true,
+      "fallbackReason": null,
+      "inferenceSource": "fallback",
+      "modelVersion": "simpleide-laya-1.0.0",
+      "contextDecision": {
+        "breadth": "focused",
+        "depth": "0",
+        "symbol_navigation": "none"
+      },
+      "toolFamilyDecision": {
+        "legacy": "editor",
+        "laya": "editor"
+      },
+      "riskDecision": "low"
+    },
+    {
+      "timestamp": 1790582668015,
+      "request": "Fix syntax bug in return statement in tokenService.js",
+      "legacyDecision": {
+        "intent": "edit",
+        "actionClass": "main_llm",
+        "toolFamily": "editor",
+        "needsLLM": true,
+        "needsVerification": false,
+        "confidence": 0.85,
+        "latencyMs": 0
+      },
+      "layaDecision": {
+        "intent": "edit",
+        "actionClass": "main_llm",
+        "toolFamily": "editor",
+        "needsLLM": true,
+        "needsVerification": false,
+        "confidence": 0.95,
+        "inferenceSource": "fallback",
+        "modelVersion": "simpleide-laya-1.0.0",
+        "symbol_navigation": "none",
+        "context_breadth": "focused",
+        "graph_depth": "0",
+        "risk": "low",
+        "stuck": false,
+        "latencyMs": 0
+      },
+      "agreement": true,
+      "disagreements": {
+        "intent": false,
+        "actionClass": false,
+        "toolFamily": false,
+        "needsLLM": false
+      },
+      "confidence": {
+        "legacy": 0.85,
+        "laya": 0.95
+      },
+      "latency": {
+        "legacyMs": 0,
+        "layaMs": 0
+      },
+      "fallback": true,
+      "fallbackReason": null,
+      "inferenceSource": "fallback",
+      "modelVersion": "simpleide-laya-1.0.0",
+      "contextDecision": {
+        "breadth": "focused",
+        "depth": "0",
+        "symbol_navigation": "none"
+      },
+      "toolFamilyDecision": {
+        "legacy": "editor",
+        "laya": "editor"
+      },
+      "riskDecision": "low"
+    },
+    {
+      "timestamp": 1790582668015,
+      "request": "Fix syntax issue missing closing bracket in Login.jsx",
+      "legacyDecision": {
+        "intent": "edit",
+        "actionClass": "main_llm",
+        "toolFamily": "editor",
+        "needsLLM": true,
+        "needsVerification": false,
+        "confidence": 0.85,
+        "latencyMs": 0
+      },
+      "layaDecision": {
+        "intent": "edit",
+        "actionClass": "main_llm",
+        "toolFamily": "editor",
+        "needsLLM": true,
+        "needsVerification": false,
+        "confidence": 0.95,
+        "inferenceSource": "fallback",
+        "modelVersion": "simpleide-laya-1.0.0",
+        "symbol_navigation": "none",
+        "context_breadth": "focused",
+        "graph_depth": "0",
+        "risk": "low",
+        "stuck": false,
+        "latencyMs": 0
+      },
+      "agreement": true,
+      "disagreements": {
+        "intent": false,
+        "actionClass": false,
+        "toolFamily": false,
+        "needsLLM": false
+      },
+      "confidence": {
+        "legacy": 0.85,
+        "laya": 0.95
+      },
+      "latency": {
+        "legacyMs": 0,
+        "layaMs": 0
+      },
+      "fallback": true,
+      "fallbackReason": null,
+      "inferenceSource": "fallback",
+      "modelVersion": "simpleide-laya-1.0.0",
+      "contextDecision": {
+        "breadth": "focused",
+        "depth": "0",
+        "symbol_navigation": "none"
+      },
+      "toolFamilyDecision": {
+        "legacy": "editor",
+        "laya": "editor"
+      },
+      "riskDecision": "low"
+    },
+    {
+      "timestamp": 1790582668015,
+      "request": "Fix syntax error unexpected token in database.js",
+      "legacyDecision": {
+        "intent": "edit",
+        "actionClass": "main_llm",
+        "toolFamily": "editor",
+        "needsLLM": true,
+        "needsVerification": false,
+        "confidence": 0.85,
+        "latencyMs": 0
+      },
+      "layaDecision": {
+        "intent": "edit",
+        "actionClass": "main_llm",
+        "toolFamily": "editor",
+        "needsLLM": true,
+        "needsVerification": false,
+        "confidence": 0.95,
+        "inferenceSource": "fallback",
+        "modelVersion": "simpleide-laya-1.0.0",
+        "symbol_navigation": "none",
+        "context_breadth": "focused",
+        "graph_depth": "0",
+        "risk": "low",
+        "stuck": false,
+        "latencyMs": 0
+      },
+      "agreement": true,
+      "disagreements": {
+        "intent": false,
+        "actionClass": false,
+        "toolFamily": false,
+        "needsLLM": false
+      },
+      "confidence": {
+        "legacy": 0.85,
+        "laya": 0.95
+      },
+      "latency": {
+        "legacyMs": 0,
+        "layaMs": 0
+      },
+      "fallback": true,
+      "fallbackReason": null,
+      "inferenceSource": "fallback",
+      "modelVersion": "simpleide-laya-1.0.0",
+      "contextDecision": {
+        "breadth": "focused",
+        "depth": "0",
+        "symbol_navigation": "none"
+      },
+      "toolFamilyDecision": {
+        "legacy": "editor",
+        "laya": "editor"
+      },
+      "riskDecision": "low"
+    },
+    {
+      "timestamp": 1790582668015,
+      "request": "Fix syntax bug trailing comma in package.json",
+      "legacyDecision": {
+        "intent": "edit",
+        "actionClass": "main_llm",
+        "toolFamily": "editor",
+        "needsLLM": true,
+        "needsVerification": false,
+        "confidence": 0.85,
+        "latencyMs": 0
+      },
+      "layaDecision": {
+        "intent": "edit",
+        "actionClass": "main_llm",
+        "toolFamily": "editor",
+        "needsLLM": true,
+        "needsVerification": false,
+        "confidence": 0.95,
+        "inferenceSource": "fallback",
+        "modelVersion": "simpleide-laya-1.0.0",
+        "symbol_navigation": "none",
+        "context_breadth": "focused",
+        "graph_depth": "0",
+        "risk": "low",
+        "stuck": false,
+        "latencyMs": 0
+      },
+      "agreement": true,
+      "disagreements": {
+        "intent": false,
+        "actionClass": false,
+        "toolFamily": false,
+        "needsLLM": false
+      },
+      "confidence": {
+        "legacy": 0.85,
+        "laya": 0.95
+      },
+      "latency": {
+        "legacyMs": 0,
+        "layaMs": 0
+      },
+      "fallback": true,
+      "fallbackReason": null,
+      "inferenceSource": "fallback",
+      "modelVersion": "simpleide-laya-1.0.0",
+      "contextDecision": {
+        "breadth": "focused",
+        "depth": "0",
+        "symbol_navigation": "none"
+      },
+      "toolFamilyDecision": {
+        "legacy": "editor",
+        "laya": "editor"
+      },
+      "riskDecision": "low"
+    },
+    {
+      "timestamp": 1790582668015,
+      "request": "Stuck in infinite loop while attempting to parse token",
+      "legacyDecision": {
+        "intent": "debug",
+        "actionClass": "main_llm",
+        "toolFamily": "filesystem",
+        "needsLLM": true,
+        "needsVerification": true,
+        "confidence": 0.87,
+        "latencyMs": 0
+      },
+      "layaDecision": {
+        "intent": "explain",
+        "actionClass": "main_llm",
+        "toolFamily": "none",
+        "needsLLM": true,
+        "needsVerification": false,
+        "confidence": 0.88,
+        "inferenceSource": "fallback",
+        "modelVersion": "simpleide-laya-1.0.0",
+        "symbol_navigation": "none",
+        "risk": "low",
+        "stuck": false,
+        "latencyMs": 0
+      },
+      "agreement": false,
+      "disagreements": {
+        "intent": true,
+        "actionClass": false,
+        "toolFamily": true,
+        "needsLLM": false
+      },
+      "confidence": {
+        "legacy": 0.87,
+        "laya": 0.88
+      },
+      "latency": {
+        "legacyMs": 0,
+        "layaMs": 0
+      },
+      "fallback": true,
+      "fallbackReason": null,
+      "inferenceSource": "fallback",
+      "modelVersion": "simpleide-laya-1.0.0",
+      "contextDecision": {
+        "breadth": "focused",
+        "depth": 0,
+        "symbol_navigation": "none"
+      },
+      "toolFamilyDecision": {
+        "legacy": "filesystem",
+        "laya": "none"
+      },
+      "riskDecision": "low"
+    },
+    {
+      "timestamp": 1790582668015,
+      "request": "Command timed out three times consecutively in runner",
+      "legacyDecision": {
+        "intent": "debug",
+        "actionClass": "main_llm",
+        "toolFamily": "filesystem",
+        "needsLLM": true,
+        "needsVerification": true,
+        "confidence": 0.87,
+        "latencyMs": 0
+      },
+      "layaDecision": {
+        "intent": "explain",
+        "actionClass": "main_llm",
+        "toolFamily": "none",
+        "needsLLM": true,
+        "needsVerification": false,
+        "confidence": 0.88,
+        "inferenceSource": "fallback",
+        "modelVersion": "simpleide-laya-1.0.0",
+        "symbol_navigation": "none",
+        "risk": "low",
+        "stuck": false,
+        "latencyMs": 0
+      },
+      "agreement": false,
+      "disagreements": {
+        "intent": true,
+        "actionClass": false,
+        "toolFamily": true,
+        "needsLLM": false
+      },
+      "confidence": {
+        "legacy": 0.87,
+        "laya": 0.88
+      },
+      "latency": {
+        "legacyMs": 0,
+        "layaMs": 0
+      },
+      "fallback": true,
+      "fallbackReason": null,
+      "inferenceSource": "fallback",
+      "modelVersion": "simpleide-laya-1.0.0",
+      "contextDecision": {
+        "breadth": "focused",
+        "depth": 0,
+        "symbol_navigation": "none"
+      },
+      "toolFamilyDecision": {
+        "legacy": "filesystem",
+        "laya": "none"
+      },
+      "riskDecision": "low"
+    },
+    {
+      "timestamp": 1790582668015,
+      "request": "Failed edit on authService.js after 3 attempts with syntax error",
+      "legacyDecision": {
+        "intent": "debug",
+        "actionClass": "main_llm",
+        "toolFamily": "filesystem",
+        "needsLLM": true,
+        "needsVerification": true,
+        "confidence": 0.87,
+        "latencyMs": 0
+      },
+      "layaDecision": {
+        "intent": "debug",
+        "actionClass": "main_llm",
+        "toolFamily": "diagnostics",
+        "needsLLM": true,
+        "needsVerification": true,
+        "confidence": 0.91,
+        "inferenceSource": "fallback",
+        "modelVersion": "simpleide-laya-1.0.0",
+        "symbol_navigation": "required",
+        "risk": "medium",
+        "stuck": false,
+        "latencyMs": 0
+      },
+      "agreement": false,
+      "disagreements": {
+        "intent": false,
+        "actionClass": false,
+        "toolFamily": true,
+        "needsLLM": false
+      },
+      "confidence": {
+        "legacy": 0.87,
+        "laya": 0.91
+      },
+      "latency": {
+        "legacyMs": 0,
+        "layaMs": 0
+      },
+      "fallback": true,
+      "fallbackReason": null,
+      "inferenceSource": "fallback",
+      "modelVersion": "simpleide-laya-1.0.0",
+      "contextDecision": {
+        "breadth": "focused",
+        "depth": 1,
+        "symbol_navigation": "required"
+      },
+      "toolFamilyDecision": {
+        "legacy": "filesystem",
+        "laya": "diagnostics"
+      },
+      "riskDecision": "medium"
+    },
+    {
+      "timestamp": 1790582668015,
+      "request": "Agent is repeating the same search without making progress",
+      "legacyDecision": {
+        "intent": "debug",
+        "actionClass": "main_llm",
+        "toolFamily": "filesystem",
+        "needsLLM": true,
+        "needsVerification": true,
+        "confidence": 0.87,
+        "latencyMs": 0
+      },
+      "layaDecision": {
+        "intent": "search",
+        "actionClass": "local_tool",
+        "toolFamily": "search",
+        "needsLLM": false,
+        "needsVerification": false,
+        "confidence": 0.92,
+        "inferenceSource": "fallback",
+        "modelVersion": "simpleide-laya-1.0.0",
+        "symbol_navigation": "optional",
+        "risk": "low",
+        "stuck": false,
+        "latencyMs": 0
+      },
+      "agreement": false,
+      "disagreements": {
+        "intent": true,
+        "actionClass": true,
+        "toolFamily": true,
+        "needsLLM": true
+      },
+      "confidence": {
+        "legacy": 0.87,
+        "laya": 0.92
+      },
+      "latency": {
+        "legacyMs": 0,
+        "layaMs": 0
+      },
+      "fallback": true,
+      "fallbackReason": null,
+      "inferenceSource": "fallback",
+      "modelVersion": "simpleide-laya-1.0.0",
+      "contextDecision": {
+        "breadth": "focused",
+        "depth": 0,
+        "symbol_navigation": "optional"
+      },
+      "toolFamilyDecision": {
+        "legacy": "filesystem",
+        "laya": "search"
+      },
+      "riskDecision": "low"
+    },
+    {
+      "timestamp": 1790582668015,
+      "request": "Terminal output continuously hangs on dev server startup",
+      "legacyDecision": {
+        "intent": "debug",
+        "actionClass": "main_llm",
+        "toolFamily": "filesystem",
+        "needsLLM": true,
+        "needsVerification": true,
+        "confidence": 0.87,
+        "latencyMs": 0
+      },
+      "layaDecision": {
+        "intent": "explain",
+        "actionClass": "main_llm",
+        "toolFamily": "none",
+        "needsLLM": true,
+        "needsVerification": false,
+        "confidence": 0.88,
+        "inferenceSource": "fallback",
+        "modelVersion": "simpleide-laya-1.0.0",
+        "symbol_navigation": "none",
+        "risk": "low",
+        "stuck": false,
+        "latencyMs": 0
+      },
+      "agreement": false,
+      "disagreements": {
+        "intent": true,
+        "actionClass": false,
+        "toolFamily": true,
+        "needsLLM": false
+      },
+      "confidence": {
+        "legacy": 0.87,
+        "laya": 0.88
+      },
+      "latency": {
+        "legacyMs": 0,
+        "layaMs": 0
+      },
+      "fallback": true,
+      "fallbackReason": null,
+      "inferenceSource": "fallback",
+      "modelVersion": "simpleide-laya-1.0.0",
+      "contextDecision": {
+        "breadth": "focused",
+        "depth": 0,
+        "symbol_navigation": "none"
+      },
+      "toolFamilyDecision": {
+        "legacy": "filesystem",
+        "laya": "none"
+      },
+      "riskDecision": "low"
+    }
+  ]
+}

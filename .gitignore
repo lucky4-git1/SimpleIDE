@@ -32,5 +32,16 @@ release
 *.tgz
 *.tar.gz
 
+# Model weights and checkpoints (Strictly isolated outside Git)
+*.onnx
+*.onnx.*
+*.pt
+*.bin
+*.tar
+models/**/*.onnx
+models/**/*.onnx.*
+training/checkpoints/
+
 # OS
 Thumbs.db
+

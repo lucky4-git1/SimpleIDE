@@ -1,0 +1,63 @@
+{
+  "phases": {
+    "modelAcquisition": {
+      "payloadSizeMB": 100,
+      "durationMs": 594.46,
+      "throughputMBPerSec": 168.22,
+      "atomicInstallVerified": true
+    },
+    "diskToRamLoad": {
+      "durationMs": 86.44,
+      "throughputMBPerSec": 1156.84,
+      "bufferSizeBytes": 104857600
+    },
+    "sessionInitialization": {
+      "durationMs": 0.28,
+      "sessionActive": true
+    },
+    "firstInference": {
+      "durationMs": 1.74,
+      "inferenceSource": "onnx"
+    },
+    "warmInference": {
+      "durationMs": 0.35,
+      "inferenceSource": "onnx"
+    },
+    "tenQuestionBatchInference": {
+      "durationMs": 0.51,
+      "questionsEvaluated": 10,
+      "inferenceSource": "onnx"
+    },
+    "concurrentRequests": {
+      "concurrency": 5,
+      "totalWallMs": 0.25,
+      "avgPerRequestMs": 0.05,
+      "allOnnx": true
+    },
+    "fallbackComparison": {
+      "avgMs": 0.022,
+      "inferenceSource": "fallback"
+    }
+  },
+  "latencyMetrics": {
+    "iterations": 120,
+    "minMs": 0.033,
+    "maxMs": 0.811,
+    "avgMs": 0.096,
+    "p50Ms": 0.067,
+    "p95Ms": 0.284,
+    "p99Ms": 0.7
+  },
+  "memoryMetrics": {
+    "initialRssMB": 55.13,
+    "peakRssMB": 258.7,
+    "deltaRssMB": 203.57,
+    "heapUsedMB": 6.15,
+    "heapTotalMB": 8.32
+  },
+  "cpuMetrics": {
+    "userCpuMs": 812,
+    "systemCpuMs": 172,
+    "totalCpuMs": 984
+  }
+}

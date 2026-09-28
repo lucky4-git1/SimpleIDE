@@ -1,0 +1,38 @@
+{
+  "lifecycle": {
+    "applicationStartupMs": 10.65,
+    "modelAcquisitionMs": 462.7,
+    "acquisitionThroughputMBs": 216.12,
+    "diskToRamLoadMs": 55.5,
+    "diskReadThroughputMBs": 1801.75,
+    "onnxSessionInitMs": 0.39
+  },
+  "inference": {
+    "coldStartInferenceMs": 1.83,
+    "warmP50Ms": 0.012,
+    "warmP95Ms": 0.042,
+    "warmP99Ms": 0.426,
+    "warmMeanMs": 0.021
+  },
+  "contextAndGraph": {
+    "contextPlannerP50Ms": 0.035,
+    "contextPlannerMeanMs": 0.088,
+    "symbolGraphP50Ms": 0.009,
+    "symbolGraphMeanMs": 0.031
+  },
+  "decisionComparison": {
+    "legacyMeanMs": 0.066,
+    "legacyP95Ms": 0.032,
+    "layaMeanMs": 0.046,
+    "layaP95Ms": 0.042,
+    "deltaMs": -0.02
+  },
+  "resources": {
+    "peakRssMB": 267.01,
+    "heapUsedMB": 12.08,
+    "heapTotalMB": 19.57,
+    "externalMB": 202.16,
+    "cpuUserMs": 734,
+    "cpuSystemMs": 219
+  }
+}

@@ -1,58 +1,44 @@
-# Prime Router Training Pipeline — SimpleIDE
+# SimpleIDE Laya Fine-Tuning Pipeline
 
-This directory contains the reproducible dataset generation, validation, training, calibration, and ONNX export pipeline for the SimpleIDE Prime Router local decision model.
-
----
-
-## Directory Structure
-
-```
-training/
-├── README.md               # Pipeline documentation & instructions
-├── schemas/                # Canonical JSON schemas
-│   ├── decision.schema.json
-│   └── trace.schema.json
-├── seed/                   # Hand-curated seed samples
-│   └── seed_data.json
-├── generated/              # Synthesized samples & hard negatives
-├── validated/              # Validated & deduplicated dataset
-├── splits/                 # Train / Validation / Test partitions (80/10/10)
-├── scripts/                # Reproducible execution scripts
-│   ├── generate_dataset.py
-│   ├── validate_and_split.py
-│   ├── train_router.py
-│   └── export_onnx.py
-├── experiments/            # Saved checkpoints & serialized models
-└── evaluation/             # Metrics, confusion analysis, ECE calibration
-```
+This directory contains the domain fine-tuning and calibration pipeline for specializing the **Laya System-1 Decision Model** (`convaiinnovations/laya` / `receptron/laya-onnx`) into **SimpleIDE-Laya**.
 
 ---
 
-## Pipeline Execution Steps
+## 1. Upstream Model Sources
+- **Base Architecture**: `convaiinnovations/laya` (ModernBERT-large encoder + decision head)
+- **Official ONNX Distribution**: `receptron/laya-onnx` (revision: `4e7492c6b3e9a11db9cfcbf14be791197ad679ba`)
+- **Node.js Runtime**: `@receptron/laya` / `onnxruntime-node`
+- **License**: Apache-2.0 (model weights) / MIT (ONNX runtime)
 
-### 1. Generate Synthetic Data and Hard Negatives
-```bash
-python training/scripts/generate_dataset.py
-```
-Synthesizes thousands of domain-specific SimpleIDE agent turns, including file operations, git commands, terminal executions, state transitions, and critical hard negatives (e.g. questions about commands vs command execution).
+---
 
-### 2. Validate, Deduplicate, and Split Dataset
-```bash
-python training/scripts/validate_and_split.py
-```
-Validates against `decision.schema.json`, deduplicates samples based on normalized request and state, and partitions into:
-- `splits/train.json` (80%)
-- `splits/val.json` (10%)
-- `splits/test.json` (10%)
+## 2. Dataset Synthesis
+Generate the 10,000–30,000 structured coding agent decision examples:
 
-### 3. Fine-Tune and Calibrate Model
 ```bash
-python training/scripts/train_router.py
+node training/dataset_generator.js
 ```
-Trains the multi-head classifier, measures accuracy, F1, Expected Calibration Error (ECE), and Brier score, outputs `evaluation/metrics.json` and `evaluation/error_analysis.json`.
 
-### 4. Export and Optimize ONNX Model
+This outputs:
+- `training/data/train.jsonl` (80%): 8,000 examples
+- `training/data/val.jsonl` (10%): 1,000 examples
+- `training/data/test.jsonl` (10%): 1,000 examples (untouched test set)
+
+### Dataset Features:
+- **3 Quality Tiers**: Deterministic symbol rules (Tier 1), repository call graph ground truth (Tier 2), and curated agent scenarios (Tier 3).
+- **Hard Negatives**: Style and wording edits where SymbolGraph is strictly unnecessary, preventing semantic navigation overuse.
+
+---
+
+## 3. Hardware Requirements & GPU Training
+Per Section 16 of the specification:
+- Local development machines (CPU) generate data, run validations, and execute ONNX runtime inference.
+- Full GPU training should be executed on an NVIDIA CUDA environment:
+
 ```bash
-python training/scripts/export_onnx.py
+pip install -r training/requirements.txt
+python training/train_laya.py --config training/config.yaml
 ```
-Generates `assets/models/prime-router/prime-router.onnx` and `model-manifest.json` with SHA256 checksum and tensor shapes for consumption by the Electron main process.
+
+The fine-tuned model checkpoint is saved to:
+`models/laya/simpleide/simpleide-laya.onnx`
