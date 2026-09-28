@@ -19,6 +19,7 @@ export class SymbolRecord {
   }) {
     this.id = id || `${file}:${startLine}:${kind}:${name}`
     this.name = name
+    this.symbol = name
     this.kind = kind // 'function' | 'class' | 'method' | 'variable' | 'constant' | 'interface' | 'type' | 'enum' | 'component' | 'export'
     this.file = file
     this.startLine = startLine
@@ -39,6 +40,10 @@ class BabelAstParser {
     const symbols = []
     const imports = []
     const exports = []
+    const calls = []
+    const implementations = []
+    const diagnostics = []
+    const isTest = /\.(?:test|spec)\.[jt]sx?$/i.test(relPath) || /(?:^|\/)(?:__tests__|tests|specs)\//i.test(relPath)
 
     const ext = relPath.split('.').pop()?.toLowerCase() || 'js'
     const isTypeScript = ext === 'ts' || ext === 'tsx' || ext === 'mts' || ext === 'cts'
@@ -69,6 +74,13 @@ class BabelAstParser {
         errorRecovery: true
       })
     } catch (err) {
+      diagnostics.push({
+        file: relPath,
+        line: err.loc?.line || 1,
+        column: err.loc?.column || 0,
+        message: err.message || 'Syntax parse error',
+        severity: 'error'
+      })
       // Fallback for non-module or script files
       try {
         ast = babelParser.parse(source, {
@@ -77,22 +89,36 @@ class BabelAstParser {
           errorRecovery: true
         })
       } catch {
-        return null // Trigger regex fallback if AST parsing fails completely
+        return { symbols, imports, exports, calls, implementations, diagnostics, isTest }
       }
     }
 
-    if (!ast || !ast.program) return null
+    if (ast?.errors?.length) {
+      for (const err of ast.errors) {
+        diagnostics.push({
+          file: relPath,
+          line: err.loc?.line || 1,
+          column: err.loc?.column || 0,
+          message: err.message,
+          severity: 'error'
+        })
+      }
+    }
+
+    if (!ast || !ast.program) {
+      return { symbols, imports, exports, calls, implementations, diagnostics, isTest }
+    }
 
     const body = ast.program.body || []
 
     for (const node of body) {
-      this.processNode(node, relPath, symbols, imports, exports, source)
+      this.processNode(node, relPath, symbols, imports, exports, calls, implementations, source)
     }
 
-    return { symbols, imports, exports }
+    return { symbols, imports, exports, calls, implementations, diagnostics, isTest }
   }
 
-  processNode(node, relPath, symbols, imports, exports, source, parentName = null, isExported = false) {
+  processNode(node, relPath, symbols, imports, exports, calls, implementations, source, parentName = null, isExported = false) {
     if (!node) return
 
     // ── Import Statements ──
@@ -112,7 +138,7 @@ class BabelAstParser {
     // ── Export Named / Default Declarations ──
     if (node.type === 'ExportNamedDeclaration') {
       if (node.declaration) {
-        this.processNode(node.declaration, relPath, symbols, imports, exports, source, parentName, true)
+        this.processNode(node.declaration, relPath, symbols, imports, exports, calls, implementations, source, parentName, true)
       }
       if (node.specifiers) {
         for (const spec of node.specifiers) {
@@ -135,7 +161,7 @@ class BabelAstParser {
       }
       exports.push({ file: relPath, name, isDefault: true })
       if (decl && typeof decl === 'object') {
-        this.processNode(decl, relPath, symbols, imports, exports, source, parentName, false)
+        this.processNode(decl, relPath, symbols, imports, exports, calls, implementations, source, parentName, false)
       }
       return
     }
@@ -160,6 +186,9 @@ class BabelAstParser {
           signature: sig
         }))
         if (isExported) exports.push({ file: relPath, name, isDefault: false })
+        if (node.body) {
+          this.extractCallsFromBody(node.body, name, relPath, calls)
+        }
       }
       return
     }
@@ -168,6 +197,15 @@ class BabelAstParser {
     if (node.type === 'ClassDeclaration') {
       const name = node.id?.name
       if (name) {
+        const superClass = node.superClass?.name || (node.superClass?.type === 'MemberExpression' ? `${node.superClass.object?.name}.${node.superClass.property?.name}` : null)
+        const implementsList = (node.implements || []).map(i => i.id?.name || i.expression?.name).filter(Boolean)
+        implementations.push({
+          name,
+          extends: superClass,
+          implements: implementsList,
+          file: relPath
+        })
+
         symbols.push(new SymbolRecord({
           name,
           kind: 'class',
@@ -178,7 +216,7 @@ class BabelAstParser {
           endColumn: node.loc?.end.column || 0,
           exported: isExported,
           parent: parentName,
-          signature: `class ${name}`
+          signature: `class ${name}${superClass ? ` extends ${superClass}` : ''}`
         }))
         if (isExported) exports.push({ file: relPath, name, isDefault: false })
 
@@ -199,6 +237,9 @@ class BabelAstParser {
               parent: name,
               signature: `${name}.${methodName}()`
             }))
+            if (member.body) {
+              this.extractCallsFromBody(member.body, `${name}.${methodName}`, relPath, calls)
+            }
           }
         }
       }
@@ -229,6 +270,10 @@ class BabelAstParser {
             signature: `${node.kind} ${name}`
           }))
           if (isExported) exports.push({ file: relPath, name, isDefault: false })
+
+          if (isFuncInit && declarator.init?.body) {
+            this.extractCallsFromBody(declarator.init.body, name, relPath, calls)
+          }
         }
       }
       return
@@ -236,6 +281,14 @@ class BabelAstParser {
 
     // ── TypeScript Types, Interfaces, Enums ──
     if (node.type === 'TSInterfaceDeclaration' && node.id?.name) {
+      const extendsList = (node.extends || []).map(e => e.id?.name || e.expression?.name).filter(Boolean)
+      implementations.push({
+        name: node.id.name,
+        extends: extendsList,
+        implements: [],
+        file: relPath
+      })
+
       symbols.push(new SymbolRecord({
         name: node.id.name,
         kind: 'interface',
@@ -272,7 +325,51 @@ class BabelAstParser {
         signature: `enum ${node.id.name}`
       }))
       if (isExported) exports.push({ file: relPath, name: node.id.name, isDefault: false })
+      return
     }
+
+    // ── Top-level Expression Statements (e.g. test(...), describe(...), function calls) ──
+    if (node.type === 'ExpressionStatement' && node.expression) {
+      if (node.expression.type === 'CallExpression') {
+        const callee = node.expression.callee?.name || node.expression.callee?.property?.name || '<module>'
+        this.extractCallsFromBody(node.expression, callee, relPath, calls)
+      }
+    }
+  }
+
+  extractCallsFromBody(bodyNode, callerName, relPath, calls) {
+    if (!bodyNode) return
+    const walk = (n) => {
+      if (!n || typeof n !== 'object') return
+      if (n.type === 'CallExpression') {
+        let callee = null
+        if (n.callee?.type === 'Identifier') {
+          callee = n.callee.name
+        } else if (n.callee?.type === 'MemberExpression') {
+          if (n.callee.property?.name) {
+            callee = n.callee.property.name
+          }
+        }
+        if (callee) {
+          calls.push({
+            caller: callerName,
+            callee,
+            file: relPath,
+            line: n.loc?.start.line || 1
+          })
+        }
+      }
+      for (const key of Object.keys(n)) {
+        if (key === 'loc' || key === 'comments' || key === 'tokens') continue
+        const val = n[key]
+        if (Array.isArray(val)) {
+          for (const item of val) walk(item)
+        } else if (val && typeof val === 'object') {
+          walk(val)
+        }
+      }
+    }
+    walk(bodyNode)
   }
 
   extractSignature(node, source) {

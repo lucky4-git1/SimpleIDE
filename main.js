@@ -10,6 +10,8 @@ import { registerAiIPC } from './src/main/ipc/ai.ipc.js'
 import { registerProcessIPC } from './src/main/ipc/process.ipc.js'
 import { registerDbIPC } from './src/main/ipc/db.ipc.js'
 import { registerSkillsIPC } from './src/main/ipc/skills.ipc.js'
+import { registerPrimeRouterIPC } from './src/main/ipc/primeRouter.ipc.js'
+import { localModelRuntime } from './src/main/primeRouter/LocalModelRuntime.js'
 import { databaseManager } from './electron/database/DatabaseManager.js'
 
 const __filename = fileURLToPath(import.meta.url)
@@ -34,10 +36,13 @@ function broadcastReload() {
 }
 
 function createWindow() {
+  console.log('[MAIN] Creating BrowserWindow...')
   mainWindow = new BrowserWindow({
     width: 1200,
     height: 800,
+    title: 'Simple IDE',
     icon: join(__dirname, '../assets/icon.ico'),
+    show: true,
     webPreferences: {
       preload: join(__dirname, 'preload.js'),
       contextIsolation: true,
@@ -45,12 +50,35 @@ function createWindow() {
     },
   })
 
-  if (process.env.VITE_DEV_SERVER_URL) {
-    mainWindow.loadURL(process.env.VITE_DEV_SERVER_URL)
+  mainWindow.webContents.on('did-finish-load', () => {
+    console.log('[MAIN] WebContents did-finish-load!')
+  })
+
+  mainWindow.webContents.on('did-fail-load', (e, code, desc) => {
+    console.error('[MAIN] WebContents did-fail-load:', code, desc)
+  })
+
+  mainWindow.webContents.on('console-message', (e, level, msg) => {
+    console.log('[RENDERER CONSOLE]', msg)
+  })
+
+  const targetUrl = process.env.VITE_DEV_SERVER_URL
+  if (targetUrl) {
+    console.log('[MAIN] Loading dev server URL:', targetUrl)
+    mainWindow.loadURL(targetUrl)
   } else {
-    mainWindow.loadFile(join(__dirname, '../dist/index.html'))
+    const indexPath = join(__dirname, '../dist/index.html')
+    console.log('[MAIN] Loading local file:', indexPath)
+    mainWindow.loadFile(indexPath)
   }
+
+  mainWindow.once('ready-to-show', () => {
+    console.log('[MAIN] ready-to-show fired!')
+    mainWindow.show()
+    mainWindow.focus()
+  })
 }
+
 
 app.whenReady().then(() => {
   createWindow()
@@ -62,6 +90,10 @@ app.whenReady().then(() => {
   registerProcessIPC()
   registerDbIPC()
   registerSkillsIPC()
+  registerPrimeRouterIPC()
+
+  // Initialize Prime Router local decision runtime in background
+  localModelRuntime.initInBackground()
 
   // Server & Browser IPCs
   ipcMain.handle('start-server', async (_, folderPath) => {

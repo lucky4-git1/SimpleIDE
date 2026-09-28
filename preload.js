@@ -28,6 +28,7 @@ contextBridge.exposeInMainWorld('api', {
   getProcess: (id) => ipcRenderer.invoke('process-get', id),
   listProcesses: () => ipcRenderer.invoke('process-list'),
   readProcessOutput: (params) => ipcRenderer.invoke('process-output', params),
+  cleanupProcessRun: (runId) => ipcRenderer.invoke('process-cleanup-run', runId),
   browserAction: (opts) => ipcRenderer.invoke('browser-action', opts),
   startServer: (folderPath) => ipcRenderer.invoke('start-server', folderPath),
   openInBrowser: (relativePath) => ipcRenderer.invoke('open-in-browser', relativePath),
@@ -139,5 +140,12 @@ contextBridge.exposeInMainWorld('api', {
     integrityCheck: () => ipcRenderer.invoke('db:storage:integrityCheck'),
     clearHistory: () => ipcRenderer.invoke('db:storage:prune', { runDays: 0, toolDays: 0, verificationDays: 0 }),
     clearAllData: () => ipcRenderer.invoke('db:storage:clearAll')
+  },
+
+  primeRouter: {
+    decide: (params) => ipcRenderer.invoke('prime-router:decide', params),
+    batchDecide: (items) => ipcRenderer.invoke('prime-router:batch', items),
+    getStatus: () => ipcRenderer.invoke('prime-router:status'),
+    init: () => ipcRenderer.invoke('prime-router:init')
   }
 })

@@ -1,0 +1,2738 @@
+[
+  {
+    "id": "neg-02030",
+    "request": "Can you explain how git log -n 10 works behind the scenes?",
+    "state": "IDLE",
+    "availableTools": [
+      "run_command",
+      "read_file",
+      "git_status"
+    ],
+    "intent": "explain",
+    "actionClass": "main_llm",
+    "toolFamily": "none",
+    "needsLLM": true,
+    "needsVerification": false,
+    "isHardNegative": true,
+    "source": "hard_negative"
+  },
+  {
+    "id": "syn-00496",
+    "request": "find usages of authentication in the codebase",
+    "state": "EXECUTING",
+    "availableTools": [
+      "search_workspace",
+      "read_file"
+    ],
+    "intent": "search",
+    "actionClass": "local_tool",
+    "toolFamily": "search",
+    "needsLLM": false,
+    "needsVerification": false,
+    "isHardNegative": false,
+    "source": "synthetic"
+  },
+  {
+    "id": "syn-00349",
+    "request": "find all occurrences of cancellation",
+    "state": "IDLE",
+    "availableTools": [
+      "search_workspace",
+      "read_file"
+    ],
+    "intent": "search",
+    "actionClass": "local_tool",
+    "toolFamily": "search",
+    "needsLLM": false,
+    "needsVerification": false,
+    "isHardNegative": false,
+    "source": "synthetic"
+  },
+  {
+    "id": "syn-00573",
+    "request": "run npm run lint",
+    "state": "IDLE",
+    "availableTools": [
+      "run_command"
+    ],
+    "intent": "run_command",
+    "actionClass": "local_tool",
+    "toolFamily": "terminal",
+    "needsLLM": false,
+    "needsVerification": false,
+    "isHardNegative": false,
+    "source": "synthetic"
+  },
+  {
+    "id": "syn-01568",
+    "request": "scaffold a module for error classification at src/main/ipc/fs.ipc.js",
+    "state": "PLANNING",
+    "availableTools": [
+      "create_file",
+      "write_file",
+      "read_file"
+    ],
+    "intent": "create",
+    "actionClass": "main_llm",
+    "toolFamily": "editor",
+    "needsLLM": true,
+    "needsVerification": true,
+    "isHardNegative": false,
+    "source": "synthetic"
+  },
+  {
+    "id": "syn-01253",
+    "request": "find why symbol resolution is failing",
+    "state": "REPAIRING",
+    "availableTools": [
+      "search_workspace",
+      "read_file",
+      "run_command"
+    ],
+    "intent": "debug",
+    "actionClass": "main_llm",
+    "toolFamily": "filesystem",
+    "needsLLM": true,
+    "needsVerification": true,
+    "isHardNegative": false,
+    "source": "synthetic"
+  },
+  {
+    "id": "syn-01700",
+    "request": "update electron/database/CodeIntelligenceService.js to support safeStorage encryption",
+    "state": "PLANNING",
+    "availableTools": [
+      "edit_file",
+      "read_file"
+    ],
+    "intent": "edit",
+    "actionClass": "main_llm",
+    "toolFamily": "editor",
+    "needsLLM": true,
+    "needsVerification": true,
+    "isHardNegative": false,
+    "source": "synthetic"
+  },
+  {
+    "id": "syn-01135",
+    "request": "walk me through the logic in src/services/agentEngine/DatabaseManager.js",
+    "state": "IDLE",
+    "availableTools": [
+      "read_file"
+    ],
+    "intent": "explain",
+    "actionClass": "main_llm",
+    "toolFamily": "none",
+    "needsLLM": true,
+    "needsVerification": false,
+    "isHardNegative": false,
+    "source": "synthetic"
+  },
+  {
+    "id": "syn-01418",
+    "request": "troubleshoot state management failure in electron/database/autocompleteService.js",
+    "state": "EXECUTING",
+    "availableTools": [
+      "search_workspace",
+      "read_file",
+      "run_command"
+    ],
+    "intent": "debug",
+    "actionClass": "main_llm",
+    "toolFamily": "filesystem",
+    "needsLLM": true,
+    "needsVerification": true,
+    "isHardNegative": false,
+    "source": "synthetic"
+  },
+  {
+    "id": "syn-00296",
+    "request": "browse src/main/ipc/git.ipc.js",
+    "state": "EXECUTING",
+    "availableTools": [
+      "read_file",
+      "list_files"
+    ],
+    "intent": "inspect",
+    "actionClass": "local_tool",
+    "toolFamily": "filesystem",
+    "needsLLM": false,
+    "needsVerification": false,
+    "isHardNegative": false,
+    "source": "synthetic"
+  },
+  {
+    "id": "neg-02231",
+    "request": "Inspect src/utils/hash.js but don't modify anything.",
+    "state": "IDLE",
+    "availableTools": [
+      "run_command",
+      "read_file",
+      "git_status"
+    ],
+    "intent": "inspect",
+    "actionClass": "local_tool",
+    "toolFamily": "filesystem",
+    "needsLLM": false,
+    "needsVerification": false,
+    "isHardNegative": true,
+    "source": "hard_negative"
+  },
+  {
+    "id": "neg-02275",
+    "request": "Look at src/components/ApprovalDialog.jsx without making any changes.",
+    "state": "IDLE",
+    "availableTools": [
+      "run_command",
+      "read_file",
+      "git_status"
+    ],
+    "intent": "inspect",
+    "actionClass": "local_tool",
+    "toolFamily": "filesystem",
+    "needsLLM": false,
+    "needsVerification": false,
+    "isHardNegative": true,
+    "source": "hard_negative"
+  },
+  {
+    "id": "neg-02056",
+    "request": "Why should I run vite build in this situation?",
+    "state": "IDLE",
+    "availableTools": [
+      "run_command",
+      "read_file",
+      "git_status"
+    ],
+    "intent": "explain",
+    "actionClass": "main_llm",
+    "toolFamily": "none",
+    "needsLLM": true,
+    "needsVerification": false,
+    "isHardNegative": true,
+    "source": "hard_negative"
+  },
+  {
+    "id": "syn-00602",
+    "request": "execute npm run test in terminal",
+    "state": "EXECUTING",
+    "availableTools": [
+      "run_command"
+    ],
+    "intent": "run_command",
+    "actionClass": "local_tool",
+    "toolFamily": "terminal",
+    "needsLLM": false,
+    "needsVerification": false,
+    "isHardNegative": false,
+    "source": "synthetic"
+  },
+  {
+    "id": "syn-01672",
+    "request": "fix the bug in src/utils/formatters.js around line 40",
+    "state": "PLANNING",
+    "availableTools": [
+      "edit_file",
+      "read_file"
+    ],
+    "intent": "edit",
+    "actionClass": "main_llm",
+    "toolFamily": "editor",
+    "needsLLM": true,
+    "needsVerification": true,
+    "isHardNegative": false,
+    "source": "synthetic"
+  },
+  {
+    "id": "syn-01770",
+    "request": "optimize the performance of handleModelSelector in src/utils/formatters.js",
+    "state": "PLANNING",
+    "availableTools": [
+      "edit_file",
+      "read_file"
+    ],
+    "intent": "edit",
+    "actionClass": "main_llm",
+    "toolFamily": "editor",
+    "needsLLM": true,
+    "needsVerification": true,
+    "isHardNegative": false,
+    "source": "synthetic"
+  },
+  {
+    "id": "syn-01869",
+    "request": "revert recent changes to src/services/CodeIntelligenceService.js",
+    "state": "EVALUATING",
+    "availableTools": [
+      "rollback",
+      "git_diff"
+    ],
+    "intent": "recover",
+    "actionClass": "recovery",
+    "toolFamily": "diagnostics",
+    "needsLLM": false,
+    "needsVerification": false,
+    "isHardNegative": false,
+    "source": "synthetic"
+  },
+  {
+    "id": "syn-01797",
+    "request": "modify src/services/agentEngine/CrashRecoveryService.js to handle errors cleanly",
+    "state": "PLANNING",
+    "availableTools": [
+      "edit_file",
+      "read_file"
+    ],
+    "intent": "edit",
+    "actionClass": "main_llm",
+    "toolFamily": "editor",
+    "needsLLM": true,
+    "needsVerification": true,
+    "isHardNegative": false,
+    "source": "synthetic"
+  },
+  {
+    "id": "syn-00986",
+    "request": "git commit -m 'feat: update' in the repo",
+    "state": "IDLE",
+    "availableTools": [
+      "git_status",
+      "git_diff",
+      "git_commit"
+    ],
+    "intent": "git",
+    "actionClass": "local_tool",
+    "toolFamily": "git",
+    "needsLLM": false,
+    "needsVerification": false,
+    "isHardNegative": false,
+    "source": "synthetic"
+  },
+  {
+    "id": "syn-00464",
+    "request": "where is ModelSelectorHandler referenced?",
+    "state": "PLANNING",
+    "availableTools": [
+      "search_workspace",
+      "read_file"
+    ],
+    "intent": "search",
+    "actionClass": "local_tool",
+    "toolFamily": "search",
+    "needsLLM": false,
+    "needsVerification": false,
+    "isHardNegative": false,
+    "source": "synthetic"
+  },
+  {
+    "id": "syn-00148",
+    "request": "inspect src/services/agentEngine/autocompleteService.js",
+    "state": "IDLE",
+    "availableTools": [
+      "read_file",
+      "list_files"
+    ],
+    "intent": "inspect",
+    "actionClass": "local_tool",
+    "toolFamily": "filesystem",
+    "needsLLM": false,
+    "needsVerification": false,
+    "isHardNegative": false,
+    "source": "synthetic"
+  },
+  {
+    "id": "syn-01112",
+    "request": "help me understand how tests/m2_native_tools.test.js handles AST indexing",
+    "state": "IDLE",
+    "availableTools": [
+      "read_file"
+    ],
+    "intent": "explain",
+    "actionClass": "main_llm",
+    "toolFamily": "none",
+    "needsLLM": true,
+    "needsVerification": false,
+    "isHardNegative": false,
+    "source": "synthetic"
+  },
+  {
+    "id": "syn-00875",
+    "request": "check test results for RunLedger",
+    "state": "EVALUATING",
+    "availableTools": [
+      "run_command",
+      "verify"
+    ],
+    "intent": "test",
+    "actionClass": "local_tool",
+    "toolFamily": "testing",
+    "needsLLM": false,
+    "needsVerification": true,
+    "isHardNegative": false,
+    "source": "synthetic"
+  },
+  {
+    "id": "syn-01347",
+    "request": "investigate failure when running npm test",
+    "state": "EXECUTING",
+    "availableTools": [
+      "search_workspace",
+      "read_file",
+      "run_command"
+    ],
+    "intent": "debug",
+    "actionClass": "main_llm",
+    "toolFamily": "filesystem",
+    "needsLLM": true,
+    "needsVerification": true,
+    "isHardNegative": false,
+    "source": "synthetic"
+  },
+  {
+    "id": "syn-01744",
+    "request": "clean up unused variables in src/services/agentEngine/ToolRunner.js",
+    "state": "EXECUTING",
+    "availableTools": [
+      "edit_file",
+      "read_file"
+    ],
+    "intent": "edit",
+    "actionClass": "main_llm",
+    "toolFamily": "editor",
+    "needsLLM": true,
+    "needsVerification": true,
+    "isHardNegative": false,
+    "source": "synthetic"
+  },
+  {
+    "id": "syn-00120",
+    "request": "cat electron/database/ConsistencyEngine.js",
+    "state": "EXECUTING",
+    "availableTools": [
+      "read_file",
+      "list_files"
+    ],
+    "intent": "inspect",
+    "actionClass": "local_tool",
+    "toolFamily": "filesystem",
+    "needsLLM": false,
+    "needsVerification": false,
+    "isHardNegative": false,
+    "source": "synthetic"
+  },
+  {
+    "id": "syn-00339",
+    "request": "search for stream parsing across the project",
+    "state": "EXECUTING",
+    "availableTools": [
+      "search_workspace",
+      "read_file"
+    ],
+    "intent": "search",
+    "actionClass": "local_tool",
+    "toolFamily": "search",
+    "needsLLM": false,
+    "needsVerification": false,
+    "isHardNegative": false,
+    "source": "synthetic"
+  },
+  {
+    "id": "neg-02171",
+    "request": "Run git status and summarize the output for me.",
+    "state": "IDLE",
+    "availableTools": [
+      "run_command",
+      "read_file",
+      "git_status"
+    ],
+    "intent": "debug",
+    "actionClass": "main_llm",
+    "toolFamily": "terminal",
+    "needsLLM": true,
+    "needsVerification": false,
+    "isHardNegative": true,
+    "source": "hard_negative"
+  },
+  {
+    "id": "syn-00666",
+    "request": "run the command vite build",
+    "state": "IDLE",
+    "availableTools": [
+      "run_command"
+    ],
+    "intent": "run_command",
+    "actionClass": "local_tool",
+    "toolFamily": "terminal",
+    "needsLLM": false,
+    "needsVerification": false,
+    "isHardNegative": false,
+    "source": "synthetic"
+  },
+  {
+    "id": "syn-01256",
+    "request": "find why error classification is failing",
+    "state": "EXECUTING",
+    "availableTools": [
+      "search_workspace",
+      "read_file",
+      "run_command"
+    ],
+    "intent": "debug",
+    "actionClass": "main_llm",
+    "toolFamily": "filesystem",
+    "needsLLM": true,
+    "needsVerification": true,
+    "isHardNegative": false,
+    "source": "synthetic"
+  },
+  {
+    "id": "syn-00091",
+    "request": "view src/services/agentEngine/fileIndex.js",
+    "state": "IDLE",
+    "availableTools": [
+      "read_file",
+      "list_files"
+    ],
+    "intent": "inspect",
+    "actionClass": "local_tool",
+    "toolFamily": "filesystem",
+    "needsLLM": false,
+    "needsVerification": false,
+    "isHardNegative": false,
+    "source": "synthetic"
+  },
+  {
+    "id": "neg-02054",
+    "request": "Why should I run npm run preview in this situation?",
+    "state": "IDLE",
+    "availableTools": [
+      "run_command",
+      "read_file",
+      "git_status"
+    ],
+    "intent": "explain",
+    "actionClass": "main_llm",
+    "toolFamily": "none",
+    "needsLLM": true,
+    "needsVerification": false,
+    "isHardNegative": true,
+    "source": "hard_negative"
+  },
+  {
+    "id": "syn-01686",
+    "request": "fix the bug in src/main/ipc/git.ipc.js around line 40",
+    "state": "EXECUTING",
+    "availableTools": [
+      "edit_file",
+      "read_file"
+    ],
+    "intent": "edit",
+    "actionClass": "main_llm",
+    "toolFamily": "editor",
+    "needsLLM": true,
+    "needsVerification": true,
+    "isHardNegative": false,
+    "source": "synthetic"
+  },
+  {
+    "id": "syn-00885",
+    "request": "check test results for agentService",
+    "state": "IDLE",
+    "availableTools": [
+      "run_command",
+      "verify"
+    ],
+    "intent": "test",
+    "actionClass": "local_tool",
+    "toolFamily": "testing",
+    "needsLLM": false,
+    "needsVerification": true,
+    "isHardNegative": false,
+    "source": "synthetic"
+  },
+  {
+    "id": "syn-01248",
+    "request": "find why IPC serialization is failing",
+    "state": "EXECUTING",
+    "availableTools": [
+      "search_workspace",
+      "read_file",
+      "run_command"
+    ],
+    "intent": "debug",
+    "actionClass": "main_llm",
+    "toolFamily": "filesystem",
+    "needsLLM": true,
+    "needsVerification": true,
+    "isHardNegative": false,
+    "source": "synthetic"
+  },
+  {
+    "id": "syn-00326",
+    "request": "search for SidebarHandler across the project",
+    "state": "IDLE",
+    "availableTools": [
+      "search_workspace",
+      "read_file"
+    ],
+    "intent": "search",
+    "actionClass": "local_tool",
+    "toolFamily": "search",
+    "needsLLM": false,
+    "needsVerification": false,
+    "isHardNegative": false,
+    "source": "synthetic"
+  },
+  {
+    "id": "syn-01571",
+    "request": "scaffold a module for symbol resolution at src/services/agentEngine/fileIndex.js",
+    "state": "PLANNING",
+    "availableTools": [
+      "create_file",
+      "write_file",
+      "read_file"
+    ],
+    "intent": "create",
+    "actionClass": "main_llm",
+    "toolFamily": "editor",
+    "needsLLM": true,
+    "needsVerification": true,
+    "isHardNegative": false,
+    "source": "synthetic"
+  },
+  {
+    "id": "syn-00115",
+    "request": "cat src/components/Notification.jsx",
+    "state": "EXECUTING",
+    "availableTools": [
+      "read_file",
+      "list_files"
+    ],
+    "intent": "inspect",
+    "actionClass": "local_tool",
+    "toolFamily": "filesystem",
+    "needsLLM": false,
+    "needsVerification": false,
+    "isHardNegative": false,
+    "source": "synthetic"
+  },
+  {
+    "id": "syn-00574",
+    "request": "run git checkout -b feature",
+    "state": "IDLE",
+    "availableTools": [
+      "run_command"
+    ],
+    "intent": "run_command",
+    "actionClass": "local_tool",
+    "toolFamily": "terminal",
+    "needsLLM": false,
+    "needsVerification": false,
+    "isHardNegative": false,
+    "source": "synthetic"
+  },
+  {
+    "id": "syn-01541",
+    "request": "add a new function renderSidebar to src/services/agentEngine/AgentRuntime.js",
+    "state": "PLANNING",
+    "availableTools": [
+      "create_file",
+      "write_file",
+      "read_file"
+    ],
+    "intent": "create",
+    "actionClass": "main_llm",
+    "toolFamily": "editor",
+    "needsLLM": true,
+    "needsVerification": true,
+    "isHardNegative": false,
+    "source": "synthetic"
+  },
+  {
+    "id": "syn-01284",
+    "request": "diagnose the error in src/main/ipc/db.ipc.js",
+    "state": "REPAIRING",
+    "availableTools": [
+      "search_workspace",
+      "read_file",
+      "run_command"
+    ],
+    "intent": "debug",
+    "actionClass": "main_llm",
+    "toolFamily": "filesystem",
+    "needsLLM": true,
+    "needsVerification": true,
+    "isHardNegative": false,
+    "source": "synthetic"
+  },
+  {
+    "id": "syn-00424",
+    "request": "grep for 'error classification' in src/",
+    "state": "EXECUTING",
+    "availableTools": [
+      "search_workspace",
+      "read_file"
+    ],
+    "intent": "search",
+    "actionClass": "local_tool",
+    "toolFamily": "search",
+    "needsLLM": false,
+    "needsVerification": false,
+    "isHardNegative": false,
+    "source": "synthetic"
+  },
+  {
+    "id": "syn-00169",
+    "request": "show me the code in src/services/autocompleteService.js",
+    "state": "IDLE",
+    "availableTools": [
+      "read_file",
+      "list_files"
+    ],
+    "intent": "inspect",
+    "actionClass": "local_tool",
+    "toolFamily": "filesystem",
+    "needsLLM": false,
+    "needsVerification": false,
+    "isHardNegative": false,
+    "source": "synthetic"
+  },
+  {
+    "id": "syn-00743",
+    "request": "execute unit tests in src/services/agentEngine/VerificationManager.js",
+    "state": "EVALUATING",
+    "availableTools": [
+      "run_command",
+      "verify"
+    ],
+    "intent": "test",
+    "actionClass": "local_tool",
+    "toolFamily": "testing",
+    "needsLLM": false,
+    "needsVerification": true,
+    "isHardNegative": false,
+    "source": "synthetic"
+  },
+  {
+    "id": "syn-00374",
+    "request": "find all occurrences of TabBarHandler",
+    "state": "IDLE",
+    "availableTools": [
+      "search_workspace",
+      "read_file"
+    ],
+    "intent": "search",
+    "actionClass": "local_tool",
+    "toolFamily": "search",
+    "needsLLM": false,
+    "needsVerification": false,
+    "isHardNegative": false,
+    "source": "synthetic"
+  },
+  {
+    "id": "syn-00126",
+    "request": "cat src/main/ipc/fs.ipc.js",
+    "state": "IDLE",
+    "availableTools": [
+      "read_file",
+      "list_files"
+    ],
+    "intent": "inspect",
+    "actionClass": "local_tool",
+    "toolFamily": "filesystem",
+    "needsLLM": false,
+    "needsVerification": false,
+    "isHardNegative": false,
+    "source": "synthetic"
+  },
+  {
+    "id": "syn-00285",
+    "request": "display contents of src/main/ipc/skills.ipc.js",
+    "state": "EXECUTING",
+    "availableTools": [
+      "read_file",
+      "list_files"
+    ],
+    "intent": "inspect",
+    "actionClass": "local_tool",
+    "toolFamily": "filesystem",
+    "needsLLM": false,
+    "needsVerification": false,
+    "isHardNegative": false,
+    "source": "synthetic"
+  },
+  {
+    "id": "neg-02020",
+    "request": "Can you explain how npm run build works behind the scenes?",
+    "state": "IDLE",
+    "availableTools": [
+      "run_command",
+      "read_file",
+      "git_status"
+    ],
+    "intent": "explain",
+    "actionClass": "main_llm",
+    "toolFamily": "none",
+    "needsLLM": true,
+    "needsVerification": false,
+    "isHardNegative": true,
+    "source": "hard_negative"
+  },
+  {
+    "id": "syn-00144",
+    "request": "inspect src/services/agentEngine/ProjectIndexer.js",
+    "state": "PLANNING",
+    "availableTools": [
+      "read_file",
+      "list_files"
+    ],
+    "intent": "inspect",
+    "actionClass": "local_tool",
+    "toolFamily": "filesystem",
+    "needsLLM": false,
+    "needsVerification": false,
+    "isHardNegative": false,
+    "source": "synthetic"
+  },
+  {
+    "id": "syn-00599",
+    "request": "execute git branch -a in terminal",
+    "state": "IDLE",
+    "availableTools": [
+      "run_command"
+    ],
+    "intent": "run_command",
+    "actionClass": "local_tool",
+    "toolFamily": "terminal",
+    "needsLLM": false,
+    "needsVerification": false,
+    "isHardNegative": false,
+    "source": "synthetic"
+  },
+  {
+    "id": "syn-00587",
+    "request": "execute npm test in terminal",
+    "state": "EXECUTING",
+    "availableTools": [
+      "run_command"
+    ],
+    "intent": "run_command",
+    "actionClass": "local_tool",
+    "toolFamily": "terminal",
+    "needsLLM": false,
+    "needsVerification": false,
+    "isHardNegative": false,
+    "source": "synthetic"
+  },
+  {
+    "id": "syn-01772",
+    "request": "optimize the performance of handleDiffViewer in src/main/ipc/skills.ipc.js",
+    "state": "EXECUTING",
+    "availableTools": [
+      "edit_file",
+      "read_file"
+    ],
+    "intent": "edit",
+    "actionClass": "main_llm",
+    "toolFamily": "editor",
+    "needsLLM": true,
+    "needsVerification": true,
+    "isHardNegative": false,
+    "source": "synthetic"
+  },
+  {
+    "id": "syn-01601",
+    "request": "build a new UI view for safeStorage encryption in src/services/agentEngine/DatabaseManager.js",
+    "state": "PLANNING",
+    "availableTools": [
+      "create_file",
+      "write_file",
+      "read_file"
+    ],
+    "intent": "create",
+    "actionClass": "main_llm",
+    "toolFamily": "editor",
+    "needsLLM": true,
+    "needsVerification": true,
+    "isHardNegative": false,
+    "source": "synthetic"
+  },
+  {
+    "id": "syn-01579",
+    "request": "scaffold a module for error classification at tests/m2_native_tools.test.js",
+    "state": "PLANNING",
+    "availableTools": [
+      "create_file",
+      "write_file",
+      "read_file"
+    ],
+    "intent": "create",
+    "actionClass": "main_llm",
+    "toolFamily": "editor",
+    "needsLLM": true,
+    "needsVerification": true,
+    "isHardNegative": false,
+    "source": "synthetic"
+  },
+  {
+    "id": "neg-02141",
+    "request": "Execute vite build and tell me what the error output means.",
+    "state": "IDLE",
+    "availableTools": [
+      "run_command",
+      "read_file",
+      "git_status"
+    ],
+    "intent": "debug",
+    "actionClass": "main_llm",
+    "toolFamily": "terminal",
+    "needsLLM": true,
+    "needsVerification": true,
+    "isHardNegative": true,
+    "source": "hard_negative"
+  },
+  {
+    "id": "syn-01006",
+    "request": "git pull in the repo",
+    "state": "IDLE",
+    "availableTools": [
+      "git_status",
+      "git_diff",
+      "git_commit"
+    ],
+    "intent": "git",
+    "actionClass": "local_tool",
+    "toolFamily": "git",
+    "needsLLM": false,
+    "needsVerification": false,
+    "isHardNegative": false,
+    "source": "synthetic"
+  },
+  {
+    "id": "neg-02113",
+    "request": "Run npm run lint and explain why it fails.",
+    "state": "IDLE",
+    "availableTools": [
+      "run_command",
+      "read_file",
+      "git_status"
+    ],
+    "intent": "debug",
+    "actionClass": "main_llm",
+    "toolFamily": "terminal",
+    "needsLLM": true,
+    "needsVerification": true,
+    "isHardNegative": true,
+    "source": "hard_negative"
+  },
+  {
+    "id": "syn-01791",
+    "request": "optimize the performance of handleEditor in src/main/ipc/skills.ipc.js",
+    "state": "PLANNING",
+    "availableTools": [
+      "edit_file",
+      "read_file"
+    ],
+    "intent": "edit",
+    "actionClass": "main_llm",
+    "toolFamily": "editor",
+    "needsLLM": true,
+    "needsVerification": true,
+    "isHardNegative": false,
+    "source": "synthetic"
+  },
+  {
+    "id": "neg-02214",
+    "request": "Run tests with npm test tests/agentRuntime.test.js and fix any failing assertions.",
+    "state": "EXECUTING",
+    "availableTools": [
+      "run_command",
+      "read_file",
+      "git_status"
+    ],
+    "intent": "debug",
+    "actionClass": "main_llm",
+    "toolFamily": "terminal",
+    "needsLLM": true,
+    "needsVerification": true,
+    "isHardNegative": true,
+    "source": "hard_negative"
+  },
+  {
+    "id": "syn-01546",
+    "request": "add a new function renderFileTree to src/utils/validators.js",
+    "state": "PLANNING",
+    "availableTools": [
+      "create_file",
+      "write_file",
+      "read_file"
+    ],
+    "intent": "create",
+    "actionClass": "main_llm",
+    "toolFamily": "editor",
+    "needsLLM": true,
+    "needsVerification": true,
+    "isHardNegative": false,
+    "source": "synthetic"
+  },
+  {
+    "id": "syn-01425",
+    "request": "troubleshoot symbol resolution failure in tests/codeIntelligence.test.js",
+    "state": "EXECUTING",
+    "availableTools": [
+      "search_workspace",
+      "read_file",
+      "run_command"
+    ],
+    "intent": "debug",
+    "actionClass": "main_llm",
+    "toolFamily": "filesystem",
+    "needsLLM": true,
+    "needsVerification": true,
+    "isHardNegative": false,
+    "source": "synthetic"
+  },
+  {
+    "id": "syn-01503",
+    "request": "implement a helper for AST indexing in electron/database/RollingSummarizer.js",
+    "state": "PLANNING",
+    "availableTools": [
+      "create_file",
+      "write_file",
+      "read_file"
+    ],
+    "intent": "create",
+    "actionClass": "main_llm",
+    "toolFamily": "editor",
+    "needsLLM": true,
+    "needsVerification": true,
+    "isHardNegative": false,
+    "source": "synthetic"
+  },
+  {
+    "id": "syn-00053",
+    "request": "read src/components/TabBar.jsx",
+    "state": "IDLE",
+    "availableTools": [
+      "read_file",
+      "list_files"
+    ],
+    "intent": "inspect",
+    "actionClass": "local_tool",
+    "toolFamily": "filesystem",
+    "needsLLM": false,
+    "needsVerification": false,
+    "isHardNegative": false,
+    "source": "synthetic"
+  },
+  {
+    "id": "syn-01326",
+    "request": "debug the issue where token budgeting throws an exception",
+    "state": "EXECUTING",
+    "availableTools": [
+      "search_workspace",
+      "read_file",
+      "run_command"
+    ],
+    "intent": "debug",
+    "actionClass": "main_llm",
+    "toolFamily": "filesystem",
+    "needsLLM": true,
+    "needsVerification": true,
+    "isHardNegative": false,
+    "source": "synthetic"
+  },
+  {
+    "id": "syn-01633",
+    "request": "refactor src/services/agentEngine/aiService.js to use async/await",
+    "state": "PLANNING",
+    "availableTools": [
+      "edit_file",
+      "read_file"
+    ],
+    "intent": "edit",
+    "actionClass": "main_llm",
+    "toolFamily": "editor",
+    "needsLLM": true,
+    "needsVerification": true,
+    "isHardNegative": false,
+    "source": "synthetic"
+  },
+  {
+    "id": "neg-02146",
+    "request": "Execute npm run build and tell me what the error output means.",
+    "state": "IDLE",
+    "availableTools": [
+      "run_command",
+      "read_file",
+      "git_status"
+    ],
+    "intent": "debug",
+    "actionClass": "main_llm",
+    "toolFamily": "terminal",
+    "needsLLM": true,
+    "needsVerification": true,
+    "isHardNegative": true,
+    "source": "hard_negative"
+  },
+  {
+    "id": "neg-01995",
+    "request": "Tell me what npm run preview does and when I should use it.",
+    "state": "IDLE",
+    "availableTools": [
+      "run_command",
+      "read_file",
+      "git_status"
+    ],
+    "intent": "explain",
+    "actionClass": "main_llm",
+    "toolFamily": "none",
+    "needsLLM": true,
+    "needsVerification": false,
+    "isHardNegative": true,
+    "source": "hard_negative"
+  },
+  {
+    "id": "syn-01440",
+    "request": "troubleshoot token budgeting failure in src/components/ApprovalDialog.jsx",
+    "state": "REPAIRING",
+    "availableTools": [
+      "search_workspace",
+      "read_file",
+      "run_command"
+    ],
+    "intent": "debug",
+    "actionClass": "main_llm",
+    "toolFamily": "filesystem",
+    "needsLLM": true,
+    "needsVerification": true,
+    "isHardNegative": false,
+    "source": "synthetic"
+  },
+  {
+    "id": "neg-02196",
+    "request": "Run tests with npx eslint src/ and fix any failing assertions.",
+    "state": "EXECUTING",
+    "availableTools": [
+      "run_command",
+      "read_file",
+      "git_status"
+    ],
+    "intent": "debug",
+    "actionClass": "main_llm",
+    "toolFamily": "terminal",
+    "needsLLM": true,
+    "needsVerification": true,
+    "isHardNegative": true,
+    "source": "hard_negative"
+  },
+  {
+    "id": "syn-00109",
+    "request": "cat src/components/DiffViewer.jsx",
+    "state": "IDLE",
+    "availableTools": [
+      "read_file",
+      "list_files"
+    ],
+    "intent": "inspect",
+    "actionClass": "local_tool",
+    "toolFamily": "filesystem",
+    "needsLLM": false,
+    "needsVerification": false,
+    "isHardNegative": false,
+    "source": "synthetic"
+  },
+  {
+    "id": "syn-01810",
+    "request": "modify tests/agentRuntime.test.js to handle errors cleanly",
+    "state": "PLANNING",
+    "availableTools": [
+      "edit_file",
+      "read_file"
+    ],
+    "intent": "edit",
+    "actionClass": "main_llm",
+    "toolFamily": "editor",
+    "needsLLM": true,
+    "needsVerification": true,
+    "isHardNegative": false,
+    "source": "synthetic"
+  },
+  {
+    "id": "syn-00410",
+    "request": "grep for 'path traversal guards' in src/",
+    "state": "EXECUTING",
+    "availableTools": [
+      "search_workspace",
+      "read_file"
+    ],
+    "intent": "search",
+    "actionClass": "local_tool",
+    "toolFamily": "search",
+    "needsLLM": false,
+    "needsVerification": false,
+    "isHardNegative": false,
+    "source": "synthetic"
+  },
+  {
+    "id": "syn-01516",
+    "request": "add a new function renderTerminal to tests/boundedBudgets.test.js",
+    "state": "PLANNING",
+    "availableTools": [
+      "create_file",
+      "write_file",
+      "read_file"
+    ],
+    "intent": "create",
+    "actionClass": "main_llm",
+    "toolFamily": "editor",
+    "needsLLM": true,
+    "needsVerification": true,
+    "isHardNegative": false,
+    "source": "synthetic"
+  },
+  {
+    "id": "syn-01512",
+    "request": "implement a helper for SQLite queries in src/services/agentService.js",
+    "state": "PLANNING",
+    "availableTools": [
+      "create_file",
+      "write_file",
+      "read_file"
+    ],
+    "intent": "create",
+    "actionClass": "main_llm",
+    "toolFamily": "editor",
+    "needsLLM": true,
+    "needsVerification": true,
+    "isHardNegative": false,
+    "source": "synthetic"
+  },
+  {
+    "id": "syn-01517",
+    "request": "add a new function renderModelSelector to src/utils/formatters.js",
+    "state": "PLANNING",
+    "availableTools": [
+      "create_file",
+      "write_file",
+      "read_file"
+    ],
+    "intent": "create",
+    "actionClass": "main_llm",
+    "toolFamily": "editor",
+    "needsLLM": true,
+    "needsVerification": true,
+    "isHardNegative": false,
+    "source": "synthetic"
+  },
+  {
+    "id": "syn-00402",
+    "request": "locate where safeStorage encryption is declared",
+    "state": "PLANNING",
+    "availableTools": [
+      "search_workspace",
+      "read_file"
+    ],
+    "intent": "search",
+    "actionClass": "local_tool",
+    "toolFamily": "search",
+    "needsLLM": false,
+    "needsVerification": false,
+    "isHardNegative": false,
+    "source": "synthetic"
+  },
+  {
+    "id": "syn-01697",
+    "request": "update src/services/agentEngine/WorkspaceScanner.js to support cancellation",
+    "state": "EXECUTING",
+    "availableTools": [
+      "edit_file",
+      "read_file"
+    ],
+    "intent": "edit",
+    "actionClass": "main_llm",
+    "toolFamily": "editor",
+    "needsLLM": true,
+    "needsVerification": true,
+    "isHardNegative": false,
+    "source": "synthetic"
+  },
+  {
+    "id": "syn-00476",
+    "request": "search workspace for AST indexing",
+    "state": "EXECUTING",
+    "availableTools": [
+      "search_workspace",
+      "read_file"
+    ],
+    "intent": "search",
+    "actionClass": "local_tool",
+    "toolFamily": "search",
+    "needsLLM": false,
+    "needsVerification": false,
+    "isHardNegative": false,
+    "source": "synthetic"
+  },
+  {
+    "id": "syn-00723",
+    "request": "run tests for VerificationManager",
+    "state": "IDLE",
+    "availableTools": [
+      "run_command",
+      "verify"
+    ],
+    "intent": "test",
+    "actionClass": "local_tool",
+    "toolFamily": "testing",
+    "needsLLM": false,
+    "needsVerification": true,
+    "isHardNegative": false,
+    "source": "synthetic"
+  },
+  {
+    "id": "syn-01774",
+    "request": "optimize the performance of handleEditor in electron/database/fileIndex.js",
+    "state": "EXECUTING",
+    "availableTools": [
+      "edit_file",
+      "read_file"
+    ],
+    "intent": "edit",
+    "actionClass": "main_llm",
+    "toolFamily": "editor",
+    "needsLLM": true,
+    "needsVerification": true,
+    "isHardNegative": false,
+    "source": "synthetic"
+  },
+  {
+    "id": "neg-02104",
+    "request": "What are the flags available for git pull --ff-only?",
+    "state": "IDLE",
+    "availableTools": [
+      "run_command",
+      "read_file",
+      "git_status"
+    ],
+    "intent": "explain",
+    "actionClass": "main_llm",
+    "toolFamily": "none",
+    "needsLLM": true,
+    "needsVerification": false,
+    "isHardNegative": true,
+    "source": "hard_negative"
+  },
+  {
+    "id": "syn-01573",
+    "request": "scaffold a module for cancellation at src/services/agentEngine/RollingSummarizer.js",
+    "state": "PLANNING",
+    "availableTools": [
+      "create_file",
+      "write_file",
+      "read_file"
+    ],
+    "intent": "create",
+    "actionClass": "main_llm",
+    "toolFamily": "editor",
+    "needsLLM": true,
+    "needsVerification": true,
+    "isHardNegative": false,
+    "source": "synthetic"
+  },
+  {
+    "id": "syn-00098",
+    "request": "view src/components/CommandPalette.jsx",
+    "state": "PLANNING",
+    "availableTools": [
+      "read_file",
+      "list_files"
+    ],
+    "intent": "inspect",
+    "actionClass": "local_tool",
+    "toolFamily": "filesystem",
+    "needsLLM": false,
+    "needsVerification": false,
+    "isHardNegative": false,
+    "source": "synthetic"
+  },
+  {
+    "id": "syn-01561",
+    "request": "scaffold a module for state management at src/services/LLMRouter.js",
+    "state": "PLANNING",
+    "availableTools": [
+      "create_file",
+      "write_file",
+      "read_file"
+    ],
+    "intent": "create",
+    "actionClass": "main_llm",
+    "toolFamily": "editor",
+    "needsLLM": true,
+    "needsVerification": true,
+    "isHardNegative": false,
+    "source": "synthetic"
+  },
+  {
+    "id": "syn-00511",
+    "request": "find usages of LoginHandler in the codebase",
+    "state": "EXECUTING",
+    "availableTools": [
+      "search_workspace",
+      "read_file"
+    ],
+    "intent": "search",
+    "actionClass": "local_tool",
+    "toolFamily": "search",
+    "needsLLM": false,
+    "needsVerification": false,
+    "isHardNegative": false,
+    "source": "synthetic"
+  },
+  {
+    "id": "syn-01608",
+    "request": "build a new UI view for cancellation in src/components/Terminal.jsx",
+    "state": "PLANNING",
+    "availableTools": [
+      "create_file",
+      "write_file",
+      "read_file"
+    ],
+    "intent": "create",
+    "actionClass": "main_llm",
+    "toolFamily": "editor",
+    "needsLLM": true,
+    "needsVerification": true,
+    "isHardNegative": false,
+    "source": "synthetic"
+  },
+  {
+    "id": "syn-01267",
+    "request": "find why AST indexing is failing",
+    "state": "EXECUTING",
+    "availableTools": [
+      "search_workspace",
+      "read_file",
+      "run_command"
+    ],
+    "intent": "debug",
+    "actionClass": "main_llm",
+    "toolFamily": "filesystem",
+    "needsLLM": true,
+    "needsVerification": true,
+    "isHardNegative": false,
+    "source": "synthetic"
+  },
+  {
+    "id": "syn-00808",
+    "request": "test the symbol resolution module",
+    "state": "EVALUATING",
+    "availableTools": [
+      "run_command",
+      "verify"
+    ],
+    "intent": "test",
+    "actionClass": "local_tool",
+    "toolFamily": "testing",
+    "needsLLM": false,
+    "needsVerification": true,
+    "isHardNegative": false,
+    "source": "synthetic"
+  },
+  {
+    "id": "syn-01695",
+    "request": "update src/main/ipc/git.ipc.js to support AST indexing",
+    "state": "PLANNING",
+    "availableTools": [
+      "edit_file",
+      "read_file"
+    ],
+    "intent": "edit",
+    "actionClass": "main_llm",
+    "toolFamily": "editor",
+    "needsLLM": true,
+    "needsVerification": true,
+    "isHardNegative": false,
+    "source": "synthetic"
+  },
+  {
+    "id": "syn-00026",
+    "request": "open src/utils/logger.js",
+    "state": "EXECUTING",
+    "availableTools": [
+      "read_file",
+      "list_files"
+    ],
+    "intent": "inspect",
+    "actionClass": "local_tool",
+    "toolFamily": "filesystem",
+    "needsLLM": false,
+    "needsVerification": false,
+    "isHardNegative": false,
+    "source": "synthetic"
+  },
+  {
+    "id": "syn-00738",
+    "request": "execute unit tests in src/components/Notification.jsx",
+    "state": "IDLE",
+    "availableTools": [
+      "run_command",
+      "verify"
+    ],
+    "intent": "test",
+    "actionClass": "local_tool",
+    "toolFamily": "testing",
+    "needsLLM": false,
+    "needsVerification": true,
+    "isHardNegative": false,
+    "source": "synthetic"
+  },
+  {
+    "id": "syn-01600",
+    "request": "build a new UI view for state management in src/services/RollingSummarizer.js",
+    "state": "PLANNING",
+    "availableTools": [
+      "create_file",
+      "write_file",
+      "read_file"
+    ],
+    "intent": "create",
+    "actionClass": "main_llm",
+    "toolFamily": "editor",
+    "needsLLM": true,
+    "needsVerification": true,
+    "isHardNegative": false,
+    "source": "synthetic"
+  },
+  {
+    "id": "neg-02204",
+    "request": "Run tests with node --test tests/primeRouter.test.js and fix any failing assertions.",
+    "state": "EXECUTING",
+    "availableTools": [
+      "run_command",
+      "read_file",
+      "git_status"
+    ],
+    "intent": "debug",
+    "actionClass": "main_llm",
+    "toolFamily": "terminal",
+    "needsLLM": true,
+    "needsVerification": true,
+    "isHardNegative": true,
+    "source": "hard_negative"
+  },
+  {
+    "id": "syn-01319",
+    "request": "debug the issue where cancellation throws an exception",
+    "state": "REPAIRING",
+    "availableTools": [
+      "search_workspace",
+      "read_file",
+      "run_command"
+    ],
+    "intent": "debug",
+    "actionClass": "main_llm",
+    "toolFamily": "filesystem",
+    "needsLLM": true,
+    "needsVerification": true,
+    "isHardNegative": false,
+    "source": "synthetic"
+  },
+  {
+    "id": "syn-00438",
+    "request": "where is TabBarHandler referenced?",
+    "state": "EXECUTING",
+    "availableTools": [
+      "search_workspace",
+      "read_file"
+    ],
+    "intent": "search",
+    "actionClass": "local_tool",
+    "toolFamily": "search",
+    "needsLLM": false,
+    "needsVerification": false,
+    "isHardNegative": false,
+    "source": "synthetic"
+  },
+  {
+    "id": "syn-00659",
+    "request": "run the command npm run build",
+    "state": "EXECUTING",
+    "availableTools": [
+      "run_command"
+    ],
+    "intent": "run_command",
+    "actionClass": "local_tool",
+    "toolFamily": "terminal",
+    "needsLLM": false,
+    "needsVerification": false,
+    "isHardNegative": false,
+    "source": "synthetic"
+  },
+  {
+    "id": "syn-00224",
+    "request": "check the implementation of src/utils/hash.js",
+    "state": "IDLE",
+    "availableTools": [
+      "read_file",
+      "list_files"
+    ],
+    "intent": "inspect",
+    "actionClass": "local_tool",
+    "toolFamily": "filesystem",
+    "needsLLM": false,
+    "needsVerification": false,
+    "isHardNegative": false,
+    "source": "synthetic"
+  },
+  {
+    "id": "neg-02300",
+    "request": "Read src/services/agentEngine/RunLedger.js only; do not edit or create files.",
+    "state": "IDLE",
+    "availableTools": [
+      "run_command",
+      "read_file",
+      "git_status"
+    ],
+    "intent": "inspect",
+    "actionClass": "local_tool",
+    "toolFamily": "filesystem",
+    "needsLLM": false,
+    "needsVerification": false,
+    "isHardNegative": true,
+    "source": "hard_negative"
+  },
+  {
+    "id": "syn-00439",
+    "request": "where is SidebarHandler referenced?",
+    "state": "EXECUTING",
+    "availableTools": [
+      "search_workspace",
+      "read_file"
+    ],
+    "intent": "search",
+    "actionClass": "local_tool",
+    "toolFamily": "search",
+    "needsLLM": false,
+    "needsVerification": false,
+    "isHardNegative": false,
+    "source": "synthetic"
+  },
+  {
+    "id": "neg-02350",
+    "request": "View src/main/ipc/skills.ipc.js in read-only mode.",
+    "state": "IDLE",
+    "availableTools": [
+      "run_command",
+      "read_file",
+      "git_status"
+    ],
+    "intent": "inspect",
+    "actionClass": "local_tool",
+    "toolFamily": "filesystem",
+    "needsLLM": false,
+    "needsVerification": false,
+    "isHardNegative": true,
+    "source": "hard_negative"
+  },
+  {
+    "id": "syn-00036",
+    "request": "open src/main/ipc/git.ipc.js",
+    "state": "PLANNING",
+    "availableTools": [
+      "read_file",
+      "list_files"
+    ],
+    "intent": "inspect",
+    "actionClass": "local_tool",
+    "toolFamily": "filesystem",
+    "needsLLM": false,
+    "needsVerification": false,
+    "isHardNegative": false,
+    "source": "synthetic"
+  },
+  {
+    "id": "syn-01865",
+    "request": "revert recent changes to src/components/ApprovalDialog.jsx",
+    "state": "EVALUATING",
+    "availableTools": [
+      "rollback",
+      "git_diff"
+    ],
+    "intent": "recover",
+    "actionClass": "recovery",
+    "toolFamily": "diagnostics",
+    "needsLLM": false,
+    "needsVerification": false,
+    "isHardNegative": false,
+    "source": "synthetic"
+  },
+  {
+    "id": "syn-00116",
+    "request": "cat src/components/SettingsModal.jsx",
+    "state": "EXECUTING",
+    "availableTools": [
+      "read_file",
+      "list_files"
+    ],
+    "intent": "inspect",
+    "actionClass": "local_tool",
+    "toolFamily": "filesystem",
+    "needsLLM": false,
+    "needsVerification": false,
+    "isHardNegative": false,
+    "source": "synthetic"
+  },
+  {
+    "id": "syn-01714",
+    "request": "update tests/m2_native_tools.test.js to support AST indexing",
+    "state": "EXECUTING",
+    "availableTools": [
+      "edit_file",
+      "read_file"
+    ],
+    "intent": "edit",
+    "actionClass": "main_llm",
+    "toolFamily": "editor",
+    "needsLLM": true,
+    "needsVerification": true,
+    "isHardNegative": false,
+    "source": "synthetic"
+  },
+  {
+    "id": "syn-01789",
+    "request": "optimize the performance of handleTabBar in src/components/TabBar.jsx",
+    "state": "EXECUTING",
+    "availableTools": [
+      "edit_file",
+      "read_file"
+    ],
+    "intent": "edit",
+    "actionClass": "main_llm",
+    "toolFamily": "editor",
+    "needsLLM": true,
+    "needsVerification": true,
+    "isHardNegative": false,
+    "source": "synthetic"
+  },
+  {
+    "id": "syn-01169",
+    "request": "can you describe what DatabaseManagerInit does?",
+    "state": "IDLE",
+    "availableTools": [
+      "read_file"
+    ],
+    "intent": "explain",
+    "actionClass": "main_llm",
+    "toolFamily": "none",
+    "needsLLM": true,
+    "needsVerification": false,
+    "isHardNegative": false,
+    "source": "synthetic"
+  },
+  {
+    "id": "syn-00155",
+    "request": "inspect src/services/agentEngine/ConsistencyEngine.js",
+    "state": "EXECUTING",
+    "availableTools": [
+      "read_file",
+      "list_files"
+    ],
+    "intent": "inspect",
+    "actionClass": "local_tool",
+    "toolFamily": "filesystem",
+    "needsLLM": false,
+    "needsVerification": false,
+    "isHardNegative": false,
+    "source": "synthetic"
+  },
+  {
+    "id": "syn-00093",
+    "request": "view electron/database/VerificationManager.js",
+    "state": "IDLE",
+    "availableTools": [
+      "read_file",
+      "list_files"
+    ],
+    "intent": "inspect",
+    "actionClass": "local_tool",
+    "toolFamily": "filesystem",
+    "needsLLM": false,
+    "needsVerification": false,
+    "isHardNegative": false,
+    "source": "synthetic"
+  },
+  {
+    "id": "neg-02276",
+    "request": "Look at src/services/agentEngine/CodeIntelligenceService.js without making any changes.",
+    "state": "IDLE",
+    "availableTools": [
+      "run_command",
+      "read_file",
+      "git_status"
+    ],
+    "intent": "inspect",
+    "actionClass": "local_tool",
+    "toolFamily": "filesystem",
+    "needsLLM": false,
+    "needsVerification": false,
+    "isHardNegative": true,
+    "source": "hard_negative"
+  },
+  {
+    "id": "syn-01620",
+    "request": "build a new UI view for safeStorage encryption in tests/boundedBudgets.test.js",
+    "state": "PLANNING",
+    "availableTools": [
+      "create_file",
+      "write_file",
+      "read_file"
+    ],
+    "intent": "create",
+    "actionClass": "main_llm",
+    "toolFamily": "editor",
+    "needsLLM": true,
+    "needsVerification": true,
+    "isHardNegative": false,
+    "source": "synthetic"
+  },
+  {
+    "id": "syn-01712",
+    "request": "update src/services/MessageWindow.js to support cancellation",
+    "state": "EXECUTING",
+    "availableTools": [
+      "edit_file",
+      "read_file"
+    ],
+    "intent": "edit",
+    "actionClass": "main_llm",
+    "toolFamily": "editor",
+    "needsLLM": true,
+    "needsVerification": true,
+    "isHardNegative": false,
+    "source": "synthetic"
+  },
+  {
+    "id": "syn-01510",
+    "request": "implement a helper for caching in tests/boundedBudgets.test.js",
+    "state": "PLANNING",
+    "availableTools": [
+      "create_file",
+      "write_file",
+      "read_file"
+    ],
+    "intent": "create",
+    "actionClass": "main_llm",
+    "toolFamily": "editor",
+    "needsLLM": true,
+    "needsVerification": true,
+    "isHardNegative": false,
+    "source": "synthetic"
+  },
+  {
+    "id": "syn-01758",
+    "request": "clean up unused variables in src/services/agentEngine/agentService.js",
+    "state": "PLANNING",
+    "availableTools": [
+      "edit_file",
+      "read_file"
+    ],
+    "intent": "edit",
+    "actionClass": "main_llm",
+    "toolFamily": "editor",
+    "needsLLM": true,
+    "needsVerification": true,
+    "isHardNegative": false,
+    "source": "synthetic"
+  },
+  {
+    "id": "syn-00145",
+    "request": "inspect src/services/agentEngine/ChangeManager.js",
+    "state": "IDLE",
+    "availableTools": [
+      "read_file",
+      "list_files"
+    ],
+    "intent": "inspect",
+    "actionClass": "local_tool",
+    "toolFamily": "filesystem",
+    "needsLLM": false,
+    "needsVerification": false,
+    "isHardNegative": false,
+    "source": "synthetic"
+  },
+  {
+    "id": "syn-01557",
+    "request": "scaffold a module for context compaction at tests/agentRuntime.test.js",
+    "state": "PLANNING",
+    "availableTools": [
+      "create_file",
+      "write_file",
+      "read_file"
+    ],
+    "intent": "create",
+    "actionClass": "main_llm",
+    "toolFamily": "editor",
+    "needsLLM": true,
+    "needsVerification": true,
+    "isHardNegative": false,
+    "source": "synthetic"
+  },
+  {
+    "id": "syn-00448",
+    "request": "where is LoginHandler referenced?",
+    "state": "PLANNING",
+    "availableTools": [
+      "search_workspace",
+      "read_file"
+    ],
+    "intent": "search",
+    "actionClass": "local_tool",
+    "toolFamily": "search",
+    "needsLLM": false,
+    "needsVerification": false,
+    "isHardNegative": false,
+    "source": "synthetic"
+  },
+  {
+    "id": "syn-00607",
+    "request": "start npm run lint",
+    "state": "IDLE",
+    "availableTools": [
+      "run_command"
+    ],
+    "intent": "run_command",
+    "actionClass": "local_tool",
+    "toolFamily": "terminal",
+    "needsLLM": false,
+    "needsVerification": false,
+    "isHardNegative": false,
+    "source": "synthetic"
+  },
+  {
+    "id": "syn-01677",
+    "request": "fix the bug in src/services/agentEngine/DatabaseManager.js around line 40",
+    "state": "EXECUTING",
+    "availableTools": [
+      "edit_file",
+      "read_file"
+    ],
+    "intent": "edit",
+    "actionClass": "main_llm",
+    "toolFamily": "editor",
+    "needsLLM": true,
+    "needsVerification": true,
+    "isHardNegative": false,
+    "source": "synthetic"
+  },
+  {
+    "id": "syn-01331",
+    "request": "debug the issue where error classification throws an exception",
+    "state": "EXECUTING",
+    "availableTools": [
+      "search_workspace",
+      "read_file",
+      "run_command"
+    ],
+    "intent": "debug",
+    "actionClass": "main_llm",
+    "toolFamily": "filesystem",
+    "needsLLM": true,
+    "needsVerification": true,
+    "isHardNegative": false,
+    "source": "synthetic"
+  },
+  {
+    "id": "syn-01682",
+    "request": "fix the bug in electron/database/fileIndex.js around line 40",
+    "state": "PLANNING",
+    "availableTools": [
+      "edit_file",
+      "read_file"
+    ],
+    "intent": "edit",
+    "actionClass": "main_llm",
+    "toolFamily": "editor",
+    "needsLLM": true,
+    "needsVerification": true,
+    "isHardNegative": false,
+    "source": "synthetic"
+  },
+  {
+    "id": "syn-01926",
+    "request": "restore previous version of tests/boundedBudgets.test.js",
+    "state": "EVALUATING",
+    "availableTools": [
+      "rollback",
+      "git_diff"
+    ],
+    "intent": "recover",
+    "actionClass": "recovery",
+    "toolFamily": "diagnostics",
+    "needsLLM": false,
+    "needsVerification": false,
+    "isHardNegative": false,
+    "source": "synthetic"
+  },
+  {
+    "id": "syn-01874",
+    "request": "revert recent changes to tests/rollingSummarizer.test.js",
+    "state": "EVALUATING",
+    "availableTools": [
+      "rollback",
+      "git_diff"
+    ],
+    "intent": "recover",
+    "actionClass": "recovery",
+    "toolFamily": "diagnostics",
+    "needsLLM": false,
+    "needsVerification": false,
+    "isHardNegative": false,
+    "source": "synthetic"
+  },
+  {
+    "id": "syn-00737",
+    "request": "execute unit tests in src/utils/pathSanitizer.js",
+    "state": "VERIFYING",
+    "availableTools": [
+      "run_command",
+      "verify"
+    ],
+    "intent": "test",
+    "actionClass": "local_tool",
+    "toolFamily": "testing",
+    "needsLLM": false,
+    "needsVerification": true,
+    "isHardNegative": false,
+    "source": "synthetic"
+  },
+  {
+    "id": "neg-02327",
+    "request": "Check src/services/agentEngine/ToolRunner.js for syntax issues without editing it.",
+    "state": "IDLE",
+    "availableTools": [
+      "run_command",
+      "read_file",
+      "git_status"
+    ],
+    "intent": "inspect",
+    "actionClass": "local_tool",
+    "toolFamily": "filesystem",
+    "needsLLM": false,
+    "needsVerification": false,
+    "isHardNegative": true,
+    "source": "hard_negative"
+  },
+  {
+    "id": "syn-00376",
+    "request": "locate where ApprovalDialogHandler is declared",
+    "state": "IDLE",
+    "availableTools": [
+      "search_workspace",
+      "read_file"
+    ],
+    "intent": "search",
+    "actionClass": "local_tool",
+    "toolFamily": "search",
+    "needsLLM": false,
+    "needsVerification": false,
+    "isHardNegative": false,
+    "source": "synthetic"
+  },
+  {
+    "id": "syn-00554",
+    "request": "locate cancellation function",
+    "state": "EXECUTING",
+    "availableTools": [
+      "search_workspace",
+      "read_file"
+    ],
+    "intent": "search",
+    "actionClass": "local_tool",
+    "toolFamily": "search",
+    "needsLLM": false,
+    "needsVerification": false,
+    "isHardNegative": false,
+    "source": "synthetic"
+  },
+  {
+    "id": "syn-01345",
+    "request": "investigate failure when running git diff",
+    "state": "EXECUTING",
+    "availableTools": [
+      "search_workspace",
+      "read_file",
+      "run_command"
+    ],
+    "intent": "debug",
+    "actionClass": "main_llm",
+    "toolFamily": "filesystem",
+    "needsLLM": true,
+    "needsVerification": true,
+    "isHardNegative": false,
+    "source": "synthetic"
+  },
+  {
+    "id": "syn-00255",
+    "request": "examine lines in electron/database/ToolRunner.js",
+    "state": "EXECUTING",
+    "availableTools": [
+      "read_file",
+      "list_files"
+    ],
+    "intent": "inspect",
+    "actionClass": "local_tool",
+    "toolFamily": "filesystem",
+    "needsLLM": false,
+    "needsVerification": false,
+    "isHardNegative": false,
+    "source": "synthetic"
+  },
+  {
+    "id": "syn-01659",
+    "request": "fix the bug in electron/database/VerificationManager.js around line 40",
+    "state": "PLANNING",
+    "availableTools": [
+      "edit_file",
+      "read_file"
+    ],
+    "intent": "edit",
+    "actionClass": "main_llm",
+    "toolFamily": "editor",
+    "needsLLM": true,
+    "needsVerification": true,
+    "isHardNegative": false,
+    "source": "synthetic"
+  },
+  {
+    "id": "syn-01026",
+    "request": "explain how src/services/agentEngine/DatabaseManager.js works",
+    "state": "IDLE",
+    "availableTools": [
+      "read_file"
+    ],
+    "intent": "explain",
+    "actionClass": "main_llm",
+    "toolFamily": "none",
+    "needsLLM": true,
+    "needsVerification": false,
+    "isHardNegative": false,
+    "source": "synthetic"
+  },
+  {
+    "id": "syn-00037",
+    "request": "open electron/database/NativeToolAdapter.js",
+    "state": "PLANNING",
+    "availableTools": [
+      "read_file",
+      "list_files"
+    ],
+    "intent": "inspect",
+    "actionClass": "local_tool",
+    "toolFamily": "filesystem",
+    "needsLLM": false,
+    "needsVerification": false,
+    "isHardNegative": false,
+    "source": "synthetic"
+  },
+  {
+    "id": "syn-01812",
+    "request": "modify src/utils/hash.js to handle errors cleanly",
+    "state": "EXECUTING",
+    "availableTools": [
+      "edit_file",
+      "read_file"
+    ],
+    "intent": "edit",
+    "actionClass": "main_llm",
+    "toolFamily": "editor",
+    "needsLLM": true,
+    "needsVerification": true,
+    "isHardNegative": false,
+    "source": "synthetic"
+  },
+  {
+    "id": "syn-00730",
+    "request": "run tests for CodeIntelligenceService",
+    "state": "EVALUATING",
+    "availableTools": [
+      "run_command",
+      "verify"
+    ],
+    "intent": "test",
+    "actionClass": "local_tool",
+    "toolFamily": "testing",
+    "needsLLM": false,
+    "needsVerification": true,
+    "isHardNegative": false,
+    "source": "synthetic"
+  },
+  {
+    "id": "neg-02336",
+    "request": "Check src/main/ipc/git.ipc.js for syntax issues without editing it.",
+    "state": "IDLE",
+    "availableTools": [
+      "run_command",
+      "read_file",
+      "git_status"
+    ],
+    "intent": "inspect",
+    "actionClass": "local_tool",
+    "toolFamily": "filesystem",
+    "needsLLM": false,
+    "needsVerification": false,
+    "isHardNegative": true,
+    "source": "hard_negative"
+  },
+  {
+    "id": "neg-02155",
+    "request": "Execute npm test and tell me what the error output means.",
+    "state": "IDLE",
+    "availableTools": [
+      "run_command",
+      "read_file",
+      "git_status"
+    ],
+    "intent": "debug",
+    "actionClass": "main_llm",
+    "toolFamily": "terminal",
+    "needsLLM": true,
+    "needsVerification": true,
+    "isHardNegative": true,
+    "source": "hard_negative"
+  },
+  {
+    "id": "neg-02341",
+    "request": "Check src/services/autocompleteService.js for syntax issues without editing it.",
+    "state": "IDLE",
+    "availableTools": [
+      "run_command",
+      "read_file",
+      "git_status"
+    ],
+    "intent": "inspect",
+    "actionClass": "local_tool",
+    "toolFamily": "filesystem",
+    "needsLLM": false,
+    "needsVerification": false,
+    "isHardNegative": true,
+    "source": "hard_negative"
+  },
+  {
+    "id": "neg-02343",
+    "request": "Check electron/database/NativeToolAdapter.js for syntax issues without editing it.",
+    "state": "IDLE",
+    "availableTools": [
+      "run_command",
+      "read_file",
+      "git_status"
+    ],
+    "intent": "inspect",
+    "actionClass": "local_tool",
+    "toolFamily": "filesystem",
+    "needsLLM": false,
+    "needsVerification": false,
+    "isHardNegative": true,
+    "source": "hard_negative"
+  },
+  {
+    "id": "syn-01161",
+    "request": "walk me through the logic in src/services/aiService.js",
+    "state": "IDLE",
+    "availableTools": [
+      "read_file"
+    ],
+    "intent": "explain",
+    "actionClass": "main_llm",
+    "toolFamily": "none",
+    "needsLLM": true,
+    "needsVerification": false,
+    "isHardNegative": false,
+    "source": "synthetic"
+  },
+  {
+    "id": "syn-00881",
+    "request": "check test results for CodeIntelligenceService",
+    "state": "IDLE",
+    "availableTools": [
+      "run_command",
+      "verify"
+    ],
+    "intent": "test",
+    "actionClass": "local_tool",
+    "toolFamily": "testing",
+    "needsLLM": false,
+    "needsVerification": true,
+    "isHardNegative": false,
+    "source": "synthetic"
+  },
+  {
+    "id": "syn-01825",
+    "request": "modify src/services/agentEngine/ConsistencyEngine.js to handle errors cleanly",
+    "state": "EXECUTING",
+    "availableTools": [
+      "edit_file",
+      "read_file"
+    ],
+    "intent": "edit",
+    "actionClass": "main_llm",
+    "toolFamily": "editor",
+    "needsLLM": true,
+    "needsVerification": true,
+    "isHardNegative": false,
+    "source": "synthetic"
+  },
+  {
+    "id": "neg-01980",
+    "request": "What does npm install do?",
+    "state": "IDLE",
+    "availableTools": [
+      "run_command",
+      "read_file",
+      "git_status"
+    ],
+    "intent": "explain",
+    "actionClass": "main_llm",
+    "toolFamily": "none",
+    "needsLLM": true,
+    "needsVerification": false,
+    "isHardNegative": true,
+    "source": "hard_negative"
+  },
+  {
+    "id": "syn-01462",
+    "request": "create a new component src/services/agentEngine/WorkspaceScanner.js",
+    "state": "PLANNING",
+    "availableTools": [
+      "create_file",
+      "write_file",
+      "read_file"
+    ],
+    "intent": "create",
+    "actionClass": "main_llm",
+    "toolFamily": "editor",
+    "needsLLM": true,
+    "needsVerification": true,
+    "isHardNegative": false,
+    "source": "synthetic"
+  },
+  {
+    "id": "syn-00140",
+    "request": "inspect src/services/agentEngine/DatabaseManager.js",
+    "state": "IDLE",
+    "availableTools": [
+      "read_file",
+      "list_files"
+    ],
+    "intent": "inspect",
+    "actionClass": "local_tool",
+    "toolFamily": "filesystem",
+    "needsLLM": false,
+    "needsVerification": false,
+    "isHardNegative": false,
+    "source": "synthetic"
+  },
+  {
+    "id": "syn-01150",
+    "request": "walk me through the logic in electron/database/ConsistencyEngine.js",
+    "state": "IDLE",
+    "availableTools": [
+      "read_file"
+    ],
+    "intent": "explain",
+    "actionClass": "main_llm",
+    "toolFamily": "none",
+    "needsLLM": true,
+    "needsVerification": false,
+    "isHardNegative": false,
+    "source": "synthetic"
+  },
+  {
+    "id": "neg-02363",
+    "request": "View electron/database/WorkspaceScanner.js in read-only mode.",
+    "state": "IDLE",
+    "availableTools": [
+      "run_command",
+      "read_file",
+      "git_status"
+    ],
+    "intent": "inspect",
+    "actionClass": "local_tool",
+    "toolFamily": "filesystem",
+    "needsLLM": false,
+    "needsVerification": false,
+    "isHardNegative": true,
+    "source": "hard_negative"
+  },
+  {
+    "id": "syn-01243",
+    "request": "find why cancellation is failing",
+    "state": "REPAIRING",
+    "availableTools": [
+      "search_workspace",
+      "read_file",
+      "run_command"
+    ],
+    "intent": "debug",
+    "actionClass": "main_llm",
+    "toolFamily": "filesystem",
+    "needsLLM": true,
+    "needsVerification": true,
+    "isHardNegative": false,
+    "source": "synthetic"
+  },
+  {
+    "id": "syn-00233",
+    "request": "examine lines in src/main/ipc/skills.ipc.js",
+    "state": "IDLE",
+    "availableTools": [
+      "read_file",
+      "list_files"
+    ],
+    "intent": "inspect",
+    "actionClass": "local_tool",
+    "toolFamily": "filesystem",
+    "needsLLM": false,
+    "needsVerification": false,
+    "isHardNegative": false,
+    "source": "synthetic"
+  },
+  {
+    "id": "syn-01059",
+    "request": "explain how tests/rollingSummarizer.test.js works",
+    "state": "IDLE",
+    "availableTools": [
+      "read_file"
+    ],
+    "intent": "explain",
+    "actionClass": "main_llm",
+    "toolFamily": "none",
+    "needsLLM": true,
+    "needsVerification": false,
+    "isHardNegative": false,
+    "source": "synthetic"
+  },
+  {
+    "id": "syn-01796",
+    "request": "modify src/main/ipc/ai.ipc.js to handle errors cleanly",
+    "state": "EXECUTING",
+    "availableTools": [
+      "edit_file",
+      "read_file"
+    ],
+    "intent": "edit",
+    "actionClass": "main_llm",
+    "toolFamily": "editor",
+    "needsLLM": true,
+    "needsVerification": true,
+    "isHardNegative": false,
+    "source": "synthetic"
+  },
+  {
+    "id": "neg-02247",
+    "request": "Inspect src/components/AIPanel.jsx but don't modify anything.",
+    "state": "IDLE",
+    "availableTools": [
+      "run_command",
+      "read_file",
+      "git_status"
+    ],
+    "intent": "inspect",
+    "actionClass": "local_tool",
+    "toolFamily": "filesystem",
+    "needsLLM": false,
+    "needsVerification": false,
+    "isHardNegative": true,
+    "source": "hard_negative"
+  },
+  {
+    "id": "syn-00457",
+    "request": "where is token budgeting referenced?",
+    "state": "IDLE",
+    "availableTools": [
+      "search_workspace",
+      "read_file"
+    ],
+    "intent": "search",
+    "actionClass": "local_tool",
+    "toolFamily": "search",
+    "needsLLM": false,
+    "needsVerification": false,
+    "isHardNegative": false,
+    "source": "synthetic"
+  },
+  {
+    "id": "neg-01971",
+    "request": "What does npm test tests/agentRuntime.test.js do?",
+    "state": "IDLE",
+    "availableTools": [
+      "run_command",
+      "read_file",
+      "git_status"
+    ],
+    "intent": "explain",
+    "actionClass": "main_llm",
+    "toolFamily": "none",
+    "needsLLM": true,
+    "needsVerification": false,
+    "isHardNegative": true,
+    "source": "hard_negative"
+  },
+  {
+    "id": "syn-01134",
+    "request": "walk me through the logic in src/services/agentEngine/AgentRuntime.js",
+    "state": "IDLE",
+    "availableTools": [
+      "read_file"
+    ],
+    "intent": "explain",
+    "actionClass": "main_llm",
+    "toolFamily": "none",
+    "needsLLM": true,
+    "needsVerification": false,
+    "isHardNegative": false,
+    "source": "synthetic"
+  },
+  {
+    "id": "syn-00724",
+    "request": "run tests for aiService",
+    "state": "IDLE",
+    "availableTools": [
+      "run_command",
+      "verify"
+    ],
+    "intent": "test",
+    "actionClass": "local_tool",
+    "toolFamily": "testing",
+    "needsLLM": false,
+    "needsVerification": true,
+    "isHardNegative": false,
+    "source": "synthetic"
+  },
+  {
+    "id": "syn-01039",
+    "request": "explain how src/services/AgentRuntime.js works",
+    "state": "IDLE",
+    "availableTools": [
+      "read_file"
+    ],
+    "intent": "explain",
+    "actionClass": "main_llm",
+    "toolFamily": "none",
+    "needsLLM": true,
+    "needsVerification": false,
+    "isHardNegative": false,
+    "source": "synthetic"
+  },
+  {
+    "id": "neg-02315",
+    "request": "Read src/main/ipc/skills.ipc.js only; do not edit or create files.",
+    "state": "IDLE",
+    "availableTools": [
+      "run_command",
+      "read_file",
+      "git_status"
+    ],
+    "intent": "inspect",
+    "actionClass": "local_tool",
+    "toolFamily": "filesystem",
+    "needsLLM": false,
+    "needsVerification": false,
+    "isHardNegative": true,
+    "source": "hard_negative"
+  },
+  {
+    "id": "syn-01746",
+    "request": "clean up unused variables in electron/database/RunLedger.js",
+    "state": "PLANNING",
+    "availableTools": [
+      "edit_file",
+      "read_file"
+    ],
+    "intent": "edit",
+    "actionClass": "main_llm",
+    "toolFamily": "editor",
+    "needsLLM": true,
+    "needsVerification": true,
+    "isHardNegative": false,
+    "source": "synthetic"
+  },
+  {
+    "id": "syn-01118",
+    "request": "help me understand how src/services/agentEngine/LLMRouter.js handles state management",
+    "state": "IDLE",
+    "availableTools": [
+      "read_file"
+    ],
+    "intent": "explain",
+    "actionClass": "main_llm",
+    "toolFamily": "none",
+    "needsLLM": true,
+    "needsVerification": false,
+    "isHardNegative": false,
+    "source": "synthetic"
+  },
+  {
+    "id": "syn-00805",
+    "request": "test the rolling summaries module",
+    "state": "VERIFYING",
+    "availableTools": [
+      "run_command",
+      "verify"
+    ],
+    "intent": "test",
+    "actionClass": "local_tool",
+    "toolFamily": "testing",
+    "needsLLM": false,
+    "needsVerification": true,
+    "isHardNegative": false,
+    "source": "synthetic"
+  },
+  {
+    "id": "neg-02279",
+    "request": "Look at src/services/CrashRecoveryService.js without making any changes.",
+    "state": "IDLE",
+    "availableTools": [
+      "run_command",
+      "read_file",
+      "git_status"
+    ],
+    "intent": "inspect",
+    "actionClass": "local_tool",
+    "toolFamily": "filesystem",
+    "needsLLM": false,
+    "needsVerification": false,
+    "isHardNegative": true,
+    "source": "hard_negative"
+  },
+  {
+    "id": "syn-00363",
+    "request": "find all occurrences of context compaction",
+    "state": "IDLE",
+    "availableTools": [
+      "search_workspace",
+      "read_file"
+    ],
+    "intent": "search",
+    "actionClass": "local_tool",
+    "toolFamily": "search",
+    "needsLLM": false,
+    "needsVerification": false,
+    "isHardNegative": false,
+    "source": "synthetic"
+  },
+  {
+    "id": "neg-02122",
+    "request": "Run npx eslint src/ and explain why it fails.",
+    "state": "IDLE",
+    "availableTools": [
+      "run_command",
+      "read_file",
+      "git_status"
+    ],
+    "intent": "debug",
+    "actionClass": "main_llm",
+    "toolFamily": "terminal",
+    "needsLLM": true,
+    "needsVerification": true,
+    "isHardNegative": true,
+    "source": "hard_negative"
+  },
+  {
+    "id": "syn-01638",
+    "request": "refactor src/components/FileTree.jsx to use async/await",
+    "state": "EXECUTING",
+    "availableTools": [
+      "edit_file",
+      "read_file"
+    ],
+    "intent": "edit",
+    "actionClass": "main_llm",
+    "toolFamily": "editor",
+    "needsLLM": true,
+    "needsVerification": true,
+    "isHardNegative": false,
+    "source": "synthetic"
+  },
+  {
+    "id": "syn-01606",
+    "request": "build a new UI view for context compaction in src/services/ToolRunner.js",
+    "state": "PLANNING",
+    "availableTools": [
+      "create_file",
+      "write_file",
+      "read_file"
+    ],
+    "intent": "create",
+    "actionClass": "main_llm",
+    "toolFamily": "editor",
+    "needsLLM": true,
+    "needsVerification": true,
+    "isHardNegative": false,
+    "source": "synthetic"
+  },
+  {
+    "id": "syn-01062",
+    "request": "what is the purpose of IPC serialization?",
+    "state": "IDLE",
+    "availableTools": [
+      "read_file"
+    ],
+    "intent": "explain",
+    "actionClass": "main_llm",
+    "toolFamily": "none",
+    "needsLLM": true,
+    "needsVerification": false,
+    "isHardNegative": false,
+    "source": "synthetic"
+  },
+  {
+    "id": "neg-02024",
+    "request": "Can you explain how npx eslint src/ works behind the scenes?",
+    "state": "IDLE",
+    "availableTools": [
+      "run_command",
+      "read_file",
+      "git_status"
+    ],
+    "intent": "explain",
+    "actionClass": "main_llm",
+    "toolFamily": "none",
+    "needsLLM": true,
+    "needsVerification": false,
+    "isHardNegative": true,
+    "source": "hard_negative"
+  },
+  {
+    "id": "syn-01526",
+    "request": "add a new function renderLogin to src/components/AIPanel.jsx",
+    "state": "PLANNING",
+    "availableTools": [
+      "create_file",
+      "write_file",
+      "read_file"
+    ],
+    "intent": "create",
+    "actionClass": "main_llm",
+    "toolFamily": "editor",
+    "needsLLM": true,
+    "needsVerification": true,
+    "isHardNegative": false,
+    "source": "synthetic"
+  },
+  {
+    "id": "syn-01710",
+    "request": "update electron/database/CrashRecoveryService.js to support path traversal guards",
+    "state": "PLANNING",
+    "availableTools": [
+      "edit_file",
+      "read_file"
+    ],
+    "intent": "edit",
+    "actionClass": "main_llm",
+    "toolFamily": "editor",
+    "needsLLM": true,
+    "needsVerification": true,
+    "isHardNegative": false,
+    "source": "synthetic"
+  }
+]

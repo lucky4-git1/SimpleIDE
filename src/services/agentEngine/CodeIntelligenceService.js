@@ -1,4 +1,5 @@
 import { globalLanguageRegistry, SymbolRecord } from './LanguageRegistry.js'
+import { SymbolGraph, SymbolNode, SymbolEdge, NODE_KINDS, EDGE_KINDS } from './SymbolGraph.js'
 
 export const INDEX_STATE = {
   IDLE: 'IDLE',
@@ -35,6 +36,7 @@ export class CodeIntelligenceService {
     this.abortSignal = abortSignal || null
     this.state = INDEX_STATE.IDLE
     this.languageRegistry = globalLanguageRegistry
+    this.symbolGraph = new SymbolGraph(workspaceRoot)
 
     // Core index stores
     this.symbolsByName = new Map() // symbol name -> SymbolRecord[]
@@ -42,6 +44,10 @@ export class CodeIntelligenceService {
     this.importsByFile = new Map() // file relPath -> import records
     this.exportsByFile = new Map() // file relPath -> export records
     this.importedByFile = new Map() // file relPath -> Set<file relPath>
+    this.callsByCaller = new Map() // callerName -> Array of { callee, file, line }
+    this.callsByCallee = new Map() // calleeName -> Array of { caller, file, line }
+    this.implementationsBySymbol = new Map() // symbolName -> Array of { name, extends, implements, file }
+    this.diagnosticsByFile = new Map() // file relPath -> Array of { line, column, message, severity }
     this.files = new Set()
     this.folders = new Set()
   }
@@ -90,6 +96,11 @@ export class CodeIntelligenceService {
     this.importsByFile.clear()
     this.exportsByFile.clear()
     this.importedByFile.clear()
+    this.callsByCaller.clear()
+    this.callsByCallee.clear()
+    this.implementationsBySymbol.clear()
+    this.diagnosticsByFile.clear()
+    this.symbolGraph?.clear()
     this.files.clear()
     this.folders.clear()
   }
@@ -168,6 +179,149 @@ export class CodeIntelligenceService {
 
       // 3. Process Exports
       this.exportsByFile.set(normPath, astResult.exports || [])
+
+      // 4. Process Calls
+      const calls = astResult.calls || []
+      for (const call of calls) {
+        const callerList = this.callsByCaller.get(call.caller) || []
+        callerList.push(call)
+        this.callsByCaller.set(call.caller, callerList)
+
+        const calleeList = this.callsByCallee.get(call.callee) || []
+        calleeList.push(call)
+        this.callsByCallee.set(call.callee, calleeList)
+      }
+
+      // 5. Process Implementations
+      const impls = astResult.implementations || []
+      for (const impl of impls) {
+        const list = this.implementationsBySymbol.get(impl.name) || []
+        list.push(impl)
+        this.implementationsBySymbol.set(impl.name, list)
+
+        if (impl.extends) {
+          const extList = this.implementationsBySymbol.get(impl.extends) || []
+          extList.push(impl)
+          this.implementationsBySymbol.set(impl.extends, extList)
+        }
+        for (const iface of impl.implements || []) {
+          const ifaceList = this.implementationsBySymbol.get(iface) || []
+          ifaceList.push(impl)
+          this.implementationsBySymbol.set(iface, ifaceList)
+        }
+      }
+
+      // 6. Process Diagnostics
+      if (astResult.diagnostics?.length) {
+        this.diagnosticsByFile.set(normPath, astResult.diagnostics)
+      }
+
+      // 7. Populate SymbolGraph nodes and edges
+      if (this.symbolGraph) {
+        const fileKind = astResult.isTest ? NODE_KINDS.TEST : NODE_KINDS.FILE
+        const fileNode = new SymbolNode({
+          id: `file:${normPath}`,
+          name: normPath,
+          kind: fileKind,
+          file: normPath,
+          line: 1
+        })
+        this.symbolGraph.addNode(fileNode)
+
+        // Symbols
+        for (const sym of symbols) {
+          const kind = sym.kind === 'component' ? NODE_KINDS.COMPONENT
+            : sym.kind === 'class' ? NODE_KINDS.CLASS
+            : sym.kind === 'interface' ? NODE_KINDS.INTERFACE
+            : sym.kind === 'function' ? NODE_KINDS.FUNCTION
+            : NODE_KINDS.VARIABLE
+
+          const symNode = new SymbolNode({
+            id: `${kind}:${normPath}:${sym.name}`,
+            name: sym.name,
+            kind,
+            file: normPath,
+            line: sym.startLine,
+            metadata: { signature: sym.signature, exported: sym.exported, parent: sym.parent }
+          })
+          this.symbolGraph.addNode(symNode)
+
+          if (sym.exported) {
+            this.symbolGraph.addEdge(fileNode.id, symNode.id, EDGE_KINDS.EXPORTS)
+          } else {
+            this.symbolGraph.addEdge(fileNode.id, symNode.id, EDGE_KINDS.REFERENCES)
+          }
+        }
+
+        // Imports
+        for (const imp of astResult.imports || []) {
+          const targetRel = resolveRelativeImport(normPath, imp.source)
+          if (targetRel) {
+            const resolvedTarget = this.resolveFileWithExtensions(targetRel) || targetRel
+            const targetId = `file:${resolvedTarget}`
+            if (!this.symbolGraph.getNode(targetId)) {
+              this.symbolGraph.addNode(new SymbolNode({
+                id: targetId,
+                name: resolvedTarget,
+                kind: NODE_KINDS.FILE,
+                file: resolvedTarget
+              }))
+            }
+            this.symbolGraph.addEdge(fileNode.id, targetId, EDGE_KINDS.IMPORTS, { source: imp.source })
+          }
+        }
+
+        // Calls
+        for (const call of calls) {
+          const callerMatches = this.symbolGraph.findNodes(call.caller)
+          const calleeMatches = this.symbolGraph.findNodes(call.callee)
+          const callerId = callerMatches[0]?.id || fileNode.id
+          const calleeId = calleeMatches[0]?.id || `function:${call.callee}`
+
+          if (!this.symbolGraph.getNode(calleeId)) {
+            this.symbolGraph.addNode(new SymbolNode({
+              id: calleeId,
+              name: call.callee,
+              kind: NODE_KINDS.FUNCTION,
+              file: ''
+            }))
+          }
+          this.symbolGraph.addEdge(callerId, calleeId, EDGE_KINDS.CALLS, { line: call.line })
+        }
+
+        // Implementations & Extends
+        for (const impl of impls) {
+          const classNode = this.symbolGraph.findNodes(impl.name, NODE_KINDS.CLASS)[0]
+          if (classNode) {
+            if (impl.extends) {
+              const superNode = this.symbolGraph.findNodes(impl.extends, NODE_KINDS.CLASS)[0]
+              const superId = superNode?.id || `class:${impl.extends}`
+              if (!this.symbolGraph.getNode(superId)) {
+                this.symbolGraph.addNode(new SymbolNode({ id: superId, name: impl.extends, kind: NODE_KINDS.CLASS }))
+              }
+              this.symbolGraph.addEdge(classNode.id, superId, EDGE_KINDS.EXTENDS)
+            }
+            for (const iface of impl.implements || []) {
+              const ifaceNode = this.symbolGraph.findNodes(iface, NODE_KINDS.INTERFACE)[0]
+              const ifaceId = ifaceNode?.id || `interface:${iface}`
+              if (!this.symbolGraph.getNode(ifaceId)) {
+                this.symbolGraph.addNode(new SymbolNode({ id: ifaceId, name: iface, kind: NODE_KINDS.INTERFACE }))
+              }
+              this.symbolGraph.addEdge(classNode.id, ifaceId, EDGE_KINDS.IMPLEMENTS)
+            }
+          }
+        }
+
+        // If this is a test file, link test edges
+        if (astResult.isTest) {
+          for (const call of calls) {
+            const targetNodes = this.symbolGraph.findNodes(call.callee)
+            for (const tNode of targetNodes) {
+              this.symbolGraph.addEdge(fileNode.id, tNode.id, EDGE_KINDS.TESTS)
+            }
+          }
+        }
+      }
     } else {
       // Fallback regex parsing for imports/exports if AST parsing failed/unsupported
       this.parseFileFallback(normPath, source)
@@ -204,6 +358,7 @@ export class CodeIntelligenceService {
   }
 
   removeFileFromIndex(normPath) {
+    this.symbolGraph?.removeFile(normPath)
     const oldSymbols = this.symbolsByFile.get(normPath) || []
     for (const sym of oldSymbols) {
       const list = this.symbolsByName.get(sym.name)
@@ -216,6 +371,26 @@ export class CodeIntelligenceService {
     this.symbolsByFile.delete(normPath)
     this.importsByFile.delete(normPath)
     this.exportsByFile.delete(normPath)
+    this.diagnosticsByFile.delete(normPath)
+
+    // Remove calls associated with this file
+    for (const [caller, list] of this.callsByCaller.entries()) {
+      const filtered = list.filter(c => c.file !== normPath)
+      if (filtered.length) this.callsByCaller.set(caller, filtered)
+      else this.callsByCaller.delete(caller)
+    }
+    for (const [callee, list] of this.callsByCallee.entries()) {
+      const filtered = list.filter(c => c.file !== normPath)
+      if (filtered.length) this.callsByCallee.set(callee, filtered)
+      else this.callsByCallee.delete(callee)
+    }
+
+    // Remove implementations associated with this file
+    for (const [sym, list] of this.implementationsBySymbol.entries()) {
+      const filtered = list.filter(i => i.file !== normPath)
+      if (filtered.length) this.implementationsBySymbol.set(sym, filtered)
+      else this.implementationsBySymbol.delete(sym)
+    }
   }
 
   parseFileFallback(relPath, content) {
@@ -289,40 +464,174 @@ export class CodeIntelligenceService {
 
   // ─── Query APIs ─────────────────────────────────────────────────────────
 
+  // ─── Query APIs ─────────────────────────────────────────────────────────
+
   findSymbol(name) {
     return this.symbolsByName.get(name) || []
   }
 
-  findSymbols(query) {
+  findSymbols(query, kind = null) {
     if (!query) return []
     const q = query.toLowerCase()
     const results = []
     for (const [name, records] of this.symbolsByName.entries()) {
       if (name.toLowerCase().includes(q)) {
-        results.push(...records)
+        for (const r of records) {
+          if (!kind || r.kind?.toLowerCase() === kind.toLowerCase()) {
+            results.push(r)
+          }
+        }
       }
     }
-    return results
+    return results.slice(0, 50)
   }
 
   getFileSymbols(path) {
     return this.symbolsByFile.get(normalizePath(path)) || []
   }
 
-  findDefinition(symbolName) {
-    return (this.symbolsByName.get(symbolName) || []).filter(s => s.kind !== 'export')
+  findDefinition(symbolName, file = null) {
+    let records = this.symbolsByName.get(symbolName) || []
+    if (file) {
+      const norm = normalizePath(file)
+      records = records.filter(s => s.file === norm)
+    }
+    // Prefer non-export declaration records if available
+    const nonExports = records.filter(s => s.kind !== 'export')
+    return nonExports.length ? nonExports : records
   }
 
   findReferences(symbolName) {
-    const defs = this.findSymbol(symbolName)
-    const references = []
+    const refs = []
+    const seen = new Set()
+
+    // 1. Direct callers via call expressions
+    const directCalls = this.callsByCallee.get(symbolName) || []
+    for (const call of directCalls) {
+      const key = `${call.file}:${call.line}:call:${call.caller}`
+      if (!seen.has(key)) {
+        seen.add(key)
+        refs.push({
+          symbol: symbolName,
+          file: call.file,
+          line: call.line,
+          caller: call.caller,
+          kind: 'call'
+        })
+      }
+    }
+
+    // 2. Import references from other files
+    const defs = this.findDefinition(symbolName)
     for (const def of defs) {
       const callers = this.getImportedBy(def.file)
       for (const caller of callers) {
-        references.push({ symbol: symbolName, file: caller, source: def.file })
+        const key = `${caller}:1:import:${def.file}`
+        if (!seen.has(key)) {
+          seen.add(key)
+          refs.push({
+            symbol: symbolName,
+            file: caller,
+            source: def.file,
+            kind: 'import'
+          })
+        }
       }
     }
-    return references
+
+    return refs.slice(0, 100)
+  }
+
+  findImplementations(symbolName) {
+    const impls = this.implementationsBySymbol.get(symbolName) || []
+    return impls.filter(i => i.name !== symbolName).map(i => ({
+      name: i.name,
+      extends: i.extends,
+      implements: i.implements,
+      file: i.file
+    }))
+  }
+
+  getCallers(functionName) {
+    const calls = this.callsByCallee.get(functionName) || []
+    return calls.map(c => ({
+      caller: c.caller,
+      file: c.file,
+      line: c.line
+    }))
+  }
+
+  getCallees(functionName) {
+    const calls = this.callsByCaller.get(functionName) || []
+    return calls.map(c => ({
+      callee: c.callee,
+      file: c.file,
+      line: c.line
+    }))
+  }
+
+  getDiagnostics(filePath = null) {
+    if (filePath) {
+      const norm = normalizePath(filePath)
+      return this.diagnosticsByFile.get(norm) || []
+    }
+    const all = []
+    for (const [file, diags] of this.diagnosticsByFile.entries()) {
+      for (const d of diags) {
+        all.push({ file, ...d })
+      }
+    }
+    return all
+  }
+
+  getImportGraph(filePath) {
+    const norm = normalizePath(filePath)
+    return {
+      file: norm,
+      imports: this.getImports(norm),
+      importedBy: this.getImportedBy(norm),
+      exports: this.getExports(norm)
+    }
+  }
+
+  getSymbolOverview(symbolName) {
+    const defs = this.findDefinition(symbolName)
+    const refs = this.findReferences(symbolName)
+    const callers = this.getCallers(symbolName)
+    const callees = this.getCallees(symbolName)
+    const impls = this.findImplementations(symbolName)
+
+    // Identify related test files
+    const defFiles = new Set(defs.map(d => d.file))
+    const testFiles = []
+    const isTestFile = (path) => /\.(?:test|spec)\.[jt]sx?$/i.test(path) || /(?:^|\/)(?:tests|__tests__|specs)\//i.test(path)
+
+    for (const file of this.files) {
+      if (isTestFile(file)) {
+        // Direct caller in test file or imports definition file
+        const callsInTest = callers.some(c => c.file === file)
+        const refsInTest = refs.some(r => r.file === file)
+        const importsDef = Array.from(defFiles).some(df => {
+          const importedBy = this.getImportedBy(df)
+          return importedBy.includes(file)
+        })
+
+        if (callsInTest || refsInTest || importsDef) {
+          testFiles.push(file)
+        }
+      }
+    }
+
+    return {
+      symbol: symbolName,
+      definition: defs[0] || null,
+      definitions: defs,
+      references: refs,
+      callers,
+      callees,
+      implementations: impls,
+      tests: Array.from(new Set(testFiles))
+    }
   }
 
   getImports(path) {
@@ -390,4 +699,26 @@ export class CodeIntelligenceService {
 
     return summaryLines.join('\n')
   }
+
+  querySymbolGraph(symbol, options = {}) {
+    if (!this.symbolGraph) {
+      return { target: symbol, found: false, usages: [], treeText: `${symbol} (graph unavailable)` }
+    }
+    const direction = options.direction || 'usages'
+    if (direction === 'dependencies') {
+      return this.symbolGraph.queryDependencies(symbol)
+    }
+    if (direction === 'callers' || direction === 'callees') {
+      return this.symbolGraph.queryCallGraph(symbol, direction, options.depth || 2)
+    }
+    return this.symbolGraph.queryUsages(symbol)
+  }
+
+  traverseContextGraph(symbol, options = {}) {
+    if (!this.symbolGraph) {
+      return { found: false, items: [], categories: {} }
+    }
+    return this.symbolGraph.traverseContextGraph(symbol, options)
+  }
 }
+

@@ -1,0 +1,106 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "PrimeRouterDecisionSample",
+  "description": "Schema for Prime Router training and evaluation dataset samples",
+  "type": "object",
+  "required": [
+    "request",
+    "intent",
+    "actionClass",
+    "toolFamily",
+    "needsLLM",
+    "needsVerification"
+  ],
+  "properties": {
+    "id": {
+      "type": "string"
+    },
+    "request": {
+      "type": "string",
+      "minLength": 1
+    },
+    "state": {
+      "type": "string",
+      "enum": [
+        "IDLE",
+        "PLANNING",
+        "EXECUTING",
+        "EVALUATING",
+        "VERIFYING",
+        "REPAIRING",
+        "REPLANNING",
+        "COMPLETED",
+        "FAILED"
+      ],
+      "default": "IDLE"
+    },
+    "availableTools": {
+      "type": "array",
+      "items": { "type": "string" },
+      "default": []
+    },
+    "intent": {
+      "type": "string",
+      "enum": [
+        "chat",
+        "explain",
+        "inspect",
+        "search",
+        "create",
+        "edit",
+        "refactor",
+        "debug",
+        "test",
+        "run_command",
+        "git",
+        "web",
+        "plan",
+        "continue",
+        "verify",
+        "finish",
+        "recover"
+      ]
+    },
+    "actionClass": {
+      "type": "string",
+      "enum": [
+        "local_tool",
+        "main_llm",
+        "verification",
+        "recovery",
+        "user_input",
+        "complete"
+      ]
+    },
+    "toolFamily": {
+      "type": "string",
+      "enum": [
+        "filesystem",
+        "editor",
+        "terminal",
+        "git",
+        "search",
+        "browser",
+        "diagnostics",
+        "testing",
+        "none"
+      ]
+    },
+    "needsLLM": {
+      "type": "boolean"
+    },
+    "needsVerification": {
+      "type": "boolean"
+    },
+    "isHardNegative": {
+      "type": "boolean",
+      "default": false
+    },
+    "source": {
+      "type": "string",
+      "enum": ["seed", "synthetic", "trace", "hard_negative"],
+      "default": "seed"
+    }
+  },
+  "additionalProperties": false
+}

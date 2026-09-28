@@ -4,6 +4,8 @@ import { getLanguageFromFile } from '../utils/language'
 import { getInlineCompletions } from '../services/autocompleteService'
 import { useEditorStore } from '../store/editorStore'
 import { useUIStore } from '../store/uiStore'
+import { editorBridge } from '../services/editorBridge'
+import { inlineDiffService } from '../services/inlineDiffService'
 
 export default function Editor({ file, revealLine, revealKey }) {
   const editorRef = useRef(null)
@@ -26,6 +28,11 @@ export default function Editor({ file, revealLine, revealKey }) {
     editorRef.current = editor
     monacoRef.current = monaco
     const model = editor.getModel()
+
+    if (file?.path) {
+      editorBridge.registerEditor(file.path, editor, monaco)
+      inlineDiffService.attachToEditor(file.path, editor, monaco)
+    }
 
     // Listen for markers (errors/warnings)
     monaco.editor.onDidChangeMarkers(([uri]) => {
@@ -89,8 +96,23 @@ export default function Editor({ file, revealLine, revealKey }) {
       setSelectedCode(selectedText)
     })
 
-    return () => provider.dispose()
+    return () => {
+      provider.dispose()
+      if (file?.path) {
+        inlineDiffService.detachFromEditor(file.path, editor)
+        editorBridge.unregisterEditor(file.path, editor)
+      }
+    }
   }
+
+  useEffect(() => {
+    return () => {
+      if (file?.path && editorRef.current) {
+        inlineDiffService.detachFromEditor(file.path, editorRef.current)
+        editorBridge.unregisterEditor(file.path, editorRef.current)
+      }
+    }
+  }, [file?.path])
 
   const handleChange = (value) => {
     if (file?.path) {

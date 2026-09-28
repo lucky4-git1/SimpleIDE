@@ -52,6 +52,10 @@ import { SkillsModal } from './SkillsModal'
 import './SkillsModal.css'
 import { memoryManager } from '../services/memory/memoryManager'
 import { getModelCapabilities } from '../services/agentEngine/LLMRouter'
+import { useEditorStore } from '../store/editorStore'
+import { AgentWorkspace } from './agent/AgentWorkspace'
+import { buildAgentViewModel } from './agent/AgentAdapter'
+import './agent/agentTokens.css'
 
 const CHAT_ACTIONS = [
   { id: 'explain', label: 'Explain', icon: Sparkles },
@@ -529,6 +533,29 @@ export default function AIPanel({
     setLastChange(lastChangeRef.current)
     setChats(memoryManager.conversations.getChats())
     setProjectMemoryRecords(memoryManager.projects.records || [])
+
+    // Inspect and recover incomplete agent runs from crashes or abnormal termination
+    try {
+      const recoveryService = new CrashRecoveryService(currentFolder)
+      recoveryService.recoverWorkspaceRuns(currentFolder).then(recovery => {
+        if (recovery?.hasUnfinished && recovery.checkpoint?.resumable) {
+          console.info('[AIPanel] Detected unfinished agent run from crash:', recovery.run?.id)
+          setAgentRun(prev => prev || {
+            task: recovery.run?.user_prompt || 'Resumed agent task',
+            status: 'review',
+            plan: recovery.checkpoint.reconciledSteps?.map(s => s.title).join('\n') || '',
+            stages: emptyStages(),
+            tools: [],
+            changedFiles: recovery.checkpoint.verifiedFiles || [],
+            todos: recovery.checkpoint.reconciledSteps || [],
+            resumable: true,
+            recoveredRunId: recovery.run?.id
+          })
+        }
+      }).catch(err => {
+        console.warn('[AIPanel] Crash recovery detection failed:', err?.message)
+      })
+    } catch {}
     return () => {
       unsubscribe()
       clearTimeout(chatsRefreshTimerRef.current)
@@ -1013,6 +1040,29 @@ export default function AIPanel({
     }
   }, [activeFile, appendChatMessage, attachedFiles, autoApproveCommands, currentFolder, ensureProvider, includeActiveFile, includeOpenFiles, includeSelection, isLoading, messages, onAgentFileWrite, onAgentWorkspaceChange, openFiles, projectIndex, projectSummary, requestApproval, selectedCode, setMessages, writeToChat])
 
+  const presentPlanInEditor = useCallback(async (planText) => {
+    if (!planText) return
+    const planFileName = 'implementation_plan.md'
+    const planFilePath = currentFolder ? `${currentFolder.replace(/[/\\]+$/, '')}\\${planFileName}` : planFileName
+
+    // Save to disk if window.api is available and workspace is open
+    if (window.api?.writeFile && currentFolder) {
+      try {
+        await window.api.writeFile(planFilePath, planText)
+      } catch (err) {
+        // non-blocking fallback
+      }
+    }
+
+    // Open directly in Monaco Editor
+    useEditorStore.getState().openFile({
+      path: planFilePath,
+      name: planFileName,
+      content: planText,
+      isDirty: false
+    })
+  }, [currentFolder])
+
   const sendAgentTask = useCallback(async (prompt = '') => {
     const task = (typeof prompt === 'string' && prompt ? prompt : input).trim()
     if (!task || isLoading || !(await ensureProvider())) return
@@ -1050,7 +1100,8 @@ export default function AIPanel({
             .map(message => ({ role: message.role, content: String(message.content).slice(0, 900) }))
         }
       })
-      const reviewRun = run => run ? { ...run, status: 'review', plan, summary: 'Review this implementation plan. You can edit it or add instructions before approving.' } : run
+      await presentPlanInEditor(plan)
+      const reviewRun = run => run ? { ...run, status: 'review', plan, summary: 'Review this implementation plan in the editor. Choose Proceed to begin.' } : run
       if (isViewingTaskChat()) {
         setPlanDraft(plan)
         setAgentRun(reviewRun)
@@ -1059,7 +1110,10 @@ export default function AIPanel({
         const stored = conv.getAgentState(taskChatId)
         conv.setAgentState(taskChatId, { agentRun: reviewRun(stored?.agentRun || planningRun), planDraft: plan })
       }
-      appendChatMessage(taskChatId, { role: 'assistant', content: `Implementation plan:\n${plan}` })
+      appendChatMessage(taskChatId, {
+        role: 'assistant',
+        content: `📋 **Implementation plan generated and opened in editor: \`implementation_plan.md\`**\n\nReview the plan in the editor, and click **Proceed with plan** below to begin.`
+      })
       if (autoProceedPlan) {
         // Stop during planning must not auto-start execution afterwards.
         if (planController.signal.aborted) return
@@ -1083,7 +1137,7 @@ export default function AIPanel({
       if (agentAbortRef.current === planController) agentAbortRef.current = null
       setIsLoading(false)
     }
-  }, [activeFile, appendChatMessage, attachedFiles, autoProceedPlan, currentFolder, ensureProvider, includeActiveFile, includeOpenFiles, includeSelection, input, isLoading, messages, openFiles, projectIndex, projectSummary, runApprovedAgentTask, selectedCode])
+  }, [activeFile, appendChatMessage, attachedFiles, autoProceedPlan, currentFolder, ensureProvider, includeActiveFile, includeOpenFiles, includeSelection, input, isLoading, messages, openFiles, presentPlanInEditor, projectIndex, projectSummary, runApprovedAgentTask, selectedCode])
 
   const sendPlanTask = useCallback(async (prompt = '') => {
     const task = (prompt || input).trim()
@@ -1097,13 +1151,14 @@ export default function AIPanel({
         task,
         context: { currentFolder, activeFile: includeActiveFile ? activeFile : null, selectedCode: includeSelection ? selectedCode : null, projectIndex, projectSummary, openFiles: includeOpenFiles ? openFiles : [], attachedFiles, conversationHistory: messages.slice(-4) }
       })
+      await presentPlanInEditor(content)
       setPlanRun({ task, content, status: 'complete' })
     } catch (error) {
       setPlanRun({ task, content: error.message, status: 'failed' })
     } finally {
       setIsLoading(false)
     }
-  }, [activeFile, attachedFiles, currentFolder, ensureProvider, includeActiveFile, includeOpenFiles, includeSelection, input, isLoading, messages, openFiles, projectIndex, projectSummary, selectedCode])
+  }, [activeFile, attachedFiles, currentFolder, ensureProvider, includeActiveFile, includeOpenFiles, includeSelection, input, isLoading, messages, openFiles, presentPlanInEditor, projectIndex, projectSummary, selectedCode])
 
   const sendChat = useCallback(async (action = 'custom', prompt = '', retryRequest = null) => {
     const userMessage = retryRequest?.userMessage || (action === 'custom'
@@ -1257,395 +1312,154 @@ export default function AIPanel({
     setEditingChatId(null)
   }
 
-  const currentModeConfig = PRIMARY_MODES.find(m => m.id === mode) || PRIMARY_MODES[0]
-
-  const modeHint = mode === 'agent'
-    ? 'Describe a task for Prime AI (plans & executes)…'
-    : 'Ask Prime AI anything (includes planning & explanations)…'
+  const viewModel = useMemo(() => {
+    return buildAgentViewModel({
+      agentRun,
+      messages,
+      isLoading,
+      pendingApproval,
+      activeFile,
+      currentFolder,
+      runDiagnostics
+    })
+  }, [agentRun, messages, isLoading, pendingApproval, activeFile, currentFolder, runDiagnostics])
 
   return (
-    <aside className={`prime-ai ${isDark ? 'prime-ai--dark' : 'prime-ai--light'}`} aria-label="Prime AI">
-      <header className="prime-ai__header">
-        <div className="prime-ai__brand">
-          <Sparkles size={16} />
-          <span>Prime AI</span>
-          {chats.length > 0 && (
-            <select
-              className="prime-chat-selector flex-1 text-xs bg-black/40 border border-white/10 rounded px-1 py-0.5 ml-2 text-gray-300 max-w-[140px] truncate outline-none cursor-pointer"
-              value={activeChatId || ''}
-              onChange={e => handleSwitchChat(e.target.value)}
-              title="Switch active chat session"
-            >
-              {chats.map(c => (
-                <option key={c.id} value={c.id} className="bg-gray-900 text-gray-200">
-                  {c.title || 'Untitled Chat'}
-                </option>
-              ))}
-            </select>
-          )}
-        </div>
-        <div className="prime-ai__header-actions">
-          <button type="button" onClick={() => { setShowProjectMemory(!showProjectMemory); setShowChatHistory(false); }} title="Project Memory"><Database size={14} /></button>
-          <button type="button" onClick={() => setShowSkills(true)} title="Skills"><BrainCircuit size={14} /></button>
-          <button type="button" onClick={() => { setShowChatHistory(!showChatHistory); setShowProjectMemory(false); }} title="Chat History"><List size={14} /></button>
-          <button type="button" onClick={handleNewChat} title="New Chat"><MessageSquarePlus size={14} /></button>
-          {canUndoAgentEdit && <button type="button" onClick={onUndoAgentEdit} title="Undo last AI edit"><Undo2 size={14} /></button>}
-          {canUndoAgentEdit && <button type="button" onClick={onUndoAgentTask} title="Undo last agent task"><History size={14} /></button>}
-          <button type="button" onClick={clearHistory} title="Clear chat history"><Trash2 size={14} /></button>
-          <button type="button" onClick={onOpenSettings} title="AI settings"><Settings size={14} /></button>
-        </div>
-      </header>
-      <SkillsModal open={showSkills} onClose={() => setShowSkills(false)} workspaceId={currentFolder} onUse={slug => { setInput(`/skill ${slug} `); setShowSkills(false); inputRef.current?.focus() }} />
+    <aside className={`prime-ai ${isDark ? 'prime-ai--dark' : 'prime-ai--light'} w-full h-full flex flex-col`} aria-label="Prime AI">
+      <SkillsModal
+        open={showSkills}
+        onClose={() => setShowSkills(false)}
+        workspaceId={currentFolder}
+        onUse={slug => { setInput(`/skill ${slug} `); setShowSkills(false); inputRef.current?.focus() }}
+      />
 
-      <nav className="prime-ai__modes" aria-label="Prime AI mode">
-        {PRIMARY_MODES.map(item => (
-          <button
-            key={item.id}
-            type="button"
-            className={mode === item.id ? 'is-active' : ''}
-            onClick={() => setMode(item.id)}
-            title={item.tooltip}
-          >
-            <item.icon size={13} />
-            <span>{item.label}</span>
-          </button>
-        ))}
-      </nav>
-
-      <div className="prime-ai__context">
-        <span><FileCode2 size={12} /> {activeFile?.name || 'No active file'}</span>
-        <span>{projectIndex.length} indexed</span>
-      </div>
-
-      <main className="prime-ai__content" ref={scrollRef}>
-        {showChatHistory && (
-          <section className="prime-chat-history">
-            <div className="prime-section-heading"><span>Recent Chats</span></div>
-            {chats.map(chat => (
-              <div key={chat.id} className={`prime-chat-item ${memoryManager.conversations.activeChatId === chat.id ? 'is-active' : ''}`} onClick={() => handleSwitchChat(chat.id)}>
-                <div className="prime-chat-item__summary">
-                  <div className="prime-chat-item__title-row">
-                  <MessageSquare size={14} />
-                  {editingChatId === chat.id
-                    ? <input autoFocus value={chatTitleDraft} onClick={event => event.stopPropagation()} onChange={event => setChatTitleDraft(event.target.value)} onKeyDown={event => { if (event.key === 'Enter') saveChatTitle(event, chat.id); if (event.key === 'Escape') setEditingChatId(null) }} />
-                    : <strong>{chat.title}</strong>}
-                  </div>
-                  <p>{getChatPreview(chat)}</p>
-                </div>
-                <div className="prime-chat-item__actions">
-                  {editingChatId === chat.id ? <button type="button" onClick={(event) => saveChatTitle(event, chat.id)}><Check size={12}/></button> : <button type="button" onClick={(event) => beginRenameChat(event, chat)} title="Rename chat"><Pencil size={12}/></button>}
-                  <button type="button" onClick={(e) => handleDeleteChat(e, chat.id)} title="Delete chat"><Trash2 size={12}/></button>
-                </div>
-              </div>
-            ))}
-          </section>
-        )}
-
-        {showProjectMemory && (
-          <section className="prime-project-memory" style={{ padding: '16px' }}>
-             <div className="prime-section-heading"><span>Project Memory</span></div>
-             <p style={{ fontSize: '12px', color: '#888', marginBottom: '16px' }}>Facts Prime AI remembers about this workspace across chats.</p>
-             {projectMemoryRecords.length === 0 && <span style={{ color: '#888' }}>No memory recorded yet.</span>}
-             {Object.entries(projectMemoryRecords.reduce((acc, curr) => {
-               if (!acc[curr.category]) acc[curr.category] = []
-               acc[curr.category].push(curr)
-               return acc
-             }, {})).map(([category, records]) => (
-               <div key={category} className="prime-memory-section" style={{ marginBottom: '16px' }}>
-                 <strong style={{ display: 'block', marginBottom: '8px', textTransform: 'capitalize' }}>{category}</strong>
-                 {records.map((item, i) => (
-                   <div key={i} style={{ marginBottom: '8px', backgroundColor: '#111', padding: '8px', borderRadius: '4px' }}>
-                     <div style={{ fontWeight: 600, fontSize: '13px' }}>{item.key}</div>
-                     <div style={{ fontSize: '13px', color: '#ccc', margin: '4px 0' }}>{item.value}</div>
-                     <div style={{ display: 'flex', gap: '8px', fontSize: '11px', color: '#666' }}>
-                       <span>Source: {item.source}</span>
-                       <span>Confidence: {item.confidence.toFixed(2)}</span>
-                     </div>
-                   </div>
-                 ))}
-               </div>
-             ))}
-          </section>
-        )}
-
-        {!showChatHistory && !showProjectMemory && mode === 'assistant' && (
-          <section className="prime-chat-feed" aria-live="polite">
-            {!messages.length && (
-              <div className="prime-ai-empty">
-                <Bot size={28} />
-                <strong>Ask about your code</strong>
-                <p>Prime AI provides plans, explanations, and code using your active file and selection context.</p>
-                <div className="prime-chat-actions">
-                  {CHAT_ACTIONS.map(action => <button key={action.id} type="button" onClick={() => sendChat(action.id)}><action.icon size={13} /> {action.label}</button>)}
-                </div>
-              </div>
-            )}
-            {messages.map(message => (
-              <article className={`prime-chat-message prime-chat-message--${message.role} ${message.isError ? 'is-error' : ''}`} key={message.id || `${message.role}-${message.content.slice(0, 20)}`}>
-                {message.role === 'user' && message.context && <span className="prime-chat-message__context">{message.context}</span>}
-                {message.role === 'assistant' && message.thinking && (
-                  <details className="prime-chat-message__thinking" style={{ fontSize: 10, opacity: 0.75, margin: '0 2px 6px' }}>
-                    <summary style={{ cursor: 'pointer' }}>Reasoning</summary>
-                    <p style={{ whiteSpace: 'pre-wrap', wordBreak: 'break-word', margin: '4px 0 0' }}>{message.thinking}</p>
-                  </details>
-                )}
-                <div className="prime-chat-message__body">
-                  {message.role === 'assistant'
-                    ? <MarkdownContent text={message.content} onApplyCode={onApplyCode} onCopy={copyToClipboard} copiedKey={copiedKey} />
-                    : message.content}
-                </div>
-                {message.role === 'assistant' && message.content && !message.isError && (
-                  <div className="flex items-center gap-2 mt-2 pt-1 border-t border-white/5">
-                    <button type="button" className="prime-chat-message__copy" onClick={() => copyToClipboard(message.content, message.id || message.content)}>
-                      {copiedKey === (message.id || message.content) ? <Check size={11} /> : <Copy size={11} />} Copy
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => handleHandOffToAgent(message.content)}
-                      className="px-2 py-1 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white rounded text-xs flex items-center gap-1 font-semibold transition-all shadow-sm cursor-pointer"
-                      title="Hand over this task to the Autonomous Agent to execute in the workspace"
-                    >
-                      <BrainCircuit size={13} />
-                      Hand Over to Agent
-                    </button>
-                  </div>
-                )}
-              </article>
-            ))}
-            {isLoading && <div className="prime-loading-line"><Loader2 size={14} /> {isReasoning ? 'Reasoning…' : 'Thinking…'} <button type="button" onClick={cancelStreaming}>Cancel</button></div>}
-            {!isLoading && lastChatRequest && <div className="prime-chat-retry"><button type="button" onClick={retryLastMessage}>Retry</button><button type="button" onClick={() => inputRef.current?.focus()}>Continue</button></div>}
-          </section>
-        )}
-
-        {!showChatHistory && !showProjectMemory && mode === 'agent' && (
-          <section className="prime-agent-session space-y-3">
-            {messages.length > 0 && (
-              <section className="prime-agent-transcript space-y-2" aria-label="Task transcript">
-                {messages.map(message => (
-                  <article className={`prime-chat-message prime-chat-message--${message.role} ${message.isError ? 'is-error' : ''}`} key={`agent-${message.id || `${message.role}-${message.content.slice(0, 20)}`}`}>
-                    {message.role === 'user' && message.context && <span className="prime-chat-message__context">{message.context}</span>}
-                    <div className="prime-chat-message__body">
-                      {message.role === 'assistant'
-                        ? <MarkdownContent text={message.content} onApplyCode={onApplyCode} onCopy={copyToClipboard} copiedKey={copiedKey} />
-                        : message.content}
-                    </div>
-                  </article>
-                ))}
-              </section>
-            )}
-
-            {!agentRun ? (
-              <div className="prime-ai-empty prime-ai-empty--agent">
-                <BrainCircuit size={28} />
-                <strong>Give Prime AI a coding task</strong>
-                <p>It creates an execution plan, inspects the workspace, changes files directly, and verifies the result. Every edit remains inspectable and undoable.</p>
-              </div>
-            ) : (
-              <div className="antigravity-trajectory-container space-y-2">
-                {agentRun.plan && (
-                  <PlanProgressBadge planTitle={agentRun.task ? `Task: ${agentRun.task.slice(0, 45)}…` : 'Implementation Plan'} commentCount={messages.length} />
-                )}
-
-                {agentRun.tools?.length > 0 && (
-                  <WorkedBadge duration={`${Math.max(1, (agentRun.tools?.length || 0) * 4)}s`} tools={agentRun.tools || []} />
-                )}
-
-                {agentRun.changedFiles?.length > 0 && (
-                  <FileChangesBadge count={agentRun.changedFiles.length} addLines={45} delLines={3} />
-                )}
-
-                {agentRun.status === 'complete' && (
-                  <StepDivider label="Task execution & verification" />
-                )}
-
-                <section className="prime-agent-card">
-                  <div className="prime-agent-card__heading"><strong>{agentRun.status === 'working' ? 'Working on it…' : agentRun.status === 'cancelled' ? 'Cancelled' : agentRun.status === 'failed' ? 'Needs attention' : 'Completed'}</strong>{agentRun.status === 'working' && <><Loader2 size={14} /><button type="button" onClick={cancelStreaming}>Cancel Agent</button></>}</div>
-                  <div className="prime-agent-stages">
-                    {AGENT_STAGES.map(stage => <AgentStage key={stage.id} stage={stage} state={agentRun.stages?.[stage.id]} />)}
-                  </div>
-                </section>
-
-                {agentRun.plan && (
-                  <section className="prime-agent-plan-card">
-                    <div className="prime-section-heading">
-                      <div><span>{agentRun.status === 'review' ? 'Implementation Plan — Review Required' : 'Approved Implementation Plan'}</span></div>
-                    </div>
-                    {agentRun.status === 'review'
-                      ? <>
-                          <textarea className="prime-plan-review-editor" value={planDraft} onChange={event => setPlanDraft(event.target.value)} aria-label="Implementation plan" />
-                          <div className="prime-plan-review-actions">
-                            <button type="button" onClick={() => { setAgentRun(previous => previous ? { ...previous, plan: planDraft, summary: 'Plan updated. Approve when you are ready to proceed.' } : previous); setMessages(previous => [...previous, { role: 'user', content: 'Edited the implementation plan.' }]) }}>Save plan edits</button>
-                            <button type="button" className="is-primary" onClick={() => runApprovedAgentTask(agentRun.task, planDraft || agentRun.plan)} disabled={isLoading}>Proceed with plan <Play size={12} /></button>
-                            <button type="button" onClick={() => { setAgentRun(null); setPlanDraft(''); setMessages(previous => [...previous, { role: 'user', content: 'Cancelled the proposed implementation plan.' }]) }}>Cancel</button>
-                          </div>
-                          <p className="prime-plan-review-hint">You can edit the plan directly, or add a note in the message box below. The agent will not edit files until you choose Proceed.</p>
-                        </>
-                      : <><div className="prime-agent-plan-body"><MarkdownContent text={agentRun.plan} onApplyCode={null} onCopy={copyToClipboard} copiedKey={copiedKey} /></div><ApprovedPlanChecklist plan={agentRun.plan} status={agentRun.status} todos={agentRun.todos} /></>}
-                  </section>
-                )}
-
-                {agentRun.tools?.length > 0 && (
-                  <section className="prime-tools-card mt-2">
-                    <StreamingLog logs={agentRun.tools || []} status={agentRun.status} />
-                  </section>
-                )}
-
-                {agentRun.summary && <section className={`prime-agent-summary ${agentRun.status === 'failed' ? 'is-error' : ''}`}>
-                  <MarkdownContent text={agentRun.summary} onApplyCode={onApplyCode} onCopy={copyToClipboard} copiedKey={copiedKey} />
-                  {agentRun.resumable && <button type="button" className="prime-agent-resume" onClick={() => runApprovedAgentTask(agentRun.task, agentRun.plan, true)} disabled={isLoading}><Play size={13} /> Continue from checkpoint</button>}
-                  {runDiagnostics && (
-                    <details style={{ marginTop: 8, fontSize: 10, opacity: 0.85 }}>
-                      <summary style={{ cursor: 'pointer' }}>
-                        Run diagnostics · {runDiagnostics.turns} turns · {Math.round((runDiagnostics.durationMs || 0) / 1000)}s · {runDiagnostics.model || 'unknown model'} · budget {runDiagnostics.gauges?.state || 'unknown'}
-                      </summary>
-                      <div style={{ marginTop: 6, display: 'grid', gap: 4 }}>
-                        {(runDiagnostics.gauges ? [runDiagnostics.gauges.requestContext, runDiagnostics.gauges.runInput, runDiagnostics.gauges.runOutput, runDiagnostics.gauges.runCost, runDiagnostics.gauges.runTurns] : [])
-                          .filter(Boolean)
-                          .map(gauge => (
-                            <div key={gauge.dimension}>
-                              {gauge.dimension}: {gauge.enabled === false
-                                ? 'disabled (unknown)'
-                                : `${Math.round(gauge.usage ?? 0)}/${Math.round(gauge.limit ?? 0)} (${Math.round((gauge.percent ?? 0) * 100)}%)`}
-                            </div>
-                          ))}
-                        {Array.isArray(runDiagnostics.models) && runDiagnostics.models.length > 0 && (
-                          <div>
-                            Models: {runDiagnostics.models.map(m => `${m.model} calls=${m.calls} err=${m.errors || 0} timeouts=${m.timeouts || 0}${m.avgLatencyMs != null ? ` avg=${Math.round(m.avgLatencyMs)}ms` : ''}`).join(' · ')}
-                          </div>
-                        )}
-                        {runDiagnostics.reason && runDiagnostics.reason !== 'completed' && (
-                          <div>Outcome: {runDiagnostics.status} ({runDiagnostics.reason})</div>
-                        )}
-                        {Array.isArray(runDiagnostics.timeline) && runDiagnostics.timeline.length > 0 && (
-                          <div>
-                            Timeline (last {Math.min(runDiagnostics.timeline.length, 12)}):
-                            {runDiagnostics.timeline.slice(-12).map(event => (
-                              <div key={event.seq}>#{event.seq} {event.type}{event.model ? ` ${String(event.model).split('/').pop()}` : ''}{event.durationMs != null ? ` ${event.durationMs}ms` : ''}{event.dimension ? ` [${event.dimension}]` : ''}{event.category ? ` (${event.category})` : ''}</div>
-                            ))}
-                            {runDiagnostics.timelineDropped > 0 && <div>…{runDiagnostics.timelineDropped} older event(s) dropped from memory</div>}
-                          </div>
-                        )}
-                      </div>
-                    </details>
-                  )}
-                </section>}
-              </div>
-            )}
-          </section>
-        )}
-      </main>
-
-      <footer className="prime-ai__composer">
-        {pendingApproval && (
-          <div className="prime-approval-card" role="alertdialog" aria-label="Agent approval requested">
-            <div className="prime-approval-card__heading">
-              <ShieldCheck size={14} />
-              <strong>Agent needs approval</strong>
-              <span>{pendingApproval.tool}</span>
-            </div>
-            <p className="prime-approval-card__reason">{pendingApproval.reason}</p>
-            <pre className="prime-approval-card__args">{JSON.stringify(pendingApproval.args, null, 2)?.slice(0, 600)}</pre>
-            <div className="prime-approval-card__actions">
-              <button type="button" className="is-deny" onClick={() => resolveApproval(false)}>Deny</button>
-              <button type="button" className="is-approve" onClick={() => resolveApproval(true)}><Check size={13} /> Approve &amp; run</button>
-            </div>
-          </div>
-        )}
-        {attachedFiles.length > 0 && (
-          <div className="prime-attached-row" aria-label="Attached files">
-            {attachedFiles.map(file => (
-              <span className="prime-attached-chip" key={file.path} title={file.path}>
-                <FileCode2 size={11} />
-                <span>{file.name}</span>
-                <button type="button" onClick={() => detachFile(file.path)} aria-label={`Remove ${file.name}`} title="Remove">
-                  <X size={11} />
-                </button>
-              </span>
-            ))}
-          </div>
-        )}
-        <div className="prime-composer">
-          <textarea
-            ref={inputRef}
-            rows={1}
-            value={input}
-            onChange={event => {
-              setInput(event.target.value)
-              event.target.style.height = 'auto'
-              event.target.style.height = `${Math.min(event.target.scrollHeight, 112)}px`
-            }}
-            onKeyDown={handleKeyDown}
-            placeholder={modeHint}
-            disabled={isLoading}
-          />
-          <div className="prime-composer__toolbar">
-            <button type="button" className={`prime-composer__approval ${autoApproveCommands ? 'is-active' : ''}`} onClick={() => setAutoApproveCommands(value => !value)} title={autoApproveCommands ? 'Approve for me: safe workspace commands run automatically; only destructive ones ask.' : 'Review commands: every shell command asks for approval before it runs.'}><ShieldCheck size={13} /> <span>{autoApproveCommands ? 'Approve for me' : 'Review commands'}</span></button>
-            <button type="button" className="prime-composer__control" onClick={() => setShowComposerControls(value => !value)} aria-expanded={showComposerControls} title="Attach files and choose context"><Paperclip size={14} /></button>
-            <select
-              className="prime-composer__model"
-              value={aiConfig?.model || ''}
-              onChange={event => handleModelChange(event.target.value)}
-              disabled={!aiConfig || modelsLoading}
-              aria-label="Model"
-              title={modelsError || (aiConfig ? `${modelOptions.length} models available with this key` : 'Model')}
-            >
-              {(modelOptions.length ? modelOptions : (aiConfig?.model ? [{ id: aiConfig.model, current: true }] : [])).map(option => (
-                <option key={option.id} value={option.id}>
-                  {option.current ? `● ${option.id} (current)` : option.id}
-                </option>
-              ))}
-            </select>
+      {showChatHistory ? (
+        <section className="prime-chat-history p-3 flex flex-col gap-2 overflow-y-auto h-full">
+          <div className="flex items-center justify-between pb-2 border-b border-[var(--agent-border)]">
+            <span className="font-semibold text-xs text-[var(--agent-text)]">Recent Tasks &amp; Chats</span>
             <button
               type="button"
-              className="prime-composer__control"
-              onClick={() => aiConfig && loadModelOptions(aiConfig.provider, aiConfig.model, { force: true })}
-              disabled={!aiConfig || modelsLoading}
-              title={modelsLoading ? 'Checking your key…' : 'Re-check which models your key can use'}
-              aria-label="Refresh models"
+              onClick={() => setShowChatHistory(false)}
+              className="text-xs text-cyan-400 hover:underline cursor-pointer"
             >
-              <RefreshCw size={13} className={modelsLoading ? 'prime-spin' : ''} />
+              Back to workspace
             </button>
-            <button type="button" className="prime-composer__context" onClick={() => setShowComposerControls(value => !value)} title="Context usage"><Gauge size={13} /> {Math.max(1, Math.round(estimatedContextTokens / 1000))}k / {Math.round(modelCapabilities.contextWindowTokens / 1000)}k</button>
-            {isLoading
-              ? <button type="button" className="prime-composer__stop" onClick={cancelStreaming} aria-label="Stop Prime AI" title="Stop"><Square size={12} fill="currentColor" /> <span>Stop</span></button>
-              : <button type="button" className="prime-composer__send" onClick={handleSubmit} disabled={!input.trim()} aria-label="Send to Prime AI" title="Send"><Send size={16} /></button>}
           </div>
-          {showComposerControls && (
-            <div className="prime-composer__controls-panel">
-              <strong>Context sources</strong>
-              <label><input type="checkbox" checked={includeActiveFile} onChange={event => setIncludeActiveFile(event.target.checked)} /> Active file</label>
-              <label><input type="checkbox" checked={includeSelection} onChange={event => setIncludeSelection(event.target.checked)} disabled={!selectedCode} /> Selection</label>
-              <label><input type="checkbox" checked={includeOpenFiles} onChange={event => setIncludeOpenFiles(event.target.checked)} disabled={!openFiles.length} /> {openFiles.length} open files</label>
-              <span>{includedFileCount} file{includedFileCount === 1 ? '' : 's'} included · {workspaceMemory.length} remembered tasks</span>
-              <label title="When on, the agent starts implementing as soon as the plan is ready, without waiting for Proceed."><input type="checkbox" checked={autoProceedPlan} onChange={event => setAutoProceedPlan(event.target.checked)} /> Auto-proceed plans</label>
-              <strong>Attach files</strong>
-              {activeFile && !attachedFiles.some(file => file.path === activeFile.path) && (
-                <button type="button" className="prime-attach-btn" onClick={() => attachFile({ path: activeFile.path, name: activeFile.name, content: activeFile.content })}>
-                  <Paperclip size={12} /> Attach active file ({activeFile.name})
+          {chats.map(chat => (
+            <div
+              key={chat.id}
+              className={`prime-chat-item p-2 rounded-lg border cursor-pointer transition-colors ${
+                memoryManager.conversations.activeChatId === chat.id
+                  ? 'bg-cyan-500/10 border-cyan-500/40 text-[var(--agent-text)]'
+                  : 'bg-[var(--agent-surface)] border-[var(--agent-border)] text-[var(--agent-text-secondary)] hover:bg-[var(--agent-surface-hover)]'
+              }`}
+              onClick={() => handleSwitchChat(chat.id)}
+            >
+              <div className="flex items-center justify-between">
+                <strong className="text-xs truncate max-w-[200px]">{chat.title || 'Untitled task'}</strong>
+                <button
+                  type="button"
+                  onClick={(e) => handleDeleteChat(e, chat.id)}
+                  title="Delete chat"
+                  className="text-zinc-500 hover:text-rose-400 p-1"
+                >
+                  <Trash2 size={12} />
                 </button>
-              )}
-              <input
-                className="prime-attach-search"
-                type="text"
-                value={attachSearch}
-                onChange={event => setAttachSearch(event.target.value)}
-                placeholder="Search workspace files…"
-                aria-label="Search workspace files to attach"
-              />
-              {attachSearchResults.map(file => (
-                <button type="button" className="prime-attach-result" key={file.path} onClick={() => attachFile(file)} title={file.path}>
-                  <FileCode2 size={12} /> <span>{relativePath(file.path, currentFolder) || file.name}</span>
-                </button>
-              ))}
-              {attachSearch.trim() && !attachSearchResults.length && <span>No matching files.</span>}
-              {attachedFiles.length > 0 && (
-                <span>{attachedFiles.length} attached — click × on a chip to remove.</span>
-              )}
+              </div>
+              <p className="text-[11px] text-[var(--agent-text-muted)] truncate mt-0.5">{getChatPreview(chat)}</p>
             </div>
+          ))}
+        </section>
+      ) : showProjectMemory ? (
+        <section className="prime-project-memory p-3 flex flex-col gap-2 overflow-y-auto h-full">
+          <div className="flex items-center justify-between pb-2 border-b border-[var(--agent-border)]">
+            <span className="font-semibold text-xs text-[var(--agent-text)]">Workspace Long-Term Memory</span>
+            <button
+              type="button"
+              onClick={() => setShowProjectMemory(false)}
+              className="text-xs text-cyan-400 hover:underline cursor-pointer"
+            >
+              Back to workspace
+            </button>
+          </div>
+          <p className="text-[11px] text-[var(--agent-text-muted)]">Facts Prime AI retains about this project across sessions.</p>
+          {projectMemoryRecords.length === 0 && (
+            <span className="text-xs text-[var(--agent-text-muted)] italic">No memory records stored yet.</span>
           )}
-        </div>
-        <p>{mode === 'agent' ? agentRun?.status === 'review' ? 'Add changes to the plan or choose Proceed when it is ready.' : 'Agent mode: plans first, then implements and verifies the approved plan.' : 'Assistant mode: uses the selected context and remembers this chat.'}{modelsError ? ` ${modelsError}` : ''}</p>
-      </footer>
+          {projectMemoryRecords.map((item, i) => (
+            <div key={i} className="p-2 rounded bg-[var(--agent-surface)] border border-[var(--agent-border)] text-xs flex flex-col gap-1">
+              <span className="font-semibold text-cyan-400">{item.key}</span>
+              <span className="text-[var(--agent-text-secondary)]">{item.value}</span>
+            </div>
+          ))}
+        </section>
+      ) : (
+        <AgentWorkspace
+          viewModel={viewModel}
+          messages={messages}
+          input={input}
+          onChangeInput={setInput}
+          onSubmit={handleSubmit}
+          onKeyDown={handleKeyDown}
+          onCancel={cancelStreaming}
+          isWorking={isLoading}
+          mode={mode}
+          onChangeMode={setMode}
+          aiConfig={aiConfig}
+          modelOptions={modelOptions}
+          modelsLoading={modelsLoading}
+          modelsError={modelsError}
+          onModelChange={handleModelChange}
+          onRefreshModels={() => aiConfig && loadModelOptions(aiConfig.provider, aiConfig.model, { force: true })}
+          estimatedContextTokens={estimatedContextTokens}
+          maxContextTokens={modelCapabilities.contextWindowTokens}
+          attachedFiles={attachedFiles}
+          onDetachFile={detachFile}
+          showComposerControls={showComposerControls}
+          onToggleComposerControls={() => setShowComposerControls(v => !v)}
+          includeActiveFile={includeActiveFile}
+          setIncludeActiveFile={setIncludeActiveFile}
+          includeSelection={includeSelection}
+          setIncludeSelection={setIncludeSelection}
+          hasSelection={Boolean(selectedCode)}
+          includeOpenFiles={includeOpenFiles}
+          setIncludeOpenFiles={setIncludeOpenFiles}
+          openFilesCount={openFiles.length}
+          autoApproveCommands={autoApproveCommands}
+          setAutoApproveCommands={setAutoApproveCommands}
+          autoProceedPlan={autoProceedPlan}
+          setAutoProceedPlan={setAutoProceedPlan}
+          activeFileName={activeFile?.name || ''}
+          onAttachActiveFile={() => activeFile && attachFile({ path: activeFile.path, name: activeFile.name, content: activeFile.content })}
+          attachSearch={attachSearch}
+          setAttachSearch={setAttachSearch}
+          attachSearchResults={attachSearchResults}
+          onAttachFile={attachFile}
+          chats={chats}
+          activeChatId={activeChatId}
+          onSwitchChat={handleSwitchChat}
+          onNewChat={handleNewChat}
+          onOpenSettings={onOpenSettings}
+          onOpenSkills={() => setShowSkills(true)}
+          onToggleMemory={() => { setShowProjectMemory(v => !v); setShowChatHistory(false) }}
+          onToggleHistory={() => { setShowChatHistory(v => !v); setShowProjectMemory(false) }}
+          onClearHistory={clearHistory}
+          onUndoEdit={onUndoAgentEdit}
+          canUndo={canUndoAgentEdit}
+          planDraft={planDraft}
+          onChangePlanDraft={setPlanDraft}
+          onProceedPlan={() => runApprovedAgentTask(agentRun?.task, planDraft || agentRun?.plan)}
+          onCancelPlan={() => { setAgentRun(null); setPlanDraft(''); }}
+          onSavePlanEdits={() => { setAgentRun(p => p ? { ...p, plan: planDraft } : p) }}
+          onOpenPlanInEditor={() => presentPlanInEditor(planDraft || agentRun?.plan)}
+          onResolveApproval={resolveApproval}
+          lastChange={lastChange}
+          onReviewChanges={(change) => setLastChange(change)}
+          onRetry={retryLastMessage}
+          onResume={() => runApprovedAgentTask(agentRun?.task, agentRun?.plan, true)}
+          onApplyCode={onApplyCode}
+        />
+      )}
     </aside>
   )
 }

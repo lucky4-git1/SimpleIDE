@@ -1,6 +1,55 @@
 import { estimateTokens } from './ContextChunk.js'
 import { LEDGER_CALL_TYPES } from './RunLedger.js'
 
+export const MODEL_CAPABILITY_REGISTRY = {
+  'gpt-4.1': { contextWindow: 1000000, maxOutput: 8192, reasoning: true, nativeTools: true, latencyClass: 'standard', inputPerMTok: 2.0, outputPerMTok: 8.0 },
+  'gpt-4.1-mini': { contextWindow: 1000000, maxOutput: 8192, reasoning: false, nativeTools: true, latencyClass: 'fast', inputPerMTok: 0.4, outputPerMTok: 1.6 },
+  'gpt-4.1-nano': { contextWindow: 1000000, maxOutput: 4096, reasoning: false, nativeTools: true, latencyClass: 'fast', inputPerMTok: 0.1, outputPerMTok: 0.4 },
+  'gpt-4o': { contextWindow: 128000, maxOutput: 4096, reasoning: false, nativeTools: true, latencyClass: 'standard', inputPerMTok: 2.5, outputPerMTok: 10.0 },
+  'gpt-4o-mini': { contextWindow: 128000, maxOutput: 4096, reasoning: false, nativeTools: true, latencyClass: 'fast', inputPerMTok: 0.15, outputPerMTok: 0.6 },
+  'deepseek-chat': { contextWindow: 128000, maxOutput: 4096, reasoning: false, nativeTools: true, latencyClass: 'fast', inputPerMTok: 0.14, outputPerMTok: 0.28 },
+  'deepseek-reasoner': { contextWindow: 128000, maxOutput: 8192, reasoning: true, nativeTools: true, latencyClass: 'reasoning', inputPerMTok: 0.55, outputPerMTok: 2.19 },
+  'llama-3.3-70b-versatile': { contextWindow: 128000, maxOutput: 4096, reasoning: false, nativeTools: true, latencyClass: 'fast', inputPerMTok: 0.59, outputPerMTok: 0.79 },
+  'llama-3.1-8b-instant': { contextWindow: 128000, maxOutput: 4096, reasoning: false, nativeTools: true, latencyClass: 'fast', inputPerMTok: 0.05, outputPerMTok: 0.08 },
+  'qwen2.5-coder:7b': { contextWindow: 32768, maxOutput: 2048, reasoning: false, nativeTools: true, latencyClass: 'fast', inputPerMTok: 0.0, outputPerMTok: 0.0 },
+  'llama3.2': { contextWindow: 128000, maxOutput: 4096, reasoning: false, nativeTools: true, latencyClass: 'fast', inputPerMTok: 0.0, outputPerMTok: 0.0 },
+  'nvidia/nemotron-3-ultra-550b-a55b': { contextWindow: 262144, maxOutput: 16384, reasoning: true, nativeTools: true, latencyClass: 'reasoning', inputPerMTok: 1.0, outputPerMTok: 3.0 }
+}
+
+export const TOOL_FAMILY_MAP = {
+  filesystem: ['read_file', 'write_file', 'create_file', 'edit_file', 'replace_in_file', 'delete_file', 'rename_file', 'move_file', 'list_files', 'directory_tree'],
+  editor: ['read_file', 'write_file', 'create_file', 'edit_file', 'replace_in_file', 'format_code', 'find_definition', 'find_references', 'query_symbol_graph'],
+  search: ['search_workspace', 'read_file', 'list_files', 'find_definition', 'find_references', 'find_symbol', 'find_implementations', 'get_callers', 'get_import_graph', 'query_symbol_graph'],
+  git: ['git_status', 'git_diff', 'git_stage', 'git_unstage', 'git_commit', 'git_push', 'git_pull'],
+  terminal: ['run_command', 'read_process_output', 'stop_process', 'list_processes'],
+  testing: ['run_command', 'verify', 'read_file'],
+  browser: ['browser_action', 'open_in_browser'],
+  diagnostics: ['read_file', 'run_command', 'rollback', 'get_diagnostics']
+}
+
+export function filterToolsByFamily(allTools, toolFamily, suggestedTools = []) {
+  if (!toolFamily || toolFamily === 'none' || !TOOL_FAMILY_MAP[toolFamily]) {
+    return allTools
+  }
+  const allowed = new Set(TOOL_FAMILY_MAP[toolFamily])
+  allowed.add('finish')
+  allowed.add('read_file')
+  if (Array.isArray(suggestedTools)) {
+    for (const tool of suggestedTools) {
+      if (typeof tool === 'string' && tool.trim()) {
+        allowed.add(tool.trim())
+      }
+    }
+  }
+
+  const filtered = (allTools || []).filter(tool => {
+    const name = typeof tool === 'string' ? tool : tool?.name
+    return allowed.has(name)
+  })
+
+  return filtered.length >= 2 ? filtered : allTools
+}
+
 export function getModelCapabilities(provider, model) {
   const p = String(provider || '').toLowerCase()
   const m = String(model || '').toLowerCase()
@@ -9,23 +58,8 @@ export function getModelCapabilities(provider, model) {
     'openai', 'nvidia', 'groq', 'openrouter', 'xai', 'deepseek', 'mistral', 'anthropic'
   ])
 
-  const modelWindows = {
-    'gpt-4.1': 1000000,
-    'gpt-4.1-mini': 1000000,
-    'gpt-4.1-nano': 1000000,
-    'gpt-4o': 128000,
-    'gpt-4o-mini': 128000,
-    'deepseek-chat': 128000,
-    'deepseek-reasoner': 128000,
-    'llama-3.3-70b-versatile': 128000,
-    'llama-3.1-8b-instant': 128000,
-    'qwen2.5-coder:7b': 32768,
-    'llama3.2': 128000,
-    // NVIDIA documents 256K default server context for Nemotron 3 Ultra
-    // (configurable up to 1M server-side). All other models keep existing values.
-    'nvidia/nemotron-3-ultra-550b-a55b': 262144
-  }
-  const contextWindowTokens = modelWindows[m] || (p === 'anthropic' || p === 'gemini' ? 200000 : 128000)
+  const registered = MODEL_CAPABILITY_REGISTRY[m]
+  const contextWindowTokens = registered?.contextWindow || (p === 'anthropic' || p === 'gemini' ? 200000 : 128000)
 
   if (!knownNativeProviders.has(p)) {
     return {
@@ -36,9 +70,13 @@ export function getModelCapabilities(provider, model) {
       supportsStructuredOutput: false,
       supportsReasoning: false,
       contextWindowTokens,
-      maxOutputTokens: 2048
+      maxOutputTokens: registered?.maxOutput || 2048,
+      latencyClass: registered?.latencyClass || 'standard',
+      pricing: { input: registered?.inputPerMTok || 0, output: registered?.outputPerMTok || 0 }
     }
   }
+
+  const supportsReasoning = registered?.reasoning ?? (m.includes('o1') || m.includes('o3') || m.includes('sol') || m.includes('reasoner'))
 
   return {
     providerId: p,
@@ -46,9 +84,11 @@ export function getModelCapabilities(provider, model) {
     supportsNativeTools: true,
     supportsStreamingToolCalls: p === 'openai',
     supportsStructuredOutput: true,
-    supportsReasoning: m.includes('o1') || m.includes('o3') || m.includes('sol') || m.includes('reasoner'),
+    supportsReasoning,
     contextWindowTokens,
-    maxOutputTokens: 4096
+    maxOutputTokens: registered?.maxOutput || 4096,
+    latencyClass: registered?.latencyClass || (supportsReasoning ? 'reasoning' : 'standard'),
+    pricing: { input: registered?.inputPerMTok || 0, output: registered?.outputPerMTok || 0 }
   }
 }
 

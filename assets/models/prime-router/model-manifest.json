@@ -1,0 +1,32 @@
+{
+  "name": "Prime Router",
+  "version": "0.1.0",
+  "format": "onnx",
+  "baseModel": "Laya-Agent-Decision-v1",
+  "specialization": "SimpleIDE Agent Controller",
+  "datasetVersion": "simpleide-v1.0",
+  "quantization": "FP32",
+  "sha256": "3019a5f0a3732eb1a34c80dfb138026613df9da9128aa2948dc146d409e94622",
+  "inputShape": {
+    "request_text": [
+      "batch_size",
+      1
+    ],
+    "agent_state": [
+      "batch_size",
+      1
+    ]
+  },
+  "outputHeads": {
+    "intent": 17,
+    "actionClass": 6,
+    "toolFamily": 9,
+    "needsLLM": 2,
+    "needsVerification": 2
+  },
+  "executionProvider": "CPUExecutionProvider",
+  "recommendedThreads": {
+    "intraOp": 2,
+    "interOp": 1
+  }
+}

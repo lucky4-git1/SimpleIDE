@@ -1,10 +1,14 @@
 import { z } from 'zod'
 import { ChangeManager } from './ChangeManager.js'
+import { PatchEngine } from './PatchEngine.js'
 import { knowledgeBase } from './KnowledgeBase.js'
 import { documentationFetcher } from './DocumentationFetcher.js'
 import { memoryManager } from '../memory/memoryManager.js'
 import { ToolDefinition, ToolCall, TOOL_PERMISSIONS, TOOL_CATEGORIES, zodToJsonSchema } from './ToolDefinition.js'
 import { FailureClassifier, FAILURE_CATEGORIES } from './FailureClassifier.js'
+import { CodeIntelligenceService } from './CodeIntelligenceService.js'
+import { globalContextEngine } from './ContextEngine.js'
+import { devServerManager } from './DevServerManager.js'
 
 const IGNORED = ['node_modules', '.git', 'dist', 'build', 'coverage', '.next', 'target', 'vendor']
 
@@ -116,11 +120,12 @@ class ToolRegistry {
 }
 
 export class ToolRunner {
-  constructor(workspaceRoot, { onChange, abortSignal, api } = {}) {
+  constructor(workspaceRoot, { onChange, abortSignal, api, codeIntelligence } = {}) {
     this.root = workspaceRoot
     this.onChange = onChange
     this.abortSignal = abortSignal
     this.api = api || globalThis.window?.api
+    this.codeIntelligence = codeIntelligence || globalContextEngine?.codeIntelligence || new CodeIntelligenceService(workspaceRoot, { api: this.getApi(), abortSignal })
     this.registry = new ToolRegistry()
     this.taskProcessIds = new Set()
     this.changeManager = new ChangeManager(workspaceRoot, { api: this.getApi() })
@@ -340,6 +345,73 @@ export class ToolRunner {
       return response.results
     })
 
+    reg('find_definition', 'Find definition, location, signature, and context for a symbol (function, class, variable, interface).', z.object({
+      symbol: z.string(),
+      file: z.string().optional()
+    }), TOOL_PERMISSIONS.SAFE, TOOL_CATEGORIES.READ, async ({ symbol, file }) => {
+      if (this.codeIntelligence) {
+        const overview = this.codeIntelligence.getSymbolOverview(symbol)
+        if (overview?.definition) return overview
+        const defs = this.codeIntelligence.findDefinition(symbol, file)
+        return { symbol, definitions: defs, found: defs.length > 0 }
+      }
+      return { symbol, definitions: [], found: false }
+    })
+
+    reg('find_references', 'Find all references, usages, and call sites of a symbol across the workspace.', z.object({
+      symbol: z.string()
+    }), TOOL_PERMISSIONS.SAFE, TOOL_CATEGORIES.READ, async ({ symbol }) => {
+      const references = this.codeIntelligence ? this.codeIntelligence.findReferences(symbol) : []
+      return { symbol, references, count: references.length }
+    })
+
+    reg('find_symbol', 'Search for symbol declarations by name query and optional kind filter (function, class, component, interface, type, constant).', z.object({
+      query: z.string(),
+      kind: z.string().optional()
+    }), TOOL_PERMISSIONS.SAFE, TOOL_CATEGORIES.READ, async ({ query, kind }) => {
+      const symbols = this.codeIntelligence ? this.codeIntelligence.findSymbols(query, kind) : []
+      return { query, symbols, count: symbols.length }
+    })
+
+    reg('find_implementations', 'Find implementations or classes extending/implementing an interface or class.', z.object({
+      symbol: z.string()
+    }), TOOL_PERMISSIONS.SAFE, TOOL_CATEGORIES.READ, async ({ symbol }) => {
+      const implementations = this.codeIntelligence ? this.codeIntelligence.findImplementations(symbol) : []
+      return { symbol, implementations, count: implementations.length }
+    })
+
+    reg('get_diagnostics', 'Get syntax and AST parse diagnostics for a file or the entire workspace.', z.object({
+      path: z.string().optional()
+    }), TOOL_PERMISSIONS.SAFE, TOOL_CATEGORIES.READ, async ({ path }) => {
+      const diagnostics = this.codeIntelligence ? this.codeIntelligence.getDiagnostics(path) : []
+      return { path: path || 'workspace', diagnostics, errorCount: diagnostics.length }
+    })
+
+    reg('get_callers', 'Find which functions, methods, or components call a given function or symbol.', z.object({
+      symbol: z.string()
+    }), TOOL_PERMISSIONS.SAFE, TOOL_CATEGORIES.READ, async ({ symbol }) => {
+      const callers = this.codeIntelligence ? this.codeIntelligence.getCallers(symbol) : []
+      return { symbol, callers, count: callers.length }
+    })
+
+    reg('get_import_graph', 'Get the import and export dependency graph for a file.', z.object({
+      path: z.string()
+    }), TOOL_PERMISSIONS.SAFE, TOOL_CATEGORIES.READ, async ({ path }) => {
+      const graph = this.codeIntelligence ? this.codeIntelligence.getImportGraph(path) : { file: path, imports: [], importedBy: [], exports: [] }
+      return graph
+    })
+
+    reg('query_symbol_graph', 'Query project symbol graph relationships (usages, dependencies, callers, callees, tests) as structured data and ASCII trees.', z.object({
+      symbol: z.string(),
+      direction: z.enum(['usages', 'dependencies', 'callers', 'callees']).optional().default('usages'),
+      depth: z.number().int().min(1).max(5).optional().default(1)
+    }), TOOL_PERMISSIONS.SAFE, TOOL_CATEGORIES.READ, async ({ symbol, direction = 'usages', depth = 1 }) => {
+      if (this.codeIntelligence) {
+        return this.codeIntelligence.querySymbolGraph(symbol, { direction, depth })
+      }
+      return { target: symbol, found: false, usages: [], treeText: `${symbol} (graph unavailable)` }
+    })
+
     reg('write_file', 'Create or replace a workspace file.', z.object({
       path: z.string(),
       content: z.string()
@@ -349,6 +421,67 @@ export class ToolRunner {
       path: z.string(),
       content: z.string().optional().default('')
     }), TOOL_PERMISSIONS.CAUTION, TOOL_CATEGORIES.WRITE, async ({ path, content = '' }) => this.write(path, content, 'create'))
+
+    reg('apply_patch', 'Apply structured incremental edits (insert, replace, delete, move, rename, multi-range edit) as a patch to a workspace file without replacing the entire file.', z.object({
+      path: z.string(),
+      patch: z.object({
+        file: z.string().optional(),
+        edits: z.array(z.object({
+          type: z.enum(['insert', 'replace', 'delete', 'move', 'rename']).optional(),
+          startLine: z.number().int().min(1).optional(),
+          endLine: z.number().int().min(1).optional(),
+          startColumn: z.number().int().min(1).optional(),
+          endColumn: z.number().int().min(1).optional(),
+          line: z.number().int().min(1).optional(),
+          column: z.number().int().min(1).optional(),
+          replacement: z.string().optional(),
+          text: z.string().optional(),
+          find: z.string().optional(),
+          replace: z.string().optional(),
+          wholeWord: z.boolean().optional(),
+          fromStartLine: z.number().int().min(1).optional(),
+          fromEndLine: z.number().int().min(1).optional(),
+          toLine: z.number().int().min(1).optional()
+        }))
+      }).optional(),
+      edits: z.array(z.object({
+        type: z.enum(['insert', 'replace', 'delete', 'move', 'rename']).optional(),
+        startLine: z.number().int().min(1).optional(),
+        endLine: z.number().int().min(1).optional(),
+        startColumn: z.number().int().min(1).optional(),
+        endColumn: z.number().int().min(1).optional(),
+        line: z.number().int().min(1).optional(),
+        column: z.number().int().min(1).optional(),
+        replacement: z.string().optional(),
+        text: z.string().optional(),
+        find: z.string().optional(),
+        replace: z.string().optional(),
+        wholeWord: z.boolean().optional(),
+        fromStartLine: z.number().int().min(1).optional(),
+        fromEndLine: z.number().int().min(1).optional(),
+        toLine: z.number().int().min(1).optional()
+      })).optional()
+    }), TOOL_PERMISSIONS.CAUTION, TOOL_CATEGORIES.WRITE, async ({ path, patch, edits: rawEditsList }) => {
+      const fullPath = resolvePath(this.root, path)
+      const api = this.getApi()
+      const read = await api.readFile(fullPath)
+      if (!read.success) {
+        throw new Error(`File "${path}" does not exist. Cannot apply patch.`)
+      }
+      const rawEdits = patch?.edits || rawEditsList || []
+      if (!Array.isArray(rawEdits) || rawEdits.length === 0) {
+        throw new Error('apply_patch requires at least one edit operation in patch.edits or edits.')
+      }
+
+      const normalizedEdits = PatchEngine.normalizeEdits(rawEdits, read.content)
+      const updatedContent = PatchEngine.applyEdits(read.content, rawEdits)
+      const structuredPatch = { file: path, edits: normalizedEdits }
+
+      return this.write(path, updatedContent, 'patch', read.content, {
+        patch: structuredPatch,
+        edits: normalizedEdits
+      })
+    })
 
     reg('edit_file', 'Replace one exact occurrence in a workspace file.', z.object({
       path: z.string(),
@@ -368,7 +501,8 @@ export class ToolRunner {
       }
       const updated = replaceExactOrNewlineInsensitive(read.content, find, replace || '')
       if (updated === null) throw new Error(`Expected exactly one match (allowing only line-ending differences); re-read "${path}" and use a unique snippet.`)
-      return this.write(path, updated, 'edit', read.content)
+      const patch = PatchEngine.createPatch(path, read.content, updated)
+      return this.write(path, updated, 'edit', read.content, { patch, edits: patch.edits })
     })
 
     reg('replace_in_file', 'Compatibility alias for edit_file.', z.object({
@@ -385,6 +519,7 @@ export class ToolRunner {
       const before = await api.readFile(fullPath)
       const response = await api.deleteFile(fullPath)
       if (!response.success) throw new Error(response.error)
+      this.codeIntelligence?.removeFile(fullPath)
       this.onChange?.({ path: fullPath, operation: 'delete', before: before.success ? before.content : '', after: '' })
       return { path, operation: 'delete' }
     })
@@ -414,9 +549,10 @@ export class ToolRunner {
       if (isCommandBlocked(command)) throw new Error(`run_command blocked for safety: ${command}`)
       const api = this.getApi()
       const requestId = `command-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`
+      const runId = this.activeTransactionId || null
       const cancel = () => api.cancelCommand?.(requestId)
       this.abortSignal?.addEventListener('abort', cancel, { once: true })
-      const response = await api.runCommand({ command, cwd: this.root, timeoutMs, requestId })
+      const response = await api.runCommand({ command, cwd: this.root, timeoutMs, requestId, runId })
       this.abortSignal?.removeEventListener('abort', cancel)
       if (this.abortSignal?.aborted || response.cancelled) {
         const error = new Error('Command cancelled by user.')
@@ -459,7 +595,8 @@ export class ToolRunner {
     }), TOOL_PERMISSIONS.CAUTION, TOOL_CATEGORIES.EXECUTE, async ({ command, id }) => {
       if (isCommandBlocked(command)) throw new Error(`start_process blocked for safety: ${command}`)
       const api = this.getApi()
-      const response = await api.startProcess({ command, id, cwd: this.root })
+      const runId = this.activeTransactionId || null
+      const response = await api.startProcess({ command, id, cwd: this.root, runId })
       if (!response.success) throw new Error(response.error)
       if (response.process?.id) this.taskProcessIds.add(response.process.id)
       return response.process
@@ -507,6 +644,26 @@ export class ToolRunner {
       const response = await api.readProcessOutput({ id, limit })
       if (!response.success) throw new Error(response.error)
       return response.output
+    })
+
+    reg('start_dev_server', 'Start a long-running development server (e.g. npm run dev, vite, pnpm dev) in the background without blocking the agent.', z.object({
+      command: z.string(),
+      id: z.string().optional()
+    }), TOOL_PERMISSIONS.CAUTION, TOOL_CATEGORIES.EXECUTE, async ({ command, id }) => {
+      if (isCommandBlocked(command)) throw new Error(`start_dev_server blocked for safety: ${command}`)
+      return devServerManager.startDevServer({ command, cwd: this.root, id })
+    })
+
+    reg('inspect_dev_server', 'Inspect status, detected local port, and logs of a running development server.', z.object({
+      id: z.string()
+    }), TOOL_PERMISSIONS.SAFE, TOOL_CATEGORIES.EXECUTE, async ({ id }) => {
+      return devServerManager.inspectDevServer(id)
+    })
+
+    reg('stop_dev_server', 'Stop a development server.', z.object({
+      id: z.string()
+    }), TOOL_PERMISSIONS.SAFE, TOOL_CATEGORIES.EXECUTE, async ({ id }) => {
+      return devServerManager.stopDevServer(id)
     })
 
     // Git Tools
@@ -610,7 +767,7 @@ export class ToolRunner {
     })
   }
 
-  async write(path, content, operation, beforeOverride) {
+  async write(path, content, operation, beforeOverride, metadata = {}) {
     if (typeof content !== 'string') throw new Error('File content must be a string.')
     if (/\.html?$/i.test(path) && /<!doctype\s+html/i.test(content)) {
       const inspection = inspectStandaloneHtml(content)
@@ -631,13 +788,18 @@ export class ToolRunner {
       throw err
     }
 
+    const patch = metadata.patch || (before && content && before !== content ? PatchEngine.createPatch(fullPath, before, content) : null)
+    const edits = metadata.edits || patch?.edits || []
+
     if (this.changeManager.currentTaskId) {
-      await this.changeManager.recordChange({ path: fullPath, operation, before, after: content })
+      await this.changeManager.recordChange({ path: fullPath, operation, before, after: content, patch, edits })
     }
 
-    const change = { path: fullPath, operation, before, after: content, timestamp: Date.now() }
+    this.codeIntelligence?.updateFile(fullPath, content)
+
+    const change = { path: fullPath, operation, before, after: content, patch, edits, timestamp: Date.now() }
     this.onChange?.(change)
-    return { path, operation, bytes: content.length, linesAdded: content.split('\n').length - before.split('\n').length, changed: before !== content }
+    return { path, operation, bytes: content.length, linesAdded: content.split('\n').length - before.split('\n').length, changed: before !== content, patch, edits }
   }
 
   async move(from, to, operation) {
@@ -655,6 +817,9 @@ export class ToolRunner {
     if (this.changeManager.currentTaskId) {
       await this.changeManager.recordChange({ path: toPath, operation, before: before.success ? before.content : '', after: before.success ? before.content : '', from: fromPath })
     }
+
+    this.codeIntelligence?.removeFile(fromPath)
+    this.codeIntelligence?.updateFile(toPath, before.success ? before.content : '')
 
     this.onChange?.({ path: toPath, from: fromPath, operation, before: before.success ? before.content : '', after: before.success ? before.content : '' })
     return { from, to, operation }

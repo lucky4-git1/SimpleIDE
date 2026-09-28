@@ -43,8 +43,16 @@ export class PromptContextFormatter {
 
     // 5. Dependencies & Related Files
     const depChunks = groups.get('DEPENDENCY') || []
-    if (depChunks.length > 0) {
-      sections.push(`[Related File Dependencies]\n` + depChunks.map(d => `- ${d.content}`).join('\n'))
+    const callerChunks = groups.get('CALLER') || []
+    const calleeChunks = groups.get('CALLEE') || []
+    const refChunks = groups.get('REFERENCE') || []
+    const testChunks = groups.get('TEST') || []
+    const configChunks = groups.get('CONFIG') || []
+    const docChunks = groups.get('DOCUMENTATION') || []
+
+    const allDepChunks = [...depChunks, ...callerChunks, ...calleeChunks, ...refChunks, ...testChunks, ...configChunks, ...docChunks]
+    if (allDepChunks.length > 0) {
+      sections.push(`[Related File Dependencies]\n` + allDepChunks.map(d => `- ${d.content}`).join('\n'))
     }
 
     // 6. Lexically Relevant Files

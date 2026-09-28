@@ -1,0 +1,38 @@
+{
+  "intent": {
+    "accuracy": 1.0,
+    "macro_f1": 1.0,
+    "weighted_f1": 1.0,
+    "brier_score": null,
+    "ece": null
+  },
+  "actionClass": {
+    "accuracy": 1.0,
+    "macro_f1": 1.0,
+    "weighted_f1": 1.0,
+    "brier_score": null,
+    "ece": null
+  },
+  "toolFamily": {
+    "accuracy": 1.0,
+    "macro_f1": 1.0,
+    "weighted_f1": 1.0,
+    "brier_score": null,
+    "ece": null
+  },
+  "needsLLM": {
+    "accuracy": 1.0,
+    "macro_f1": 1.0,
+    "weighted_f1": 1.0,
+    "brier_score": 0.0392,
+    "ece": 0.1871
+  },
+  "needsVerification": {
+    "accuracy": 1.0,
+    "macro_f1": 1.0,
+    "weighted_f1": 1.0,
+    "brier_score": null,
+    "ece": null
+  },
+  "hard_negative_accuracy": 1.0
+}

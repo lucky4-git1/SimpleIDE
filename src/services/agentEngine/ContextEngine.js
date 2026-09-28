@@ -112,7 +112,9 @@ export class ContextEngine {
     diagnostics = [...this.state.diagnostics, ...this.state.errors],
     writtenFiles = new Set(),
     activeFileContent = null,
-    totalTokens = 128000
+    totalTokens = 128000,
+    symbolQuery = null,
+    graphDepth = 2
   } = {}) {
     this.budgetManager.configure({ totalTokens })
 
@@ -126,7 +128,9 @@ export class ContextEngine {
       writtenFiles,
       activeFileContent,
       codeIntelligence: this.codeIntelligence,
-      fileIndex: this.fileIndex
+      fileIndex: this.fileIndex,
+      symbolQuery,
+      graphDepth
     })
 
     // 2. Add compressed observation chunks
@@ -154,6 +158,21 @@ export class ContextEngine {
     })
 
     return pkg
+  }
+
+  async retrieveContextGraph({
+    task = '',
+    symbolQuery = null,
+    activeFile = this.state.activeFile,
+    graphDepth = 2
+  } = {}) {
+    return this.pipeline.retrieveContextGraph({
+      task,
+      symbolQuery,
+      activeFile,
+      graphDepth,
+      codeIntelligence: this.codeIntelligence
+    })
   }
 
   getRelevantCodeStructure({ task, activeFile } = {}) {

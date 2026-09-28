@@ -7,6 +7,10 @@ import { isPathInWorkspace } from './pathSanitizer.js'
 let workspaceWatcher = null
 let watchedWorkspacePath = null
 
+export function getWatchedWorkspacePath() {
+  return watchedWorkspacePath
+}
+
 export function registerFsIPC(getMainWindow, broadcastReload) {
   ipcMain.handle('open-folder', async () => {
     const mainWindow = getMainWindow()
@@ -86,6 +90,9 @@ export function registerFsIPC(getMainWindow, broadcastReload) {
 
   ipcMain.handle('format-code', async (_, filePath, content) => {
     try {
+      if (watchedWorkspacePath && !isPathInWorkspace(filePath, watchedWorkspacePath)) {
+        return { success: false, error: 'Access denied: Path is outside the open workspace.' }
+      }
       const prettier = await import('prettier')
       const ext = filePath.split('.').pop().toLowerCase()
       const parserMap = {
@@ -131,6 +138,12 @@ export function registerFsIPC(getMainWindow, broadcastReload) {
     const needle = String(query || '').toLowerCase()
     if (!needle) return { success: false, error: 'Search query is required.' }
     const rootPath = join(root, path)
+    if (watchedWorkspacePath && !isPathInWorkspace(rootPath, watchedWorkspacePath)) {
+      return { success: false, error: 'Access denied: Search path is outside the open workspace.' }
+    }
+    if (!isPathInWorkspace(rootPath, root)) {
+      return { success: false, error: 'Access denied: Search path is outside the root directory.' }
+    }
     try {
       const visit = async dir => {
         if (results.length >= 80) return

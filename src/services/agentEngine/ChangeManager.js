@@ -1,4 +1,5 @@
 import { memoryManager } from '../memory/memoryManager.js'
+import { PatchEngine } from './PatchEngine.js'
 
 function hashString(str) {
   let hash = 0;
@@ -28,10 +29,11 @@ export class ChangeManager {
     this.currentTaskChanges = [];
   }
 
-  async recordChange({ path, operation, before, after }) {
+  async recordChange({ path, operation, before, after, patch, edits }) {
     if (!this.currentTaskId) throw new Error('No active transaction');
     
     const changeId = `change-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+    const computedPatch = patch || (before && after ? PatchEngine.createPatch(path, before, after) : null);
     const change = {
       taskId: this.currentTaskId,
       changeId,
@@ -41,7 +43,9 @@ export class ChangeManager {
       before: before || '',
       after: after || '',
       checksumBefore: hashString(before || ''),
-      checksumAfter: hashString(after || '')
+      checksumAfter: hashString(after || ''),
+      patch: computedPatch,
+      edits: edits || computedPatch?.edits || []
     };
     
     this.currentTaskChanges.push(change);
