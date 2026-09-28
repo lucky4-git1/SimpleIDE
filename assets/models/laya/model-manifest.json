@@ -1,0 +1,28 @@
+{
+  "name": "SimpleIDE Laya Compact Decision Engine",
+  "modelId": "simpleide-laya-compact",
+  "format": "neural-tensor",
+  "version": "1.0.0",
+  "sizeBytes": 2935793,
+  "sizeMB": 2.8,
+  "sha256": "dfcaeafa9e123dbeeae1e71dc0ad25ad2b13b4745c7c8929b7e91f1f8e3e6d9e",
+  "accuracy": 97.73,
+  "inputDim": 1024,
+  "hiddenDim": 128,
+  "decisionHeads": [
+    "intent",
+    "actionClass",
+    "toolFamily",
+    "symbol_navigation",
+    "context_breadth",
+    "graph_depth",
+    "risk",
+    "semantic_navigation_required",
+    "verification_required",
+    "tests_required",
+    "stuck",
+    "strategy_change"
+  ],
+  "bundled": true,
+  "zeroDownloadRequired": true
+}

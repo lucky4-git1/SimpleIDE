@@ -137,7 +137,9 @@ export class LayaModelManager {
    */
   resolveLocalModelPath(variant = 'simpleide', version = null) {
     if (!isNode) return null
-    const filename = variant === 'base' ? 'laya.onnx' : 'simpleide-laya.onnx'
+    const filename = variant === 'base'
+      ? 'laya.onnx'
+      : (variant === 'compact' ? 'simpleide-laya-compact.json' : 'simpleide-laya.onnx')
     const cwd = getCwd()
 
     // 1. Explicit env override

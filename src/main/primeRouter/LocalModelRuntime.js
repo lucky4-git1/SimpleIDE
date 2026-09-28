@@ -3,6 +3,7 @@ import fs from 'fs/promises'
 import { existsSync } from 'fs'
 import { extractSymbolHeuristics } from '../../services/agentEngine/primeRouterSchemas.js'
 import { layaModelManager } from '../../services/agentEngine/LayaModelManager.js'
+import { CompactNeuralRuntime } from './CompactNeuralRuntime.js'
 
 /**
  * Embedded calibrated weights derived from SimpleIDE Laya router fine-tuning dataset.
@@ -52,6 +53,7 @@ export class LocalModelRuntime {
     this.initializing = false
     this.ready = false
     this.ortSession = null
+    this.compactNeuralRuntime = null
     this.modelVersion = 'prime-router-0.1.0'
     this.modelPath = null
     this.warmLatencyMs = 0
@@ -60,6 +62,17 @@ export class LocalModelRuntime {
       intraOpNumThreads: 2,
       interOpNumThreads: 1
     }
+  }
+
+  resolveCompactModelPath() {
+    if (process.resourcesPath) {
+      const packagedPath = join(process.resourcesPath, 'assets', 'models', 'laya', 'simpleide-laya-compact.json')
+      if (existsSync(packagedPath)) return packagedPath
+    }
+    const devPath = join(process.cwd(), 'assets', 'models', 'laya', 'simpleide-laya-compact.json')
+    if (existsSync(devPath)) return devPath
+
+    return null
   }
 
   resolveModelPath() {
@@ -101,12 +114,26 @@ export class LocalModelRuntime {
     // Schedule on next event loop tick to yield to main UI thread
     setTimeout(async () => {
       try {
+        // 1. Load bundled compact neural decision network
+        const compactPath = this.resolveCompactModelPath()
+        if (compactPath) {
+          try {
+            this.compactNeuralRuntime = CompactNeuralRuntime.loadFromFile(compactPath)
+            if (this.compactNeuralRuntime) {
+              this.modelVersion = `simpleide-laya-compact-v${this.compactNeuralRuntime.version}`
+            }
+          } catch (compactErr) {
+            console.warn('[PrimeRouter] Could not load compact neural model:', compactErr.message)
+          }
+        }
+
+        // 2. Load ONNX session if full model weights exist
         const path = this.resolveModelPath()
         if (path) {
           this.modelPath = path
           await this._loadOnnxSession(path)
         }
-        // Always mark ready: if ONNX is present, it uses ONNX; otherwise embedded calibrated engine
+
         this.ready = true
         this.initialized = true
         await this._warmup()
@@ -215,6 +242,35 @@ export class LocalModelRuntime {
       }
     }
 
+    // 3b. If Compact Neural Decision Engine is active, execute native neural tensor forward pass
+    if (this.compactNeuralRuntime) {
+      try {
+        const neuralPred = this.compactNeuralRuntime.predict(trimmedReq, state)
+        if (neuralPred) {
+          const latencyMs = Date.now() - startTime
+          const result = {
+            ...neuralPred,
+            symbol_navigation: neuralPred.symbol_navigation || symbolHeuristics.symbol_navigation,
+            find_references: (neuralPred.symbol_navigation === 'required' ? 'required' : 'none') || symbolHeuristics.find_references,
+            suggested_tools: (symbolHeuristics.suggested_tools && symbolHeuristics.suggested_tools.length)
+              ? symbolHeuristics.suggested_tools
+              : (neuralPred.toolFamily === 'git' ? ['git_status', 'git_diff'] : (neuralPred.toolFamily === 'testing' ? ['run_command'] : [])),
+            symbol_query: symbolHeuristics.symbol_query || null,
+            latencyMs
+          }
+          if (symbolHeuristics.intent === 'refactor') {
+            result.intent = 'refactor'
+            result.symbol_navigation = 'required'
+            result.find_references = 'required'
+            result.needsVerification = true
+          }
+          return result
+        }
+      } catch {
+        // Fall through to calibrated rule engine
+      }
+    }
+
     // 4. High-precision Symbol Navigation & Refactoring rules
     if (symbolHeuristics.matched) {
       const latencyMs = Date.now() - startTime
@@ -284,12 +340,17 @@ export class LocalModelRuntime {
   }
 
   getStatus() {
+    const hasNeural = Boolean(this.compactNeuralRuntime)
+    const hasOnnx = Boolean(this.ortSession)
     return {
       initialized: this.initialized,
       ready: this.ready,
       modelVersion: this.modelVersion,
-      modelLoaded: Boolean(this.ortSession),
-      modelPath: this.modelPath,
+      modelLoaded: hasOnnx || hasNeural,
+      modelPath: this.modelPath || this.resolveCompactModelPath(),
+      hasOnnxSession: hasOnnx,
+      hasCompactNeuralModel: hasNeural,
+      inferenceSource: hasOnnx ? 'onnx' : (hasNeural ? 'neural_tensor' : 'fallback'),
       warmLatencyMs: this.warmLatencyMs,
       inferenceCount: this.inferenceCount,
       threadSettings: this.threadSettings

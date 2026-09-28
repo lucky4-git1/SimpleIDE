@@ -78,6 +78,11 @@
         "from": "assets/models/prime-router",
         "to": "assets/models/prime-router",
         "filter": ["**/*"]
+      },
+      {
+        "from": "assets/models/laya",
+        "to": "assets/models/laya",
+        "filter": ["**/*"]
       }
     ],
     "win": {
