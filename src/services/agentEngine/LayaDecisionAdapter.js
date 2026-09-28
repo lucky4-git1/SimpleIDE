@@ -146,7 +146,8 @@ export class LayaDecisionAdapter {
             this.sessionActive = true
           } else {
             // 2. Attempt direct onnxruntime-node session loading if present
-            const ort = await import(/* @vite-ignore */ 'onnxruntime-node').catch(() => null)
+            const ortModuleName = 'onnxruntime-node'
+            const ort = await import(/* @vite-ignore */ ortModuleName).catch(() => null)
             if (ort?.InferenceSession) {
               this.ortSession = await ort.InferenceSession.create(modelPath, {
                 executionProviders: ['cpu'],
