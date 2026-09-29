@@ -25,8 +25,8 @@ export default function Tabs({ files, activeFilePath, onTabClick, onTabClose, on
                   : (isDark ? 'bg-[#2d2d2d] text-zinc-400 hover:bg-[#252526] border-[#1e1e1e]' : 'bg-[#ececec] text-zinc-600 hover:bg-[#e4e4e4] border-[#cccccc]')
               }`}
             >
-              <div className="flex-1 truncate text-sm mr-2 flex items-center gap-1.5">
-                <span className="truncate">{file.name}</span>
+              <div className="flex-1 truncate text-sm mr-2 flex items-center gap-1.5" title={file.path}>
+                <span className="truncate" title={file.path}>{file.name}</span>
                 {file.isDirty && <span className={`w-2 h-2 rounded-full inline-block ${isDark ? 'bg-blue-300' : 'bg-blue-600'}`} title="Unsaved changes"></span>}
               </div>
               <button

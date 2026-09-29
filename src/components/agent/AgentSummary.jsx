@@ -1,6 +1,7 @@
 import React, { useState } from 'react'
 import {
   CheckCircle2,
+  AlertTriangle,
   FileCode2,
   Play,
   Activity,
@@ -55,10 +56,17 @@ export const AgentSummary = React.memo(function AgentSummary({
           </span>
         )}
 
-        {verification?.passed && (
+        {(verification?.passed || verification?.success) && (
           <span className="flex items-center gap-1 text-emerald-400">
             <CheckCircle2 size={12} />
             <span>Verification passed</span>
+          </span>
+        )}
+
+        {verification?.failed && (
+          <span className="flex items-center gap-1 text-rose-400">
+            <AlertTriangle size={12} />
+            <span>Verification check failed</span>
           </span>
         )}
 

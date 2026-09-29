@@ -160,3 +160,85 @@ test('AgentAdapter — parsePlanSteps parses JSON plans and markdown checklists'
   assert.equal(checklistSteps[1].text, 'Phase 2: Implement UI redesign')
 })
 
+test('AgentAdapter — parsePlanSteps is section-aware and ignores non-step bullet lists', () => {
+  const fullPlan = `
+# Implementation Plan: Landing Page
+
+## 1. Goal & Objectives
+Build a modern dark-mode landing page with responsive layouts.
+
+## 2. Design & Architecture
+- Modern tech aesthetics
+- High contrast typography
+- Dynamic CSS grid
+
+## 3. Implementation Steps
+1. **Initialize Project Files** — Create index.html and style.css
+2. **Implement Hero Section** — Title, CTA buttons, and badge
+3. **Add Responsive Features Grid** — 3 column card layout
+
+## 4. Affected Files
+- \`index.html\` — Main markup
+- \`style.css\` — Responsive stylesheet
+
+## 5. Verification Plan
+- \`npm test\`
+- Inspect in browser preview
+
+## 6. Risks & Mitigations
+- Mobile layout clipping
+`
+  const steps = parsePlanSteps(fullPlan, [], 'working')
+  assert.equal(steps.length, 3)
+  assert.equal(steps[0].text, 'Initialize Project Files — Create index.html and style.css')
+  assert.equal(steps[1].text, 'Implement Hero Section — Title, CTA buttons, and badge')
+  assert.equal(steps[2].text, 'Add Responsive Features Grid — 3 column card layout')
+  assert.equal(steps[0].status, 'active')
+  assert.equal(steps[1].status, 'pending')
+})
+
+test('AgentAdapter — buildAgentViewModel normalizes verification from agentRun.verification', () => {
+  const agentRun = {
+    task: 'Create landing page',
+    status: 'complete',
+    verification: {
+      attempted: true,
+      success: true,
+      command: 'npm test',
+      stdout: 'All 12 tests passed'
+    },
+    tools: [],
+    changedFiles: ['index.html']
+  }
+
+  const vm = buildAgentViewModel({ agentRun, isLoading: false })
+  assert.equal(vm.verification.attempted, true)
+  assert.equal(vm.verification.passed, true)
+  assert.equal(vm.verification.failed, false)
+  assert.equal(vm.verification.command, 'npm test')
+  assert.equal(vm.verification.output, 'All 12 tests passed')
+})
+
+test('AgentAdapter — buildAgentViewModel normalizes failed verification cleanly', () => {
+  const agentRun = {
+    task: 'Create landing page',
+    status: 'failed',
+    verification: {
+      attempted: true,
+      success: false,
+      command: 'npm test',
+      stdout: 'AssertionError: expected true to be false',
+      exitCode: 1
+    },
+    tools: [],
+    changedFiles: []
+  }
+
+  const vm = buildAgentViewModel({ agentRun, isLoading: false })
+  assert.equal(vm.verification.attempted, true)
+  assert.equal(vm.verification.passed, false)
+  assert.equal(vm.verification.failed, true)
+  assert.match(vm.verification.detail, /npm test/)
+})
+
+

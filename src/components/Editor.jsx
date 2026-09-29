@@ -1,4 +1,4 @@
-import MonacoEditor from '@monaco-editor/react'
+import MonacoEditor, { DiffEditor } from '@monaco-editor/react'
 import { useRef, useEffect } from 'react'
 import { getLanguageFromFile } from '../utils/language'
 import { getInlineCompletions } from '../services/autocompleteService'
@@ -121,6 +121,67 @@ export default function Editor({ file, revealLine, revealKey }) {
   }
 
   if (!file) return null
+
+  if (file.isDiff) {
+    return (
+      <div className="absolute inset-0 flex flex-col bg-[#1e1e1e]">
+        {/* Diff Review Bar */}
+        <div className="flex items-center justify-between px-4 py-2 bg-[#252526] border-b border-white/10 text-xs select-none">
+          <div className="flex items-center gap-2">
+            <span className="font-semibold text-cyan-400">Diff Review:</span>
+            <span className="font-mono text-zinc-200">{file.originalPath || file.name}</span>
+            <span className="text-[10px] text-zinc-400">(Original on left · Proposed patch on right)</span>
+          </div>
+          <div className="flex items-center gap-2">
+            {file.onReject && (
+              <button
+                type="button"
+                onClick={() => file.onReject()}
+                className="flex items-center gap-1 px-3 py-1 rounded bg-rose-500/20 hover:bg-rose-500/30 text-rose-300 border border-rose-500/40 text-xs font-medium cursor-pointer transition-colors"
+                title="Reject patch and restore original file"
+              >
+                Reject Patch
+              </button>
+            )}
+            {file.onAccept && (
+              <button
+                type="button"
+                onClick={() => file.onAccept()}
+                className="flex items-center gap-1 px-3 py-1 rounded bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-300 border border-emerald-500/40 text-xs font-medium cursor-pointer transition-colors"
+                title="Accept and apply patch"
+              >
+                Accept Patch
+              </button>
+            )}
+          </div>
+        </div>
+
+        {/* Side-by-Side Monaco Diff Editor */}
+        <div className="flex-1 relative">
+          <DiffEditor
+            height="100%"
+            width="100%"
+            theme={isDark ? "vs-dark" : "light"}
+            original={file.original || ''}
+            modified={file.modified || file.content || ''}
+            language={getLanguageFromFile(file.originalPath || file.name)}
+            options={{
+              readOnly: true,
+              renderSideBySide: true,
+              minimap: { enabled: false },
+              fontSize: 14,
+              fontLigatures: true,
+              wordWrap: 'on',
+              scrollBeyondLastLine: false,
+              smoothScrolling: true,
+              automaticLayout: true,
+              padding: { top: 12 }
+            }}
+          />
+        </div>
+      </div>
+    )
+  }
 
   return (
     <div className="absolute inset-0">

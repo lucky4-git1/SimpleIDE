@@ -10,7 +10,7 @@ import { AgentChanges } from './AgentChanges'
 import { AgentSummary } from './AgentSummary'
 import { AgentError } from './AgentError'
 import { AgentComposer } from './AgentComposer'
-import { ArrowDown, Copy, Check, Play, BrainCircuit } from 'lucide-react'
+import { ArrowDown, Copy, Check, Play, BrainCircuit, Bot, ArrowRight } from 'lucide-react'
 import './agentTokens.css'
 
 export function AgentWorkspace({
@@ -76,7 +76,8 @@ export function AgentWorkspace({
   onReviewChanges,
   onRetry,
   onResume,
-  onApplyCode
+  onApplyCode,
+  onHandOffToAgent
 }) {
   const scrollRef = useRef(null)
   const [showScrollBottom, setShowScrollBottom] = useState(false)
@@ -237,6 +238,33 @@ export function AgentWorkspace({
                       )}
                     </div>
                     <div className="break-words min-w-0">{renderMessageContent(message.content)}</div>
+                    {message.role === 'assistant' && /(?:hand\s*(?:it\s*)?over\s+to\s+(?:the\s+)?(?:autonomous\s+)?agent|ready\s+to\s+hand\s+over|switch\s+to\s+(?:the\s+)?(?:autonomous\s+)?agent|hand-off\s+confirmation|hand over this job)/i.test(String(message.content || '')) && (
+                      <div className="mt-3 pt-2.5 border-t border-[var(--agent-border-subtle)] flex items-center justify-between gap-3 bg-indigo-500/10 p-2.5 rounded-lg border border-indigo-500/25 agent-fade-in">
+                        <div className="flex items-center gap-2 text-indigo-300 text-xs font-medium min-w-0">
+                          <Bot size={15} className="text-indigo-400 shrink-0" />
+                          <span className="truncate">Autonomous Agent is ready to execute</span>
+                        </div>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            let taskPrompt = ''
+                            for (let i = idx - 1; i >= 0; i--) {
+                              if (messages[i]?.role === 'user' && messages[i]?.content) {
+                                taskPrompt = messages[i].content
+                                break
+                              }
+                            }
+                            if (!taskPrompt) taskPrompt = message.content
+                            onHandOffToAgent?.(taskPrompt)
+                          }}
+                          disabled={isWorking}
+                          className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-indigo-600 hover:bg-indigo-500 text-white font-medium text-xs shadow-md transition-colors cursor-pointer shrink-0 disabled:opacity-50"
+                        >
+                          <span>Hand over to Agent</span>
+                          <ArrowRight size={12} />
+                        </button>
+                      </div>
+                    )}
                   </div>
                 ))}
               </div>

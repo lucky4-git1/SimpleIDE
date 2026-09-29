@@ -344,7 +344,11 @@ export default function Sidebar({
                 <div className="mt-2 pt-2 border-t border-white/5 space-y-1">
                   <div className="text-[11px] text-zinc-400 flex justify-between">
                     <span>Package Manager:</span>
-                    <span className="font-mono text-zinc-200">{detectedProject.packageManager}</span>
+                    <span className="font-mono text-zinc-200">
+                      {detectedProject.packageManager && detectedProject.packageManager !== 'unknown'
+                        ? detectedProject.packageManager
+                        : 'None (Static)'}
+                    </span>
                   </div>
 
                   {detectedProject.scripts.length > 0 && (

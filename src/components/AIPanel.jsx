@@ -30,7 +30,6 @@ import {
   Edit3,
   Save,
   MessageSquare,
-  MoreHorizontal,
   PanelTop,
   Play,
   RefreshCw,
@@ -413,6 +412,7 @@ export default function AIPanel({
   openFiles = [],
   onOpenSettings,
   onApplyCode,
+  onOpenDiffTab,
   onAgentFileWrite,
   onAgentWorkspaceChange,
   onUndoAgentEdit,
@@ -1010,6 +1010,8 @@ export default function AIPanel({
         summary: summaryText,
         resumable: Boolean(result?.error === 'Max turns reached without task completion.'),
         checkpoint: result?.checkpoint || previous.checkpoint || null,
+        verification: result?.verification || previous.verification || null,
+        verified: Boolean(result?.verified),
         stages: Object.fromEntries(Object.entries(previous.stages).map(([key, value]) => [key, value.status === 'working' ? { ...value, status: isCancelled || isFailed ? 'failed' : 'complete' } : value]))
       } : previous
       const resultMessage = { role: 'assistant', content: `Implementation result:\n${summaryText}\n\nChanged files: ${(result?.changedFiles || []).join(', ') || 'none'}.\nVerification: ${result?.verified ? 'passed' : result?.verification?.attempted ? 'did not pass' : 'not run'}.` }
@@ -1454,10 +1456,14 @@ export default function AIPanel({
           onOpenPlanInEditor={() => presentPlanInEditor(planDraft || agentRun?.plan)}
           onResolveApproval={resolveApproval}
           lastChange={lastChange}
-          onReviewChanges={(change) => setLastChange(change)}
+          onReviewChanges={(change) => {
+            setLastChange(change)
+            onOpenDiffTab?.(change)
+          }}
           onRetry={retryLastMessage}
           onResume={() => runApprovedAgentTask(agentRun?.task, agentRun?.plan, true)}
           onApplyCode={onApplyCode}
+          onHandOffToAgent={handleHandOffToAgent}
         />
       )}
     </aside>

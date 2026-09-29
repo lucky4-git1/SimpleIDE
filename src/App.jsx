@@ -176,9 +176,9 @@ export default function App() {
       workspaceServerRef.current = path
       window.api.startServer(path).then((res) => {
         if (!res.success) {
-          appendTerminalOutput(`\nWarning: Could not start local server: ${res.error}`)
+          appendTerminalOutput(`\r\nWarning: Could not start local server: ${res.error}\r\n`)
         } else {
-          appendTerminalOutput(`\nLocal server started on port 3000`)
+          appendTerminalOutput(`\r\nLocal server started on port 3000\r\n`)
         }
       })
     }
@@ -414,6 +414,43 @@ export default function App() {
         }
       })
     }
+  }
+
+  const handleOpenDiffTab = (change) => {
+    if (!change) return
+    const filePath = change.path || change.filePath
+    if (!filePath) return
+    const original = change.before ?? change.previousContent ?? ''
+    const modified = change.after ?? change.content ?? ''
+    const fileName = filePath.split(/[/\\]/).pop()
+    const diffPath = `diff:${filePath}`
+
+    useEditorStore.getState().openFile({
+      path: diffPath,
+      name: `Diff: ${fileName}`,
+      originalPath: filePath,
+      isDiff: true,
+      original,
+      modified,
+      content: modified,
+      isDirty: false,
+      onAccept: async () => {
+        if (window.api?.writeFile) {
+          await window.api.writeFile(filePath, modified)
+        }
+        updateSingleIndexedFile(filePath, modified)
+        useEditorStore.getState().closeFile(diffPath)
+        useEditorStore.getState().openFile({ path: filePath, name: fileName, content: modified, isDirty: false })
+      },
+      onReject: async () => {
+        if (window.api?.writeFile && original) {
+          await window.api.writeFile(filePath, original)
+        }
+        updateSingleIndexedFile(filePath, original)
+        useEditorStore.getState().closeFile(diffPath)
+        useEditorStore.getState().openFile({ path: filePath, name: fileName, content: original, isDirty: false })
+      }
+    })
   }
 
   const handleUndoAIEdit = async () => {
@@ -845,6 +882,7 @@ export default function App() {
               openFiles={openFiles}
               onOpenSettings={() => setIsAISettingsOpen(true)}
               onApplyCode={handleApplyAICode}
+              onOpenDiffTab={handleOpenDiffTab}
               onAgentFileWrite={handleAgentFileWrite}
               onAgentWorkspaceChange={handleAgentWorkspaceChange}
               onUndoAgentEdit={handleUndoAIEdit}

@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useState, useRef, useEffect } from 'react'
 import {
   Sparkles,
   Plus,
@@ -8,7 +8,8 @@ import {
   History,
   Trash2,
   Undo2,
-  ChevronDown
+  ChevronDown,
+  MoreVertical
 } from 'lucide-react'
 
 export const AgentHeader = React.memo(function AgentHeader({
@@ -29,6 +30,20 @@ export const AgentHeader = React.memo(function AgentHeader({
   onUndoEdit,
   canUndo = false
 }) {
+  const [showMenu, setShowMenu] = useState(false)
+  const menuRef = useRef(null)
+
+  useEffect(() => {
+    if (!showMenu) return
+    const handleClickOutside = (e) => {
+      if (menuRef.current && !menuRef.current.contains(e.target)) {
+        setShowMenu(false)
+      }
+    }
+    document.addEventListener('mousedown', handleClickOutside)
+    return () => document.removeEventListener('mousedown', handleClickOutside)
+  }, [showMenu])
+
   const formatTime = (seconds) => {
     if (!seconds) return '0s'
     const mins = Math.floor(seconds / 60)
@@ -92,7 +107,7 @@ export const AgentHeader = React.memo(function AgentHeader({
   }
 
   return (
-    <header className="flex flex-col gap-1.5 px-3 py-2 border-b border-[var(--agent-border)] bg-[var(--agent-surface)] select-none overflow-hidden shrink-0">
+    <header className="flex flex-col gap-1.5 px-3 py-2 border-b border-[var(--agent-border)] bg-[var(--agent-surface)] select-none shrink-0 relative z-30">
       <div className="flex items-center justify-between gap-1.5 min-w-0">
         {/* Brand & Task Title */}
         <div className="flex items-center gap-1.5 min-w-0 flex-1 overflow-hidden">
@@ -106,11 +121,11 @@ export const AgentHeader = React.memo(function AgentHeader({
         </div>
 
         {/* Global Actions */}
-        <div className="flex items-center gap-0.5 shrink-0">
+        <div className="flex items-center gap-0.5 shrink-0 relative" ref={menuRef}>
           <button
             type="button"
             onClick={onNewChat}
-            className="p-1.5 rounded text-[var(--agent-text-muted)] hover:text-[var(--agent-text)] hover:bg-[var(--agent-surface-hover)] transition-colors"
+            className="p-1.5 rounded text-[var(--agent-text-muted)] hover:text-[var(--agent-text)] hover:bg-[var(--agent-surface-hover)] transition-colors cursor-pointer"
             title="New task / chat"
             aria-label="New task"
           >
@@ -121,53 +136,75 @@ export const AgentHeader = React.memo(function AgentHeader({
             <button
               type="button"
               onClick={onUndoEdit}
-              className="p-1.5 rounded text-[var(--agent-text-muted)] hover:text-[var(--agent-text)] hover:bg-[var(--agent-surface-hover)] transition-colors"
+              className="p-1.5 rounded text-[var(--agent-text-muted)] hover:text-[var(--agent-text)] hover:bg-[var(--agent-surface-hover)] transition-colors cursor-pointer"
               title="Undo last agent modification"
               aria-label="Undo edit"
             >
-              <Undo2 size={15} />
+              <Undo2 size={14} />
             </button>
           )}
 
           <button
             type="button"
-            onClick={onToggleHistory}
-            className="p-1.5 rounded text-[var(--agent-text-muted)] hover:text-[var(--agent-text)] hover:bg-[var(--agent-surface-hover)] transition-colors"
-            title="Task History"
-            aria-label="History"
-          >
-            <History size={15} />
-          </button>
-
-          <button
-            type="button"
-            onClick={onOpenSkills}
-            className="p-1.5 rounded text-[var(--agent-text-muted)] hover:text-[var(--agent-text)] hover:bg-[var(--agent-surface-hover)] transition-colors"
-            title="Agent Skills"
-            aria-label="Skills"
-          >
-            <BrainCircuit size={15} />
-          </button>
-
-          <button
-            type="button"
-            onClick={onToggleMemory}
-            className="p-1.5 rounded text-[var(--agent-text-muted)] hover:text-[var(--agent-text)] hover:bg-[var(--agent-surface-hover)] transition-colors"
-            title="Workspace Memory"
-            aria-label="Memory"
-          >
-            <Database size={15} />
-          </button>
-
-          <button
-            type="button"
             onClick={onOpenSettings}
-            className="p-1.5 rounded text-[var(--agent-text-muted)] hover:text-[var(--agent-text)] hover:bg-[var(--agent-surface-hover)] transition-colors"
+            className="p-1.5 rounded text-[var(--agent-text-muted)] hover:text-[var(--agent-text)] hover:bg-[var(--agent-surface-hover)] transition-colors cursor-pointer"
             title="AI Settings"
             aria-label="Settings"
           >
-            <Settings size={15} />
+            <Settings size={14} />
           </button>
+
+          <button
+            type="button"
+            onClick={() => setShowMenu(v => !v)}
+            className={`p-1.5 rounded text-[var(--agent-text-muted)] hover:text-[var(--agent-text)] hover:bg-[var(--agent-surface-hover)] transition-colors cursor-pointer ${showMenu ? 'bg-[var(--agent-surface-hover)] text-[var(--agent-text)]' : ''}`}
+            title="More agent tools"
+            aria-label="More options"
+          >
+            <MoreVertical size={14} />
+          </button>
+
+          {showMenu && (
+            <div className="absolute right-0 top-full mt-1.5 w-48 rounded-xl bg-[#141c2b] border border-cyan-500/30 shadow-2xl py-1.5 z-50 agent-fade-in text-xs backdrop-blur-md">
+              <button
+                type="button"
+                onClick={() => { onToggleHistory?.(); setShowMenu(false) }}
+                className="w-full flex items-center gap-2 px-3 py-1.5 text-left text-[var(--agent-text-secondary)] hover:text-[var(--agent-text)] hover:bg-white/5 transition-colors cursor-pointer"
+              >
+                <History size={13} className="text-cyan-400 shrink-0" />
+                <span>Task History</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => { onOpenSkills?.(); setShowMenu(false) }}
+                className="w-full flex items-center gap-2 px-3 py-1.5 text-left text-[var(--agent-text-secondary)] hover:text-[var(--agent-text)] hover:bg-white/5 transition-colors cursor-pointer"
+              >
+                <BrainCircuit size={13} className="text-purple-400 shrink-0" />
+                <span>Agent Skills</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => { onToggleMemory?.(); setShowMenu(false) }}
+                className="w-full flex items-center gap-2 px-3 py-1.5 text-left text-[var(--agent-text-secondary)] hover:text-[var(--agent-text)] hover:bg-white/5 transition-colors cursor-pointer"
+              >
+                <Database size={13} className="text-emerald-400 shrink-0" />
+                <span>Project Memory</span>
+              </button>
+              {onClearHistory && (
+                <>
+                  <div className="my-1 border-t border-[var(--agent-border)]" />
+                  <button
+                    type="button"
+                    onClick={() => { onClearHistory?.(); setShowMenu(false) }}
+                    className="w-full flex items-center gap-2 px-3 py-1.5 text-left text-rose-400 hover:bg-rose-500/10 transition-colors cursor-pointer"
+                  >
+                    <Trash2 size={13} className="shrink-0" />
+                    <span>Clear Chat History</span>
+                  </button>
+                </>
+              )}
+            </div>
+          )}
         </div>
       </div>
 

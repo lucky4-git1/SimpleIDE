@@ -30,6 +30,15 @@ export function deriveTaskTitle(prompt) {
   return formatted.length > 56 ? `${formatted.slice(0, 53).trimEnd()}…` : formatted
 }
 
+function cleanStepText(text) {
+  if (typeof text !== 'string') return String(text || '')
+  return text
+    .replace(/^\[[ xX]\]\s*/, '')
+    .replace(/^\*\*(?:Step\s*\d+:?\s*)?([^*]+)\*\*(?:\s*[-—:]\s*)?/i, '$1 — ')
+    .replace(/\*\*/g, '')
+    .trim()
+}
+
 /**
  * Parses markdown plan into structured step objects.
  * @param {string} planText
@@ -41,8 +50,8 @@ export function parsePlanSteps(planText = '', existingTodos = [], runStatus = 'w
   if (Array.isArray(existingTodos) && existingTodos.length > 0) {
     return existingTodos.map((todo, idx) => ({
       id: `step-${idx}`,
-      text: typeof todo === 'string' ? todo : (todo.text || todo.title || `Step ${idx + 1}`),
-      status: normalizeStepStatus(todo.status, idx, existingTodos.length, runStatus)
+      text: typeof todo === 'string' ? cleanStepText(todo) : cleanStepText(todo.text || todo.title || `Step ${idx + 1}`),
+      status: normalizeStepStatus(todo?.status, idx, existingTodos.length, runStatus)
     }))
   }
 
@@ -64,8 +73,8 @@ export function parsePlanSteps(planText = '', existingTodos = [], runStatus = 'w
       if (Array.isArray(rawSteps) && rawSteps.length > 0) {
         return rawSteps.slice(0, 15).map((step, idx) => {
           let stepText = typeof step === 'string'
-            ? step.replace(/^(?:[-*]\s*\[[ xX]\]|\d+[.)]|[-*]|\bstep\s*\d+:?)\s+/i, '').trim()
-            : (step.text || step.name || step.title || `Step ${idx + 1}`)
+            ? cleanStepText(step.replace(/^(?:[-*]\s*\[[ xX]\]|\d+[.)]|[-*]|\bstep\s*\d+:?)\s+/i, ''))
+            : cleanStepText(step.text || step.name || step.title || `Step ${idx + 1}`)
           let status = 'pending'
           if (isComplete) status = 'completed'
           else if (!isFailed) {
@@ -77,17 +86,57 @@ export function parsePlanSteps(planText = '', existingTodos = [], runStatus = 'w
     } catch {}
   }
 
-  const lines = raw
-    .split('\n')
-    .map(line => line.trim())
-    .filter(line => /^(?:[-*]\s*\[[ xX]\]|\d+[.)]|[-*]|\b(?:step|phase|milestone)\s*\d+:?)\s+/i.test(line))
-    .map(line => line.replace(/^(?:[-*]\s*\[[ xX]\]|\d+[.)]|[-*]|\b(?:step|phase|milestone)\s*\d+:?)\s+/i, '').trim())
-    .filter(Boolean)
-    .slice(0, 15)
+  // Look for dedicated implementation steps / plan section first
+  let stepsSection = ''
+  const sectionMatch = raw.match(/(?:##+\s*(?:\d+\.\s*)?(?:Implementation\s+Steps?|Execution\s+Plan|Plan\s+Steps?|Steps?|Milestones?|Tasks?)[^\n]*)\s*\n+([\s\S]*?)(?=\n##+|\n#+|$)/i)
+  if (sectionMatch && sectionMatch[1]?.trim()) {
+    stepsSection = sectionMatch[1].trim()
+  }
 
-  if (!lines.length) return []
+  const targetText = stepsSection || raw
+  const stepLines = []
+  const rawLines = targetText.split(/\r?\n/)
 
-  return lines.map((text, idx) => {
+  for (const line of rawLines) {
+    const trimmed = line.trim()
+    if (!trimmed) continue
+
+    // If scanning whole document, avoid non-step sections or file lists
+    if (!stepsSection) {
+      if (/^#+\s+(?:Affected Files|Files|Risks|Design|Architecture|Goal|Verification|Review)/i.test(trimmed)) {
+        continue
+      }
+      if (/^[-*]\s+`[^`]+`/i.test(trimmed)) {
+        continue
+      }
+    }
+
+    const match = trimmed.match(/^(?:#+\s+)?(?:[-*]\s*\[[ xX]\]|\d+[.)]|[-*]|\b(?:step|phase|milestone)\s*\d+:?|\*\*(?:step|phase|milestone)\s*\d+[:*]*)\s+(.*)/i)
+    if (match && match[1]) {
+      const cleaned = cleanStepText(match[1])
+      if (cleaned && cleaned.length > 2 && !/^`[^`]+`(?:\s*—.*)?$/.test(cleaned)) {
+        stepLines.push(cleaned)
+      }
+    } else if (stepsSection && /^###\s+(.*)/i.test(trimmed)) {
+      const cleaned = cleanStepText(trimmed.replace(/^###\s+/, ''))
+      if (cleaned) stepLines.push(cleaned)
+    }
+  }
+
+  const finalLines = stepLines.slice(0, 15)
+
+  if (!finalLines.length) {
+    if (raw && !isFailed) {
+      return [{
+        id: 'plan-step-0',
+        text: 'Execute implementation plan',
+        status: isComplete ? 'completed' : 'active'
+      }]
+    }
+    return []
+  }
+
+  return finalLines.map((text, idx) => {
     let status = 'pending'
     if (isComplete) {
       status = 'completed'
@@ -359,12 +408,50 @@ export function buildAgentViewModel({
   // Changes summary
   const changedFiles = agentRun?.changedFiles || []
 
-  // Verification status
+  // Verification status - safely normalize from both lastVerification and stages
+  const rawVerification = (agentRun?.verification && typeof agentRun.verification === 'object') ? agentRun.verification : {}
+  const stageVerify = (agentRun?.stages?.verify && typeof agentRun.stages.verify === 'object') ? agentRun.stages.verify : {}
+
+  const attempted = Boolean(
+    rawVerification.attempted ||
+    (stageVerify.status && stageVerify.status !== 'pending')
+  )
+
+  const passed = Boolean(
+    rawVerification.success === true ||
+    rawVerification.passed === true ||
+    stageVerify.status === 'complete' ||
+    stageVerify.status === 'success'
+  )
+
+  const failed = Boolean(
+    (!passed && (rawVerification.attempted || stageVerify.status === 'failed')) ||
+    rawVerification.failed === true ||
+    (rawVerification.attempted && rawVerification.success === false) ||
+    stageVerify.status === 'failed'
+  )
+
+  const command = typeof rawVerification.command === 'string' ? rawVerification.command : ''
+  const output = typeof rawVerification.stdout === 'string'
+    ? rawVerification.stdout
+    : (typeof rawVerification.output === 'string' ? rawVerification.output : (typeof rawVerification.stderr === 'string' ? rawVerification.stderr : ''))
+
+  let detail = ''
+  if (typeof rawVerification.detail === 'string' && rawVerification.detail) {
+    detail = rawVerification.detail
+  } else if (typeof stageVerify.detail === 'string' && stageVerify.detail) {
+    detail = stageVerify.detail
+  } else if (command) {
+    detail = `${passed ? 'Passed' : failed ? 'Failed' : 'Executed'}: ${command}`
+  }
+
   const verification = {
-    attempted: Boolean(agentRun?.stages?.verify?.status && agentRun.stages.verify.status !== 'pending'),
-    passed: agentRun?.stages?.verify?.status === 'complete',
-    failed: agentRun?.stages?.verify?.status === 'failed',
-    detail: agentRun?.stages?.verify?.detail || ''
+    attempted,
+    passed,
+    failed,
+    detail,
+    command,
+    output
   }
 
   return {

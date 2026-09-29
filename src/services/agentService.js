@@ -336,6 +336,13 @@ CRITICAL — Missing files:
 ${readyToComplete ? 'The changed file has been re-read successfully. If it satisfies the stated task, complete now; do not spend more turns re-reading the same file.' : ''}
 
 Current project facts: framework=${workspace?.framework || 'unknown'}, language=${workspace?.language || 'unknown'}, package manager=${workspace?.packageManager || 'unknown'}, build tool=${workspace?.buildTool || 'unknown'}.
+- Live Web Server: Simple IDE automatically provides a live development server with hot-reload at http://localhost:3000. Do not attempt to start a new server on port 3000.
+
+CRITICAL — Turn Latency & Deliverable Checklist Guidelines:
+- Batch Related File Generations: When creating a project or feature that involves multiple files (e.g. index.html, style.css, script.js), emit all necessary file actions together in a single turn (\`actions: [{type: 'write_file', path: 'index.html', ...}, {type: 'write_file', path: 'style.css', ...}]\`); Do not divide primary deliverables across separate sequential turns.
+- Avoid Preliminary Inspection on New Projects: When tasked with generating a new page, website, or feature in an empty or fresh workspace, do not waste preliminary turns listing directories or reading non-existent files. Proceed immediately to generating the complete deliverables.
+- Instant Deliverable Verification: For web applications and landing pages, verify files using validate_standalone_html. Do not attempt to spin up redundant local servers (npx serve, python http.server) since Simple IDE already serves http://localhost:3000.
+- Complete Directly: Once all required files are written and verified, emit finish with a clear, professional summary. Avoid redundant post-write inspection cycles.
 
 ${nativeToolsInstruction}`;
 }
@@ -629,6 +636,12 @@ async function executeAction(action, context, tools, runner) {
     if (name === 'run_command' && isCommandBlocked(String(toolCall.args.command || ''))) {
       const msg = `run_command blocked for safety: ${toolCall.args.command}`
       return recordOutcome(msg, true)
+    }
+
+    if ((name === 'run_command' || name === 'start_process') &&
+        /(?:serve|http\.server|http-server|live-server).*?\b3000\b/i.test(String(toolCall.args.command || ''))) {
+      const msg = `Simple IDE Notice: Port 3000 is already actively running the built-in development server with live preview at http://localhost:3000. Do not start a separate server on port 3000 (avoided EADDRINUSE). The preview is already live.`
+      return recordOutcome(msg, false)
     }
 
     // Review mode: ask BEFORE running any shell command.
@@ -1974,12 +1987,13 @@ Then proceed with your next tool call.`
 const CONVERSATIONAL_SYSTEM_PROMPT = `You are Prime AI, an intelligent senior software engineer embedded in Simple IDE.
 
 Behavior rules:
+- Strictly Chat: You are currently running in conversational Chat mode. You do NOT have autonomous workspace write tools or terminal execution in this mode. You must never claim you have edited files or run shell commands. Your purpose is advice, code review, architectural design, debugging guidance, code drafting, and planning.
 - Be natural, articulate, and highly competent.
 - **Default Planning**: For any task, feature request, bug fix, or architecture question, always include a concise **Step-by-Step Execution Plan** outlining affected components, key steps, and verification before presenting code or final answers.
 - For feature requests or project transformations (e.g. "turn this into a landing page", "add authentication", "build a dashboard", "create a dark theme"):
   1. **Research & Design Thinking**: Provide a concise 2-3 sentence analysis of best practices (modern layout, UX flow, color scheme, typography).
   2. **Execution Roadmap / Plan**: List the step-by-step file structure, file modifications, and safe sequence of steps.
-  3. **Hand-Off Confirmation**: State clearly: "I am ready to hand over this job to the Autonomous Agent to inspect, generate, and verify these files in your workspace."
+  3. **Hand-Off Confirmation**: State clearly: "I am ready to hand over this job to the Autonomous Agent to inspect, generate, and verify these files in your workspace." (A button will appear for the user to hand over to the Autonomous Agent with 1 click).
 - You remember the full conversation history. Resolve pronouns ("it", "the page", "this file") seamlessly.
 - Format code with fenced markdown code blocks with appropriate language identifiers.`
 

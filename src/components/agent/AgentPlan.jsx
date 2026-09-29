@@ -83,23 +83,38 @@ export const AgentPlan = React.memo(function AgentPlan({
         ) : (
           <div className="flex flex-col gap-2 py-1">
             {(() => {
-              const goalMatch = rawPlan.match(/(?:##\s*(?:1\.\s*)?Goal(?:\s*&\s*Objectives)?)\s*\n+([\s\S]*?)(?=\n##|\n#|$)/i)
-              const goalText = goalMatch ? goalMatch[1].trim() : ''
+              let goalText = ''
+              const goalMatch = rawPlan.match(/(?:#+\s*(?:\d+\.\s*)?Goal[^\n]*|\*\*Goal:\*\*)\s*\n+([\s\S]*?)(?=\n#+|$)/i)
+              if (goalMatch && goalMatch[1]) {
+                goalText = goalMatch[1].trim().replace(/^[-*]\s+/, '')
+              } else {
+                const summaryMatch = rawPlan.match(/^#\s+[^\n]+\n+([^#\n][^\n]+)/m)
+                if (summaryMatch && summaryMatch[1]) {
+                  goalText = summaryMatch[1].trim()
+                }
+              }
               if (!goalText) return null
+              const displayGoal = goalText.length > 280 ? `${goalText.slice(0, 277).trimEnd()}…` : goalText
               return (
-                <div className="text-[11px] text-[var(--agent-text-secondary)] bg-[var(--agent-surface-raised)]/70 rounded-lg p-2 border border-[var(--agent-border-subtle)] leading-relaxed">
+                <div className="text-[11px] text-[var(--agent-text-secondary)] bg-[var(--agent-surface-raised)]/70 rounded-lg p-2 border border-[var(--agent-border-subtle)] leading-relaxed break-words">
                   <span className="font-semibold text-indigo-300">Goal: </span>
-                  <span>{goalText}</span>
+                  <span>{displayGoal}</span>
                 </div>
               )
             })()}
             <div className="flex flex-col gap-1.5">
-              {planSteps.map((step, idx) => (
-                <div key={step.id || idx} className="flex items-start gap-2 text-xs">
-                  <div className="mt-0.5">{getStepIcon(step.status)}</div>
-                  <span className="text-[var(--agent-text-secondary)] leading-tight">{step.text}</span>
+              {planSteps.length > 0 ? (
+                planSteps.map((step, idx) => (
+                  <div key={step.id || idx} className="flex items-start gap-2 text-xs min-w-0">
+                    <div className="mt-0.5 shrink-0">{getStepIcon(step.status)}</div>
+                    <span className="text-[var(--agent-text-secondary)] leading-tight break-words min-w-0">{step.text}</span>
+                  </div>
+                ))
+              ) : (
+                <div className="text-xs text-[var(--agent-text-muted)] italic py-1">
+                  {rawPlan ? 'Implementation plan loaded. Open in editor or click Proceed to begin.' : 'No plan steps generated.'}
                 </div>
-              ))}
+              )}
             </div>
           </div>
         )}
@@ -147,6 +162,8 @@ export const AgentPlan = React.memo(function AgentPlan({
   }
 
   // Active / Completed Plan Progress View
+  if (!planSteps.length) return null
+
   return (
     <div className="flex flex-col gap-2 p-3 rounded-xl bg-[var(--agent-surface)] border border-[var(--agent-border)] shadow-sm select-none">
       <div className="flex items-center justify-between text-[10px] font-semibold uppercase tracking-wider text-[var(--agent-text-muted)]">
