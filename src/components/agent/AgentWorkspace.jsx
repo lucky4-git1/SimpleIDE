@@ -33,20 +33,20 @@ function ThinkingDisclosure({ thinking, isWorking }) {
   if (!thinking && !isWorking) return null
 
   return (
-    <div className="my-1.5 rounded-lg border border-purple-500/20 bg-purple-950/15 overflow-hidden text-xs">
+    <div className="my-1.5 rounded-lg border border-purple-500/20 bg-purple-950/20 overflow-hidden text-xs max-w-full">
       <button
         type="button"
         onClick={() => setExpanded(v => !v)}
         className="w-full flex items-center justify-between px-2.5 py-1 text-[11px] text-purple-300 hover:text-purple-200 hover:bg-purple-500/10 transition-colors cursor-pointer select-none"
       >
-        <div className="flex items-center gap-1.5">
-          <BrainCircuit size={12} className={isWorking ? 'animate-pulse text-purple-400' : 'text-purple-400'} />
-          <span>{isWorking ? 'Thinking…' : 'Reasoning trace'}</span>
+        <div className="flex items-center gap-1.5 min-w-0">
+          <BrainCircuit size={12} className={isWorking ? 'animate-pulse text-purple-400 shrink-0' : 'text-purple-400 shrink-0'} />
+          <span className="truncate">{isWorking ? 'Thinking…' : 'Reasoning trace'}</span>
         </div>
-        <ChevronDown size={12} className={`transition-transform duration-200 ${expanded ? 'rotate-180' : ''}`} />
+        <ChevronDown size={12} className={`transition-transform duration-200 shrink-0 ${expanded ? 'rotate-180' : ''}`} />
       </button>
       {expanded && thinking && (
-        <div className="p-2.5 border-t border-purple-500/15 font-mono text-[10.5px] text-purple-200/80 whitespace-pre-wrap max-h-48 overflow-y-auto leading-relaxed select-text bg-black/20">
+        <div className="p-2.5 border-t border-purple-500/15 font-mono text-[10.5px] text-purple-200/80 whitespace-pre-wrap max-h-48 overflow-y-auto leading-relaxed select-text bg-black/25 break-words">
           {thinking}
         </div>
       )}
@@ -284,7 +284,7 @@ export function AgentWorkspace({
       const key = `code-${index}-${code.length}`
 
       return (
-        <div key={key} className="my-2 rounded-lg bg-[var(--agent-surface-sunken)] border border-[var(--agent-border-subtle)] overflow-hidden font-mono text-[11px]">
+        <div key={key} className="my-2 rounded-lg bg-[var(--agent-surface-sunken)] border border-[var(--agent-border-subtle)] overflow-hidden font-mono text-[11px] max-w-full">
           <div className="flex items-center justify-between px-2.5 py-1 bg-white/5 border-b border-white/5 text-[10px] text-[var(--agent-text-muted)] select-none">
             <span>{language}</span>
             <div className="flex items-center gap-1">
@@ -308,7 +308,7 @@ export function AgentWorkspace({
               </button>
             </div>
           </div>
-          <pre className="p-2.5 overflow-x-auto text-[var(--agent-text-secondary)] leading-normal">
+          <pre className="p-2.5 overflow-x-auto text-[var(--agent-text-secondary)] leading-normal max-w-full">
             {code}
           </pre>
         </div>

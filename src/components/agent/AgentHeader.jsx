@@ -107,7 +107,7 @@ export const AgentHeader = React.memo(function AgentHeader({
   }
 
   return (
-    <header className="flex flex-col gap-1.5 px-3 py-2 border-b border-[var(--agent-border)] bg-[var(--agent-surface)] select-none shrink-0 relative z-30">
+    <header className="flex flex-col gap-1.5 px-3 py-2 border-b border-[var(--agent-border)] bg-[var(--agent-surface)] select-none shrink-0 relative z-40">
       <div className="flex items-center justify-between gap-1.5 min-w-0">
         {/* Brand & Task Title */}
         <div className="flex items-center gap-1.5 min-w-0 flex-1 overflow-hidden">
@@ -165,7 +165,7 @@ export const AgentHeader = React.memo(function AgentHeader({
           </button>
 
           {showMenu && (
-            <div className="absolute right-0 top-full mt-1.5 w-48 rounded-xl bg-[#141c2b] border border-cyan-500/30 shadow-2xl py-1.5 z-50 agent-fade-in text-xs backdrop-blur-md">
+            <div className="absolute right-0 top-full mt-1.5 w-48 rounded-xl bg-[#161a23] border border-cyan-500/30 shadow-[0_12px_40px_rgba(0,0,0,0.7)] py-1.5 z-[100] agent-fade-in text-xs backdrop-blur-md">
               <button
                 type="button"
                 onClick={() => { onToggleHistory?.(); setShowMenu(false) }}

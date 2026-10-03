@@ -149,6 +149,128 @@ export class NativeToolAdapter {
       }
     }
 
+    if (calls.length === 0) {
+      const text = typeof data.choices?.[0]?.message?.content === 'string'
+        ? data.choices[0].message.content
+        : (typeof data.candidates?.[0]?.content?.parts?.[0]?.text === 'string'
+            ? data.candidates[0].content.parts[0].text
+            : (typeof data.content === 'string' ? data.content : ''))
+      if (text) {
+        return this.extractToolCallsFromText(text)
+      }
+    }
+
+    return calls
+  }
+
+  /**
+   * Fallback parser for models that format tool calls inside text or markdown
+   */
+  static extractToolCallsFromText(textContent) {
+    if (!textContent || typeof textContent !== 'string') return []
+    const calls = []
+
+    // 1. Match <tool_call> ... </tool_call> blocks
+    const tagMatches = [...textContent.matchAll(/<tool_call>([\s\S]*?)<\/tool_call>/gi)]
+    for (const match of tagMatches) {
+      try {
+        const parsed = JSON.parse(match[1].trim())
+        const name = parsed.name || parsed.action || parsed.tool
+        const args = parsed.arguments || parsed.args || parsed.parameters || {}
+        if (name) {
+          calls.push(new ToolCall({
+            id: `call_tag_${Date.now()}_${calls.length}`,
+            name,
+            args: typeof args === 'string' ? JSON.parse(args) : args
+          }))
+        }
+      } catch {}
+    }
+    if (calls.length > 0) return calls
+
+    // 2. Match ```json ... ``` blocks
+    const jsonBlocks = [...textContent.matchAll(/```(?:json)?\s*([\s\S]*?)```/gi)]
+    for (const match of jsonBlocks) {
+      try {
+        const parsed = JSON.parse(match[1].trim())
+        if (Array.isArray(parsed.tool_calls)) {
+          for (const tc of parsed.tool_calls) {
+            const name = tc.name || tc.action || tc.function?.name
+            const args = tc.arguments || tc.args || tc.function?.arguments || {}
+            if (name) {
+              calls.push(new ToolCall({
+                id: tc.id || `call_json_${Date.now()}_${calls.length}`,
+                name,
+                args: typeof args === 'string' ? JSON.parse(args) : args
+              }))
+            }
+          }
+        } else if (Array.isArray(parsed.actions)) {
+          for (const a of parsed.actions) {
+            const name = a.type || a.action || a.name
+            if (name && name !== 'finish') {
+              const { type, action, name: _n, ...rest } = a
+              calls.push(new ToolCall({
+                id: `call_act_${Date.now()}_${calls.length}`,
+                name,
+                args: a.args || a.parameters || rest
+              }))
+            }
+          }
+        } else if (parsed.name || parsed.action || parsed.tool) {
+          const name = parsed.name || parsed.action || parsed.tool
+          const args = parsed.arguments || parsed.args || parsed.parameters || {}
+          calls.push(new ToolCall({
+            id: `call_json_${Date.now()}_${calls.length}`,
+            name,
+            args: typeof args === 'string' ? JSON.parse(args) : args
+          }))
+        }
+      } catch {}
+    }
+    if (calls.length > 0) return calls
+
+    // 3. Match raw JSON if entire text is a JSON object
+    const rawTrimmed = textContent.trim()
+    if (rawTrimmed.startsWith('{') && rawTrimmed.endsWith('}')) {
+      try {
+        const parsed = JSON.parse(rawTrimmed)
+        if (Array.isArray(parsed.tool_calls)) {
+          for (const tc of parsed.tool_calls) {
+            const name = tc.name || tc.action || tc.function?.name
+            const args = tc.arguments || tc.args || tc.function?.arguments || {}
+            if (name) {
+              calls.push(new ToolCall({
+                id: tc.id || `call_raw_${Date.now()}_${calls.length}`,
+                name,
+                args: typeof args === 'string' ? JSON.parse(args) : args
+              }))
+            }
+          }
+        } else if (Array.isArray(parsed.actions)) {
+          for (const a of parsed.actions) {
+            const name = a.type || a.action || a.name
+            if (name && name !== 'finish') {
+              const { type, action, name: _n, ...rest } = a
+              calls.push(new ToolCall({
+                id: `call_act_${Date.now()}_${calls.length}`,
+                name,
+                args: a.args || a.parameters || rest
+              }))
+            }
+          }
+        } else if (parsed.name || parsed.action || parsed.tool) {
+          const name = parsed.name || parsed.action || parsed.tool
+          const args = parsed.arguments || parsed.args || parsed.parameters || {}
+          calls.push(new ToolCall({
+            id: `call_raw_${Date.now()}_${calls.length}`,
+            name,
+            args: typeof args === 'string' ? JSON.parse(args) : args
+          }))
+        }
+      } catch {}
+    }
+
     return calls
   }
 

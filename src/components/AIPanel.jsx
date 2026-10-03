@@ -992,7 +992,13 @@ export default function AIPanel({
       ? 'Continue the approved plan from the saved checkpoint.'
       : (approvedPlan ? 'Approved the implementation plan. Proceed with the work.' : task)
     appendChatMessage(taskChatId, { role: 'user', content: userPromptContent })
-    setAgentRun(previous => previous ? { ...previous, status: 'working', summary: '', stages: { ...emptyStages(), inspect: { status: 'working', detail: 'Starting the task.' } } } : createAgentRun(task))
+    const freshRun = resumeFromCheckpoint && agentRun
+      ? { ...agentRun, status: 'working', summary: '', stages: { ...emptyStages(), inspect: { status: 'working', detail: 'Resuming task from checkpoint.' } } }
+      : { ...createAgentRun(task), plan: approvedPlan || '', stages: { ...emptyStages(), inspect: { status: 'working', detail: 'Starting the task.' } } }
+    setAgentRun(freshRun)
+    if (!approvedPlan && !resumeFromCheckpoint) {
+      setPlanDraft('')
+    }
     setRunDiagnostics(null)
     const controller = new AbortController()
     agentAbortRef.current = controller
@@ -1400,10 +1406,16 @@ export default function AIPanel({
         return
       }
 
+      // If user confirms/approves the plan verbally:
+      if (/^(proceed|approve|approved|looks good|lgtm|go ahead|start|execute|yes|ok proceed)\b/i.test(rawInput)) {
+        runApprovedAgentTask(agentRun.task, planDraft || agentRun.plan)
+        return
+      }
+
       // If user provided a new task entirely instead of plan edits:
       if (
         !/^(step\s*\d+|change\s+step|add\s+step|revise|plan:|update\s+the\s+plan)\b/i.test(rawInput) &&
-        (intentResult.intent === INTENTS.FEATURE_REQUEST || intentResult.intent === INTENTS.BUG_FIX || intentResult.intent === INTENTS.TERMINAL_COMMAND)
+        (intentResult.intent === INTENTS.FEATURE_REQUEST || intentResult.intent === INTENTS.BUG_FIX || intentResult.intent === INTENTS.TERMINAL_COMMAND || intentResult.intent === INTENTS.REFACTOR || intentResult.intent === INTENTS.TEST_GENERATION)
       ) {
         setAgentRun(null)
         setPlanDraft('')

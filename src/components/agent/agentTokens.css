@@ -5,26 +5,26 @@
 
 :root,
 .prime-ai--dark {
-  --agent-bg: #090d14;
-  --agent-surface: #0e141f;
-  --agent-surface-elevated: #141c2b;
-  --agent-surface-sunken: #06090f;
-  --agent-surface-hover: #192335;
-  --agent-surface-active: #1f2c42;
+  --agent-bg: #121316;
+  --agent-surface: #18191e;
+  --agent-surface-elevated: #21232b;
+  --agent-surface-sunken: #0d0e11;
+  --agent-surface-hover: #262934;
+  --agent-surface-active: #2f3340;
 
-  --agent-border: rgba(144, 167, 197, 0.14);
-  --agent-border-subtle: rgba(144, 167, 197, 0.08);
-  --agent-border-strong: rgba(48, 217, 255, 0.35);
+  --agent-border: rgba(255, 255, 255, 0.08);
+  --agent-border-subtle: rgba(255, 255, 255, 0.04);
+  --agent-border-strong: rgba(157, 124, 216, 0.40);
 
-  --agent-text: #e6edf7;
-  --agent-text-secondary: #9cb0c9;
-  --agent-text-muted: #6b7d96;
-  --agent-text-faint: #445163;
+  --agent-text: #f3f4f6;
+  --agent-text-secondary: #9ca3af;
+  --agent-text-muted: #6b7280;
+  --agent-text-faint: #4b5563;
 
-  --agent-accent: #30d9ff;
-  --agent-accent-glow: rgba(48, 217, 255, 0.15);
-  --agent-accent-hover: #5ee2ff;
-  --agent-accent-secondary: #6366f1;
+  --agent-accent: #9d7cd8;
+  --agent-accent-glow: rgba(157, 124, 216, 0.18);
+  --agent-accent-hover: #b490f5;
+  --agent-accent-secondary: #38bdf8;
 
   --agent-success: #34d399;
   --agent-success-bg: rgba(52, 211, 153, 0.10);

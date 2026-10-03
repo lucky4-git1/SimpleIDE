@@ -55,7 +55,7 @@ export function getModelCapabilities(provider, model) {
   const m = String(model || '').toLowerCase()
 
   const knownNativeProviders = new Set([
-    'openai', 'nvidia', 'groq', 'openrouter', 'xai', 'deepseek', 'mistral', 'anthropic'
+    'openai', 'nvidia', 'groq', 'openrouter', 'xai', 'deepseek', 'mistral', 'anthropic', 'gemini', 'google'
   ])
 
   const registered = MODEL_CAPABILITY_REGISTRY[m]

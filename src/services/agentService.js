@@ -327,11 +327,10 @@ CRITICAL — UI and layout tasks:
 - When a local preview can be started, use browser_navigate, browser_audit, browser_screenshot, and browser_console_errors before completion. Repair horizontal overflow, clipped controls, unreadable contrast, missing image alt text, broken links, and console errors. Do not claim visual verification unless these checks ran.
 - State the exact selector and properties changed in the final summary, not merely “Done”.
 
-CRITICAL — Missing files:
-- When read_file returns exists:false or an ENOENT error, the file does NOT exist. Do NOT retry read_file on the same path.
-- Instead, use write_file or create_file to create the missing file with the required content.
-- When edit_file or replace_in_file fails because a file does not exist, use write_file to create it with complete content.
-- NEVER loop on the same read_file call for a file that does not exist. Create it immediately.
+CRITICAL — Tool Usage & Modifications:
+- Prefer \`write_file\` for creating new files, rewriting files, or files under 300 lines with complete desired content. This avoids fragile string matching.
+- Use \`edit_file\` / \`replace_in_file\` only for surgical edits in large existing files. When using \`edit_file\`, include 2-3 lines of surrounding context in \`find\` to guarantee unique matching.
+
 
 ${readyToComplete ? 'The changed file has been re-read successfully. If it satisfies the stated task, complete now; do not spend more turns re-reading the same file.' : ''}
 

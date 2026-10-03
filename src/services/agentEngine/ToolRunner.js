@@ -61,7 +61,46 @@ function replaceExactOrNewlineInsensitive(content, find, replace) {
   const normalizedContent = content.replace(/\r\n/g, '\n')
   const normalizedFind = find.replace(/\r\n/g, '\n')
   const normalizedCount = normalizedContent.split(normalizedFind).length - 1
-  return normalizedCount === 1 ? normalizedContent.replace(normalizedFind, replace) : null
+  if (normalizedCount === 1) return normalizedContent.replace(normalizedFind, replace)
+  if (normalizedCount > 1) return null
+
+  // Indentation & whitespace-tolerant line sequence fallback:
+  // If exact text wasn't found (usually due to tab/space or indentation drift),
+  // check if find lines match exactly one unique sequence in the file by trimmed line.
+  const contentLines = normalizedContent.split('\n')
+  const findLines = normalizedFind.split('\n')
+
+  if (findLines.length > 0 && contentLines.length >= findLines.length) {
+    const cleanFindLines = [...findLines]
+    if (cleanFindLines.length > 1 && cleanFindLines[cleanFindLines.length - 1].trim() === '') {
+      cleanFindLines.pop()
+    }
+
+    const matches = []
+    for (let i = 0; i <= contentLines.length - cleanFindLines.length; i++) {
+      let isMatch = true
+      for (let j = 0; j < cleanFindLines.length; j++) {
+        if (contentLines[i + j].trim() !== cleanFindLines[j].trim()) {
+          isMatch = false
+          break
+        }
+      }
+      if (isMatch) {
+        matches.push(i)
+      }
+    }
+
+    if (matches.length === 1) {
+      const matchIdx = matches[0]
+      const before = contentLines.slice(0, matchIdx).join('\n')
+      const after = contentLines.slice(matchIdx + cleanFindLines.length).join('\n')
+      const prefix = before.length > 0 ? before + '\n' : ''
+      const suffix = after.length > 0 ? '\n' + after : ''
+      return prefix + replace + suffix
+    }
+  }
+
+  return null
 }
 
 function inspectStandaloneHtml(content) {
