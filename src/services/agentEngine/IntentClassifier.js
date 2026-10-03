@@ -55,10 +55,12 @@ export const INTENT_TOOLS = {
 // ── Pattern Tables (evaluated in order, first match wins) ───────────────────
 
 const GREETING_PATTERNS = [
-  /^(hi|hello|hey|howdy|hola|sup|yo|hii+|heyy+|helloo+)[\s!.?]*$/i,
+  /^(hi|hello|hey|howdy|hola|sup|yo|hii+|heyy+|helloo+)(?:\s+(?:there|friend|assistant|agent|simpleide|prime))?[\s!.?]*$/i,
   /^good\s*(morning|afternoon|evening|night|day)[\s!.?]*$/i,
   /^what'?s?\s*up[\s!.?]*$/i,
   /^how\s*(are|r)\s*(you|u|ya)[\s!.?,]*$/i,
+  /^who\s*(are|r)\s*(you|u)[\s!.?]*$/i,
+  /^what\s*can\s*you\s*do[\s!.?]*$/i,
   /^greetings[\s!.?]*$/i
 ]
 
@@ -82,6 +84,8 @@ const TERMINAL_PATTERNS = [
 ]
 
 const CODE_TASK_PATTERNS = [
+  // Explicit planning requests (take precedence over task keywords like refactor/create)
+  { pattern: /^\/(?:plan|planning)\b|\b(?:create|draft|make|prepare|generate|write)\s+(?:an?\s+)?(?:implementation\s+)?plan\b/i, intent: INTENTS.PLANNING },
   // Bug fix / debugging
   { pattern: /\b(fix|debug|solve|troubleshoot|repair|patch|resolve|broken|error|bug|issue|crash|fail|not\s*working|doesn'?t\s*work)\b/i, intent: INTENTS.BUG_FIX },
   // Feature request
@@ -96,10 +100,8 @@ const CODE_TASK_PATTERNS = [
   { pattern: /\b(analyze|analyse|scan|overview|summarize|summary|structure)\b.*\b(project|workspace|repo|codebase|folder)\b/i, intent: INTENTS.WORKSPACE_ANALYSIS },
   // Documentation
   { pattern: /\b(document|readme|docs|jsdoc|comment|annotate)\b/i, intent: INTENTS.DOCUMENTATION },
-  // Planning
-  { pattern: /\b(plan|outline|strategy|roadmap|steps|approach)\b/i, intent: INTENTS.PLANNING },
   // Architecture
-  { pattern: /\b(architect|design|system\s*design|high.level|module|structure)\b/i, intent: INTENTS.ARCHITECTURE },
+  { pattern: /\b(architect|system\s*design|high.level\s*design|modular\s*architecture)\b/i, intent: INTENTS.ARCHITECTURE },
   // Project generation
   { pattern: /\b(scaffold|bootstrap|init|initialize|start\s*a\s*new|project\s*from\s*scratch|boilerplate)\b/i, intent: INTENTS.PROJECT_GENERATION },
   // Testing

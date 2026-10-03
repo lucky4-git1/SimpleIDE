@@ -50,6 +50,7 @@ import { getWorkspaceMemory, runAgentPlan, runAgentTask, runSmartChat } from '..
 import { SkillsModal } from './SkillsModal'
 import './SkillsModal.css'
 import { memoryManager } from '../services/memory/memoryManager'
+import { IntentClassifier, INTENTS } from '../services/agentEngine/IntentClassifier'
 import { getModelCapabilities } from '../services/agentEngine/LLMRouter'
 import { useEditorStore } from '../store/editorStore'
 import { AgentWorkspace } from './agent/AgentWorkspace'
@@ -801,6 +802,69 @@ export default function AIPanel({
     }
   }, [writeToChat])
 
+  const updateStreamMessageThinking = useCallback((targetChatId, key, thinkingDelta) => {
+    const updater = msg => msg.id === key ? { ...msg, thinking: (msg.thinking || '') + thinkingDelta } : msg
+    if (activeChatIdRef.current === targetChatId) {
+      _setMessages(previous => previous.map(updater))
+    } else {
+      const conv = memoryManager.conversations
+      const chat = conv.chats.find(c => c.id === targetChatId)
+      if (!chat) return
+      chat.messages = (chat.messages || []).map(updater)
+      conv.save()
+    }
+  }, [])
+
+  const appendToolToStreamMessage = useCallback((targetChatId, key, toolItem) => {
+    const updater = msg => {
+      if (msg.id !== key) return msg
+      const existingTools = Array.isArray(msg.tools) ? msg.tools : []
+      return { ...msg, tools: [...existingTools, toolItem] }
+    }
+    if (activeChatIdRef.current === targetChatId) {
+      _setMessages(previous => previous.map(updater))
+    } else {
+      const conv = memoryManager.conversations
+      const chat = conv.chats.find(c => c.id === targetChatId)
+      if (!chat) return
+      chat.messages = (chat.messages || []).map(updater)
+      conv.save()
+    }
+  }, [])
+
+  const updateLastToolInStreamMessage = useCallback((targetChatId, key, updates) => {
+    const updater = msg => {
+      if (msg.id !== key || !Array.isArray(msg.tools) || msg.tools.length === 0) return msg
+      const tools = [...msg.tools]
+      const lastIdx = tools.length - 1
+      tools[lastIdx] = { ...tools[lastIdx], ...updates }
+      return { ...msg, tools }
+    }
+    if (activeChatIdRef.current === targetChatId) {
+      _setMessages(previous => previous.map(updater))
+    } else {
+      const conv = memoryManager.conversations
+      const chat = conv.chats.find(c => c.id === targetChatId)
+      if (!chat) return
+      chat.messages = (chat.messages || []).map(updater)
+      conv.save()
+    }
+  }, [])
+
+  const updateStreamMessageFinal = useCallback((targetChatId, key, content, extra = {}) => {
+    const updater = msg => msg.id === key ? { ...msg, content, isWorking: false, ...extra } : msg
+    if (activeChatIdRef.current === targetChatId) {
+      _setMessages(previous => previous.map(updater))
+    } else {
+      const conv = memoryManager.conversations
+      const chat = conv.chats.find(c => c.id === targetChatId)
+      if (!chat) return
+      chat.messages = (chat.messages || []).map(updater)
+      conv.save()
+      scheduleChatsRefresh()
+    }
+  }, [scheduleChatsRefresh])
+
   useEffect(() => {
     let cancelled = false
     getApiConfig().then(setAiConfig).catch(() => { if (!cancelled) setAiConfig(null) })
@@ -924,12 +988,24 @@ export default function AIPanel({
     const isViewingTaskChat = () => activeChatIdRef.current === taskChatId
     setInput('')
     setIsLoading(true)
-    appendChatMessage(taskChatId, { role: 'user', content: resumeFromCheckpoint ? 'Continue the approved plan from the saved checkpoint.' : 'Approved the implementation plan. Proceed with the work.' })
-    setAgentRun(previous => previous ? { ...previous, status: 'working', summary: '', stages: { ...emptyStages(), inspect: { status: 'working', detail: 'Starting the approved implementation plan.' } } } : createAgentRun(task))
+    const userPromptContent = resumeFromCheckpoint
+      ? 'Continue the approved plan from the saved checkpoint.'
+      : (approvedPlan ? 'Approved the implementation plan. Proceed with the work.' : task)
+    appendChatMessage(taskChatId, { role: 'user', content: userPromptContent })
+    setAgentRun(previous => previous ? { ...previous, status: 'working', summary: '', stages: { ...emptyStages(), inspect: { status: 'working', detail: 'Starting the task.' } } } : createAgentRun(task))
     setRunDiagnostics(null)
     const controller = new AbortController()
     agentAbortRef.current = controller
     const taskId = `task-${Date.now()}`
+    const responseKey = `agent-response-${Date.now()}`
+    appendChatMessage(taskChatId, {
+      id: responseKey,
+      role: 'assistant',
+      content: 'Analyzing your workspace and preparing changes…',
+      thinking: '',
+      tools: [],
+      isWorking: true
+    })
     try {
       const result = await runAgentTask({
         task,
@@ -959,16 +1035,15 @@ export default function AIPanel({
           onFileWritten: (filePath, content, previousContent, change) => {
             onAgentFileWrite?.(filePath, content, previousContent, { ...(change || {}), taskId })
             const changeRecord = { ...(change || { path: filePath, before: previousContent, after: content }), status: 'applied' }
+            const relPath = relativePath(filePath, currentFolder)
             if (isViewingTaskChat()) {
               setLastChange(changeRecord)
               setAgentRun(previous => previous ? {
                 ...previous,
-                changedFiles: [...new Set([...previous.changedFiles, relativePath(filePath, currentFolder)])],
+                changedFiles: [...new Set([...previous.changedFiles, relPath])],
                 stages: { ...previous.stages, edit: { status: 'complete', detail: 'Patch applied to the workspace.' } }
               } : previous)
             } else {
-              // Backgrounded: fold progress into the origin chat's stored
-              // snapshot without touching the chat currently on screen.
               const conv = memoryManager.conversations
               const stored = conv.getAgentState(taskChatId)
               const base = stored?.agentRun || createAgentRun(task)
@@ -976,7 +1051,7 @@ export default function AIPanel({
                 lastChange: changeRecord,
                 agentRun: {
                   ...base,
-                  changedFiles: [...new Set([...(base.changedFiles || []), relativePath(filePath, currentFolder)])],
+                  changedFiles: [...new Set([...(base.changedFiles || []), relPath])],
                   stages: { ...base.stages, edit: { status: 'complete', detail: 'Patch applied to the workspace.' } }
                 }
               }, { touch: false })
@@ -992,9 +1067,31 @@ export default function AIPanel({
             conv.setAgentState(taskChatId, {
               agentRun: updateRunFromEvent(stored?.agentRun || createAgentRun(task), event)
             }, { touch: false })
-            return
+          } else {
+            setAgentRun(previous => updateRunFromEvent(previous, event))
           }
-          setAgentRun(previous => updateRunFromEvent(previous, event))
+
+          if (event.type === 'thinking') {
+            const thinkingText = event.message || ''
+            updateStreamMessageThinking(taskChatId, responseKey, thinkingText ? `${thinkingText}\n` : '')
+          } else if (event.type === 'tool') {
+            const toolAction = event.action || {}
+            appendToolToStreamMessage(taskChatId, responseKey, {
+              id: `tool-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
+              label: describeAction(toolAction),
+              type: toolAction.type,
+              status: 'working',
+              path: toolAction.path,
+              command: toolAction.command,
+              action: toolAction
+            })
+          } else if (event.type === 'observation') {
+            const failed = /^(?:[a-z_]+ failed:|[a-z_]+ blocked:|[a-z_]+ denied by user:|run_command blocked)/i.test(String(event.message || '').trim())
+            updateLastToolInStreamMessage(taskChatId, responseKey, {
+              status: failed ? 'failed' : 'complete',
+              detail: String(event.message || '').slice(0, 1200)
+            })
+          }
         },
         maxTurns: 100,
         signal: controller.signal
@@ -1014,33 +1111,52 @@ export default function AIPanel({
         verified: Boolean(result?.verified),
         stages: Object.fromEntries(Object.entries(previous.stages).map(([key, value]) => [key, value.status === 'working' ? { ...value, status: isCancelled || isFailed ? 'failed' : 'complete' } : value]))
       } : previous
-      const resultMessage = { role: 'assistant', content: `Implementation result:\n${summaryText}\n\nChanged files: ${(result?.changedFiles || []).join(', ') || 'none'}.\nVerification: ${result?.verified ? 'passed' : result?.verification?.attempted ? 'did not pass' : 'not run'}.` }
+
+      let conversationalContent = ''
+      if (isCancelled) {
+        conversationalContent = 'I stopped working on this task. Any incomplete changes were rolled back for safety.'
+      } else if (isFailed) {
+        conversationalContent = `I encountered an issue while working on this task:\n\n${summaryText}`
+      } else {
+        const changedList = (result?.changedFiles || [])
+        const filesBlock = changedList.length > 0
+          ? `\n\n**Modified files (${changedList.length}):**\n${changedList.map(f => `- \`${f}\``).join('\n')}`
+          : ''
+        const verifBlock = result?.verified
+          ? '\n\n✅ **Verification passed:** All tests and build checks completed successfully.'
+          : (result?.verification?.attempted ? `\n\n⚠️ **Verification:** ${result.verification.command || 'Check'} did not pass.` : '')
+        conversationalContent = `${summaryText}${filesBlock}${verifBlock}\n\nWhat would you like me to do next?`
+      }
+
       if (isViewingTaskChat()) {
         setAgentRun(finalizeRun)
-        setMessages(previous => [...previous, resultMessage])
+        updateStreamMessageFinal(taskChatId, responseKey, conversationalContent)
         if (result?.diagnostics) setRunDiagnostics(result.diagnostics)
       } else {
         const conv = memoryManager.conversations
         const stored = conv.getAgentState(taskChatId)
         conv.setAgentState(taskChatId, { agentRun: finalizeRun(stored?.agentRun || createAgentRun(task)) })
-        writeToChat(taskChatId, previous => [...previous, resultMessage])
+        updateStreamMessageFinal(taskChatId, responseKey, conversationalContent)
       }
     } catch (error) {
+      const errMsg = error.name === 'AbortError' ? 'Agent cancelled. Changes were rolled back for safety.' : error.message
       if (isViewingTaskChat()) {
-        setAgentRun(previous => previous ? { ...previous, status: error.name === 'AbortError' ? 'cancelled' : 'failed', summary: error.name === 'AbortError' ? 'Agent cancelled. Changes were rolled back for safety.' : error.message } : previous)
+        setAgentRun(previous => previous ? { ...previous, status: error.name === 'AbortError' ? 'cancelled' : 'failed', summary: errMsg } : previous)
+        updateStreamMessageFinal(taskChatId, responseKey, `I ran into an issue: ${errMsg}`, { isError: true })
       } else {
         const conv = memoryManager.conversations
         const stored = conv.getAgentState(taskChatId)
         const base = stored?.agentRun || createAgentRun(task)
         conv.setAgentState(taskChatId, {
-          agentRun: { ...base, status: error.name === 'AbortError' ? 'cancelled' : 'failed', summary: error.name === 'AbortError' ? 'Agent cancelled. Changes were rolled back for safety.' : error.message }
+          agentRun: { ...base, status: error.name === 'AbortError' ? 'cancelled' : 'failed', summary: errMsg }
         })
+        updateStreamMessageFinal(taskChatId, responseKey, `I ran into an issue: ${errMsg}`, { isError: true })
       }
     } finally {
       agentAbortRef.current = null
       setIsLoading(false)
     }
-  }, [activeFile, appendChatMessage, attachedFiles, autoApproveCommands, currentFolder, ensureProvider, includeActiveFile, includeOpenFiles, includeSelection, isLoading, messages, onAgentFileWrite, onAgentWorkspaceChange, openFiles, projectIndex, projectSummary, requestApproval, selectedCode, setMessages, writeToChat])
+  }, [activeFile, appendChatMessage, appendToolToStreamMessage, attachedFiles, autoApproveCommands, currentFolder, ensureProvider, includeActiveFile, includeOpenFiles, includeSelection, isLoading, messages, onAgentFileWrite, onAgentWorkspaceChange, openFiles, projectIndex, projectSummary, requestApproval, selectedCode, setMessages, updateLastToolInStreamMessage, updateStreamMessageFinal, updateStreamMessageThinking, writeToChat])
 
   const presentPlanInEditor = useCallback(async (planText) => {
     if (!planText) return
@@ -1239,30 +1355,94 @@ export default function AIPanel({
 
   const handleHandOffToAgent = useCallback((planOrTask) => {
     setMode('agent')
-    sendAgentTask(planOrTask)
-  }, [sendAgentTask])
+    runApprovedAgentTask(planOrTask, null)
+  }, [runApprovedAgentTask])
 
   const handleSubmit = useCallback(() => {
-    if (input.trim() === '/skills' || input.trim() === '/skill create') {
+    const rawInput = input.trim()
+    if (!rawInput) return
+
+    if (rawInput === '/skills' || rawInput === '/skill create') {
       setShowSkills(true)
       setInput('')
       return
     }
-    if (mode === 'agent') {
-      if (agentRun?.status === 'review') {
-        const feedback = input.trim()
-        if (!feedback) return
-        const revisedPlan = `${planDraft || agentRun.plan}\n\n## Reviewer additions\n${feedback}`
-        setPlanDraft(revisedPlan)
-        setAgentRun(previous => previous ? { ...previous, plan: revisedPlan, summary: 'Plan updated with your instructions. Review it, then choose Proceed.' } : previous)
-        setMessages(previous => [...previous, { role: 'user', content: `Plan changes requested: ${feedback}` }])
+
+    const classificationContext = {
+      hasActiveFile: Boolean(activeFile),
+      hasSelectedCode: Boolean(selectedCode),
+      hasWorkspace: Boolean(currentFolder)
+    }
+
+    const intentResult = IntentClassifier.classify(rawInput, messages, classificationContext)
+
+    // 1. If currently reviewing an implementation plan:
+    if (agentRun?.status === 'review') {
+      const isCancellation = /^(cancel|never\s*mind|stop|forget\s*it|abort|discard)\b/i.test(rawInput)
+      if (isCancellation) {
+        setAgentRun(null)
+        setPlanDraft('')
+        appendChatMessage(activeChatIdRef.current, { role: 'user', content: rawInput })
+        appendChatMessage(activeChatIdRef.current, { role: 'assistant', content: 'Plan discarded. What would you like to work on instead?' })
         setInput('')
         return
       }
-      return sendAgentTask()
+
+      // If user typed a greeting or conversational question, don't corrupt the plan with "Reviewer additions: hi"
+      if (
+        intentResult.intent === INTENTS.GREETING ||
+        intentResult.intent === INTENTS.CONVERSATION ||
+        intentResult.intent === INTENTS.QUESTION
+      ) {
+        setAgentRun(null)
+        setPlanDraft('')
+        sendChat('custom', rawInput)
+        return
+      }
+
+      // If user provided a new task entirely instead of plan edits:
+      if (
+        !/^(step\s*\d+|change\s+step|add\s+step|revise|plan:|update\s+the\s+plan)\b/i.test(rawInput) &&
+        (intentResult.intent === INTENTS.FEATURE_REQUEST || intentResult.intent === INTENTS.BUG_FIX || intentResult.intent === INTENTS.TERMINAL_COMMAND)
+      ) {
+        setAgentRun(null)
+        setPlanDraft('')
+        runApprovedAgentTask(rawInput, null)
+        return
+      }
+
+      // Otherwise, treat as instructions to amend the plan:
+      const revisedPlan = `${planDraft || agentRun.plan}\n\n## Reviewer additions\n${rawInput}`
+      setPlanDraft(revisedPlan)
+      setAgentRun(previous => previous ? { ...previous, plan: revisedPlan, summary: 'Plan updated with your instructions. Review it, then choose Proceed.' } : previous)
+      appendChatMessage(activeChatIdRef.current, { role: 'user', content: `Plan changes requested: ${rawInput}` })
+      setInput('')
+      return
     }
-    return sendChat()
-  }, [agentRun?.plan, agentRun?.status, input, mode, planDraft, sendAgentTask, sendChat, setMessages])
+
+    // 2. If intent is greeting, conversation, question, or general explanation (no agent tools needed):
+    if (
+      intentResult.toolReqs?.needsAgent === false ||
+      intentResult.intent === INTENTS.GREETING ||
+      intentResult.intent === INTENTS.CONVERSATION ||
+      intentResult.intent === INTENTS.QUESTION ||
+      intentResult.intent === INTENTS.CODE_EXPLANATION
+    ) {
+      sendChat('custom', rawInput)
+      return
+    }
+
+    // 3. If explicit planning requested (starts with /plan, or intent is PLANNING):
+    if (intentResult.intent === INTENTS.PLANNING || /^\/(?:plan|planning)\b/i.test(rawInput)) {
+      const planTask = rawInput.replace(/^\/(?:plan|planning)\s*/i, '').trim() || rawInput
+      sendAgentTask(planTask)
+      return
+    }
+
+    // 4. Default for coding tasks (features, bug fixes, refactoring, commands, terminal, debugging):
+    // Execute autonomously and conversationally, just like Antigravity!
+    runApprovedAgentTask(rawInput, null)
+  }, [activeFile, agentRun?.plan, agentRun?.status, appendChatMessage, currentFolder, input, messages, planDraft, runApprovedAgentTask, selectedCode, sendAgentTask, sendChat])
 
   const handleKeyDown = useCallback((event) => {
     if (event.key === 'Enter' && !event.shiftKey) {
