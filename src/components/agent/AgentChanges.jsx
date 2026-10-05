@@ -18,8 +18,8 @@ export const AgentChanges = React.memo(function AgentChanges({
   const fileCount = changedFiles.length || (lastChange ? 1 : 0)
 
   return (
-    <div className="flex flex-col gap-2 p-3 rounded-xl bg-[var(--agent-surface)] border border-[var(--agent-border)] shadow-sm agent-fade-in select-none">
-      <div className="flex items-center justify-between">
+    <div className="flex flex-col gap-2 p-3 rounded-xl bg-[var(--agent-surface)] border border-[var(--agent-border)] shadow-sm agent-fade-in select-none min-w-0 max-w-full overflow-hidden">
+      <div className="flex items-center justify-between min-w-0 gap-2">
         <div className="flex items-center gap-2">
           <FileCheck2 size={14} className="text-cyan-400 shrink-0" />
           <div className="flex items-center gap-1.5 text-xs">

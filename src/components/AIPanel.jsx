@@ -1432,7 +1432,13 @@ export default function AIPanel({
       return
     }
 
-    // 2. If intent is greeting, conversation, question, or general explanation (no agent tools needed):
+    // 2. If user explicitly selected Assistant (Chat) mode: strictly chat!
+    if (mode === 'assistant') {
+      sendChat('custom', rawInput)
+      return
+    }
+
+    // 3. If intent is greeting, conversation, question, or general explanation (no agent tools needed):
     if (
       intentResult.toolReqs?.needsAgent === false ||
       intentResult.intent === INTENTS.GREETING ||
@@ -1444,17 +1450,17 @@ export default function AIPanel({
       return
     }
 
-    // 3. If explicit planning requested (starts with /plan, or intent is PLANNING):
+    // 4. If explicit planning requested (starts with /plan, or intent is PLANNING):
     if (intentResult.intent === INTENTS.PLANNING || /^\/(?:plan|planning)\b/i.test(rawInput)) {
       const planTask = rawInput.replace(/^\/(?:plan|planning)\s*/i, '').trim() || rawInput
       sendAgentTask(planTask)
       return
     }
 
-    // 4. Default for coding tasks (features, bug fixes, refactoring, commands, terminal, debugging):
+    // 5. Default for autonomous coding tasks in Agent mode:
     // Execute autonomously and conversationally, just like Antigravity!
     runApprovedAgentTask(rawInput, null)
-  }, [activeFile, agentRun?.plan, agentRun?.status, appendChatMessage, currentFolder, input, messages, planDraft, runApprovedAgentTask, selectedCode, sendAgentTask, sendChat])
+  }, [activeFile, agentRun?.plan, agentRun?.status, appendChatMessage, currentFolder, input, messages, mode, planDraft, runApprovedAgentTask, selectedCode, sendAgentTask, sendChat])
 
   const handleKeyDown = useCallback((event) => {
     if (event.key === 'Enter' && !event.shiftKey) {

@@ -387,7 +387,7 @@ export function AgentWorkspace({
                       <MessageToolsView tools={message.tools} onReviewChanges={onReviewChanges} />
                     )}
                     <div className="break-words min-w-0">{renderMessageContent(message.content)}</div>
-                    {message.role === 'assistant' && /(?:hand\s*(?:it\s*)?over\s+to\s+(?:the\s+)?(?:autonomous\s+)?agent|ready\s+to\s+hand\s+over|switch\s+to\s+(?:the\s+)?(?:autonomous\s+)?agent|hand-off\s+confirmation|hand over this job)/i.test(String(message.content || '')) && (
+                    {message.role === 'assistant' && /(?:hand\s*(?:it\s*)?over\s+to\s+(?:the\s+)?(?:autonomous\s+)?agent|ready\s+to\s+hand\s+over|switch\s+to\s+(?:the\s+)?(?:autonomous\s+)?agent|hand-off\s+confirmation|hand over this job|would you like me to hand this over|let the agent handle this|run this with the agent|hand over to agent)/i.test(String(message.content || '')) && (
                       <div className="mt-3 pt-2.5 border-t border-[var(--agent-border-subtle)] flex items-center justify-between gap-3 bg-indigo-500/10 p-2.5 rounded-lg border border-indigo-500/25 agent-fade-in">
                         <div className="flex items-center gap-2 text-indigo-300 text-xs font-medium min-w-0">
                           <Bot size={15} className="text-indigo-400 shrink-0" />
