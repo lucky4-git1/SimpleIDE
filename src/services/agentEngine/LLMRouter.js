@@ -213,14 +213,84 @@ export class LLMRouter {
   }
 
   extractResponse(provider, data) {
+    if (!data) return ''
+    let text = ''
     if (provider === 'anthropic') {
-      return data.content?.[0]?.text || '';
+      if (Array.isArray(data.content)) {
+        const textParts = data.content
+          .filter(c => c && c.type === 'text')
+          .map(c => c.text || '')
+        text = textParts.join('\n') || data.content?.[0]?.text || ''
+      } else {
+        text = data.content?.[0]?.text || ''
+      }
+    } else if (provider === 'gemini') {
+      const parts = data.candidates?.[0]?.content?.parts || []
+      const textParts = parts
+        .filter(p => p && !p.thought && p.text)
+        .map(p => p.text)
+      text = textParts.join('\n') || parts[0]?.text || ''
+    } else {
+      // OpenAI-compatible response parsing
+      text = data.choices?.[0]?.message?.content || data.output_text || ''
     }
-    if (provider === 'gemini') {
-      return data.candidates?.[0]?.content?.parts?.[0]?.text || '';
+    // Clean inline thought tags from visible response text
+    return typeof text === 'string'
+      ? text.replace(/<(?:thought|thinking)>[\s\S]*?<\/(?:thought|thinking)>\s*/gi, '').trim()
+      : ''
+  }
+
+  /**
+   * Extract chain-of-thought or reasoning output across providers
+   * (e.g. DeepSeek-R1 reasoning_content, Anthropic thinking blocks, Gemini thoughts, <thought> tags)
+   */
+  extractReasoning(provider, data) {
+    if (!data || typeof data !== 'object') return ''
+    const p = String(provider || '').toLowerCase()
+
+    if (p === 'anthropic') {
+      if (Array.isArray(data.content)) {
+        const thinkingParts = data.content
+          .filter(c => c && (c.type === 'thinking' || c.type === 'reasoning'))
+          .map(c => c.thinking || c.text || '')
+          .filter(Boolean)
+        if (thinkingParts.length > 0) return thinkingParts.join('\n')
+      }
+      return ''
     }
-    // OpenAI-compatible response parsing
-    return data.choices?.[0]?.message?.content || data.output_text || '';
+
+    if (p === 'gemini' || p === 'google') {
+      const parts = data.candidates?.[0]?.content?.parts || []
+      const thinkingParts = parts
+        .filter(part => part && (part.thought === true || part.type === 'thought'))
+        .map(part => part.text || '')
+        .filter(Boolean)
+      if (thinkingParts.length > 0) return thinkingParts.join('\n')
+    }
+
+    // OpenAI, DeepSeek, Groq, OpenRouter, Together, Ollama
+    const msg = data.choices?.[0]?.message
+    if (msg) {
+      if (typeof msg.reasoning_content === 'string' && msg.reasoning_content.trim()) {
+        return msg.reasoning_content.trim()
+      }
+      if (typeof msg.reasoning === 'string' && msg.reasoning.trim()) {
+        return msg.reasoning.trim()
+      }
+    }
+
+    // Check for inline <thought>...</thought> or <thinking>...</thinking>
+    const content = typeof msg?.content === 'string'
+      ? msg.content
+      : (typeof data.content === 'string' ? data.content : (typeof data.output_text === 'string' ? data.output_text : ''))
+    if (content) {
+      const match = content.match(/<(?:thought|thinking)>([\s\S]*?)<\/(?:thought|thinking)>/i)
+      if (match && match[1]) {
+        return match[1].trim()
+      }
+    }
+
+    return ''
   }
 
   /**

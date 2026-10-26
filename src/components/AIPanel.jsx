@@ -1077,7 +1077,7 @@ export default function AIPanel({
             setAgentRun(previous => updateRunFromEvent(previous, event))
           }
 
-          if (event.type === 'thinking') {
+          if (event.type === 'thinking' || event.type === 'thought') {
             const thinkingText = event.message || ''
             updateStreamMessageThinking(taskChatId, responseKey, thinkingText ? `${thinkingText}\n` : '')
           } else if (event.type === 'tool') {

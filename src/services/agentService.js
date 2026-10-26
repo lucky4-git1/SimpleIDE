@@ -12,7 +12,7 @@ import { globalRouter, filterToolsByFamily } from './agentEngine/LLMRouter.js'
 import { PrimeRouter } from './agentEngine/PrimeRouter.js'
 import { MainProcessRouterAdapter } from './agentEngine/MainProcessRouterAdapter.js'
 import { RunLedger } from './agentEngine/RunLedger.js'
-import { MessageWindow, MESSAGE_KINDS } from './agentEngine/MessageWindow.js'
+import { MessageWindow, MESSAGE_KINDS, REASONING_POLICIES } from './agentEngine/MessageWindow.js'
 import { buildCheckpointV2, migrateCheckpoint, restoreIntoWindow } from './agentEngine/RunCheckpoint.js'
 import {
   SUMMARIZER_SYSTEM_PROMPT,
@@ -326,6 +326,13 @@ CRITICAL — UI and layout tasks:
 - After every UI edit, re-read the changed CSS/markup and check that each requested outcome is represented. Do not report completion if no write occurred for a requested visual change.
 - When a local preview can be started, use browser_navigate, browser_audit, browser_screenshot, and browser_console_errors before completion. Repair horizontal overflow, clipped controls, unreadable contrast, missing image alt text, broken links, and console errors. Do not claim visual verification unless these checks ran.
 - State the exact selector and properties changed in the final summary, not merely “Done”.
+
+CRITICAL — CHAIN OF THOUGHT & REASONING EFFICIENCY:
+- Before executing actions, structure your chain of thought for maximum reasoning efficiency:
+  1. ORIENT: State the exact goal, identify files involved, and review any constraints or existing code.
+  2. HYPOTHESIZE & DIAGNOSE: If fixing an error or repairing a failure, identify the exact root cause first. Never guess or retry an identical failing command.
+  3. DECISIVE BATCHED EXECUTION: Perform the smallest, most decisive sequence of actions to reach completion. Group related file writes or reads in the same turn to minimize latency.
+  4. VERIFY RIGOROUSLY: Validate standalone HTML, run automated tests, or check builds before reporting completion.
 
 CRITICAL — Tool Usage & Modifications:
 - Prefer \`write_file\` for creating new files, rewriting files, or files under 300 lines with complete desired content. This avoids fragile string matching.
@@ -838,7 +845,10 @@ export async function runAgentTask({ taskId, task, context, tools = {}, onEvent,
     8000,
     Math.floor((capabilities.contextWindowTokens - 4096 - 2000) * 0.5)
   )
-  const messageWindow = new MessageWindow({ maxWindowTokens: messageWindowBudget })
+  const messageWindow = new MessageWindow({
+    maxWindowTokens: messageWindowBudget,
+    reasoningPolicy: REASONING_POLICIES.NONE
+  })
   // Seed immutable facts deterministically from existing run state only.
   messageWindow.addFact(`Task objective: ${clip(task, 500)}`)
   if (context.approvedPlan) messageWindow.addFact(`Approved plan: ${clip(String(context.approvedPlan), 1000)}`)
@@ -1337,6 +1347,11 @@ export async function runAgentTask({ taskId, task, context, tools = {}, onEvent,
           usageSink: recordAndTrack,
           timeoutMs: DEFAULT_REQUEST_TIMEOUT_MS
         }), 'agent', turn)
+
+        const extractedReasoning = globalRouter.extractReasoning(apiConfig.provider, rawResponse)
+        if (extractedReasoning) {
+          onEvent?.({ type: 'thinking', message: extractedReasoning })
+        }
 
         if (signal?.aborted) {
           runtime.transition(AGENT_EVENTS.USER_CANCELLED)
