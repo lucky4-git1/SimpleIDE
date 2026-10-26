@@ -9,6 +9,7 @@ import { AgentVerification } from './AgentVerification'
 import { AgentChanges } from './AgentChanges'
 import { AgentSummary } from './AgentSummary'
 import { AgentError } from './AgentError'
+import { AgentComposer } from './AgentComposer'
 import {
   ArrowDown,
   Copy,
