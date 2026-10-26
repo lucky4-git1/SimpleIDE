@@ -63,7 +63,7 @@ export const AgentSummary = React.memo(function AgentSummary({
           </span>
         )}
 
-        {verification?.failed && (
+        {(verification?.failed || (verification?.attempted && !verification?.passed && !verification?.success)) && (
           <span className="flex items-center gap-1 text-rose-400">
             <AlertTriangle size={12} />
             <span>Verification check failed</span>

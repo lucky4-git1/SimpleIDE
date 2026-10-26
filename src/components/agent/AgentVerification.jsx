@@ -22,7 +22,13 @@ export const AgentVerification = React.memo(function AgentVerification({
     : (verification.detail ? String(verification.detail.message || JSON.stringify(verification.detail)) : '')
 
   const command = typeof verification.command === 'string' ? verification.command : ''
-  const output = typeof verification.output === 'string' ? verification.output : (typeof verification.stdout === 'string' ? verification.stdout : '')
+  const output = (typeof verification.output === 'string' && verification.output)
+    ? verification.output
+    : (typeof verification.stderr === 'string' && verification.stderr
+      ? verification.stderr
+      : (typeof verification.stdout === 'string' && verification.stdout
+        ? verification.stdout
+        : (typeof verification.error === 'string' ? verification.error : '')))
 
   return (
     <div

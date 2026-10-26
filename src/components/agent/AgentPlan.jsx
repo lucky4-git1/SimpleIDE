@@ -84,11 +84,12 @@ export const AgentPlan = React.memo(function AgentPlan({
           <div className="flex flex-col gap-2 py-1">
             {(() => {
               let goalText = ''
-              const goalMatch = rawPlan.match(/(?:#+\s*(?:\d+\.\s*)?Goal[^\n]*|\*\*Goal:\*\*)\s*\n+([\s\S]*?)(?=\n#+|$)/i)
+              const safePlanStr = typeof rawPlan === "string" ? rawPlan : (rawPlan ? JSON.stringify(rawPlan) : "");
+              const goalMatch = safePlanStr.match(/(?:#+\s*(?:\d+\.\s*)?Goal[^\n]*|\*\*Goal:\*\*)\s*\n+([\s\S]*?)(?=\n#+|$)/i)
               if (goalMatch && goalMatch[1]) {
                 goalText = goalMatch[1].trim().replace(/^[-*]\s+/, '')
               } else {
-                const summaryMatch = rawPlan.match(/^#\s+[^\n]+\n+([^#\n][^\n]+)/m)
+                const summaryMatch = safePlanStr.match(/^#\s+[^\n]+\n+([^#\n][^\n]+)/m)
                 if (summaryMatch && summaryMatch[1]) {
                   goalText = summaryMatch[1].trim()
                 }
@@ -165,7 +166,7 @@ export const AgentPlan = React.memo(function AgentPlan({
   if (!planSteps.length) return null
 
   return (
-    <div className="flex flex-col gap-2 p-3 rounded-xl bg-[var(--agent-surface)] border border-[var(--agent-border)] shadow-sm select-none">
+    <div className="flex flex-col gap-2 p-3 rounded-xl bg-[var(--agent-surface)] border border-[var(--agent-border)] shadow-sm select-none min-w-0 max-w-full overflow-hidden">
       <div className="flex items-center justify-between text-[10px] font-semibold uppercase tracking-wider text-[var(--agent-text-muted)]">
         <div className="flex items-center gap-1.5">
           <ListTodo size={12} className="text-cyan-400" />

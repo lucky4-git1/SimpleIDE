@@ -108,7 +108,7 @@ export default function Layout({ activityBar, sidebar, tabs, editor, terminal, a
         style={{ display: isAIPanelOpen ? 'block' : 'none' }}
       />
       <div 
-        className={`ai-panel-wrapper flex flex-col ${isAIWorking ? 'ai-working' : ''}`} 
+        className={`ai-panel-wrapper flex flex-col min-w-0 h-full overflow-hidden shrink-0 ${isAIWorking ? 'ai-working' : ''}`} 
         style={{ 
           width: `${aiPanelWidth}px`, 
           display: isAIPanelOpen ? 'flex' : 'none' 

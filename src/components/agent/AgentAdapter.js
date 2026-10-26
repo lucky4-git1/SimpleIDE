@@ -432,9 +432,11 @@ export function buildAgentViewModel({
   )
 
   const command = typeof rawVerification.command === 'string' ? rawVerification.command : ''
-  const output = typeof rawVerification.stdout === 'string'
-    ? rawVerification.stdout
-    : (typeof rawVerification.output === 'string' ? rawVerification.output : (typeof rawVerification.stderr === 'string' ? rawVerification.stderr : ''))
+  const rawStdout = typeof rawVerification.stdout === 'string' ? rawVerification.stdout.trim() : ''
+  const rawOutput = typeof rawVerification.output === 'string' ? rawVerification.output.trim() : ''
+  const rawStderr = typeof rawVerification.stderr === 'string' ? rawVerification.stderr.trim() : ''
+  const rawError = typeof rawVerification.error === 'string' ? rawVerification.error.trim() : ''
+  const output = rawOutput || (failed ? (rawStderr || rawStdout || rawError) : (rawStdout || rawStderr || rawError))
 
   let detail = ''
   if (typeof rawVerification.detail === 'string' && rawVerification.detail) {
