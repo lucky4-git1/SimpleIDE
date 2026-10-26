@@ -9,6 +9,7 @@ import SearchModal from './components/SearchModal'
 import PromptModal from './components/PromptModal'
 import CommandPalette from './components/CommandPalette'
 import AIPanel from './components/AIPanel'
+import { ErrorBoundary } from './components/ErrorBoundary'
 import AISettingsModal from './components/AISettingsModal'
 import ActivityBar from './components/ActivityBar'
 import GitPanel from './components/GitPanel'
@@ -873,7 +874,8 @@ export default function App() {
           isAIWorking={isAIWorking}
           isAIPanelOpen={isAIPanelOpen}
           aiPanel={
-            <AIPanel
+            <ErrorBoundary title='AI Workspace'>
+              <AIPanel
               isDark={isDark}
               selectedCode={selectedCode}
               activeFile={activeFile}
@@ -892,6 +894,7 @@ export default function App() {
               projectSummary={projectSummary}
               settingsVersion={aiSettingsVersion}
             />
+            </ErrorBoundary>
           }
           activityBar={
             <ActivityBar
